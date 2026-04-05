@@ -1,0 +1,112 @@
+Create a "Session Result" page for reviewing the results of a finished live quiz session.
+
+IMPORTANT RULES
+
+This page belongs to the existing Teacher Dashboard design system.
+
+Follow the same UI/UX patterns.
+
+Do NOT redesign navigation or layout.
+
+Reuse existing cards, charts, and table components.
+
+Support both Light Theme and Dark Theme.
+
+---
+
+RESPONSIVE REQUIREMENTS
+
+Desktop layout:
+Grid dashboard with analytics cards.
+
+Tablet layout:
+Two-column layout.
+
+Mobile layout:
+Stack cards vertically.
+
+The layout must adapt for:
+
+Desktop
+Tablet
+Mobile
+
+---
+
+PAGE HEADER
+
+Title:
+
+Session Results
+
+Display metadata:
+
+Quiz name
+Session date
+Participants count
+
+Example:
+
+Mathematics Practice Test
+April 4
+32 students
+
+---
+
+SECTION — LEADERBOARD
+
+Create a card titled:
+
+Leaderboard
+
+Display ranking list:
+
+Rank
+Student name
+Score
+
+Example:
+
+1. Ali — 89%
+2. Sardor — 84%
+3. Dilshod — 80%
+
+---
+
+SECTION — QUESTION ACCURACY
+
+Create a card titled:
+
+Question Accuracy
+
+Display chart showing accuracy per question.
+
+Example:
+
+Question 1 → 90%
+Question 2 → 75%
+Question 3 → 42%
+
+---
+
+SECTION — STUDENT RESULTS
+
+Create a card titled:
+
+Student Results
+
+Display table:
+
+Student name
+Score
+Correct answers
+Wrong answers
+Completion time
+
+---
+
+Use modern SaaS dashboard UI.
+
+Cards must include rounded corners and soft shadows.
+
+Ensure compatibility with both Light and Dark themes and all responsive screen sizes.

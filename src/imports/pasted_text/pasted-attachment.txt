@@ -1,0 +1,146 @@
+Create a "Live Sessions Dashboard" page for the Teacher Dashboard in a Learning Management System.
+
+IMPORTANT RULES
+
+This dashboard already exists in the Figma project.
+
+Follow the existing UI/UX design system already used in the Teacher Dashboard.
+
+Do NOT redesign the sidebar, navigation, or overall layout.
+
+Reuse existing components such as cards, buttons, tables, icons, spacing, and typography.
+
+The page must support both existing themes:
+
+Light Theme
+Dark Theme
+
+---
+
+RESPONSIVE REQUIREMENTS
+
+The page must be fully responsive.
+
+Desktop layout:
+Use a dashboard grid layout with multiple cards.
+
+Tablet layout:
+Use a two-column layout.
+
+Mobile layout:
+Stack cards vertically with large touch-friendly components.
+
+The layout must adapt for:
+
+Desktop
+Tablet
+Mobile
+
+---
+
+PAGE HEADER
+
+Title:
+
+Live Sessions
+
+Description:
+
+Manage live quiz sessions, monitor active sessions, and review past session results.
+
+---
+
+SECTION 1 — ACTIVE SESSION
+
+Create a card titled:
+
+Active Session
+
+If a session is currently running display:
+
+Quiz Name
+Example:
+Mathematics Practice Test
+
+Join Code
+Example:
+A7K92D
+
+Participants Count
+Example:
+28 students joined
+
+Session Status Badge
+Active
+
+Buttons:
+
+Open Session
+End Session
+
+---
+
+SECTION 2 — CREATE NEW SESSION
+
+Create a card titled:
+
+Create New Session
+
+Description text:
+
+Start a new live quiz session for students.
+
+Primary button:
+
+Create Session
+
+Clicking this opens the session creation flow.
+
+---
+
+SECTION 3 — PAST SESSION RESULTS
+
+Create a card titled:
+
+Past Sessions
+
+Display a table with the following columns:
+
+Quiz Name
+Date
+Participants
+Average Score
+
+Example:
+
+Mathematics Test
+April 4
+32 students
+71%
+
+Add action button:
+
+View Results
+
+---
+
+CARD DESIGN
+
+Use modern SaaS dashboard design.
+
+Cards must include:
+
+Rounded corners (16px radius)
+Soft shadows
+Clear spacing between sections
+
+---
+
+THEME SUPPORT
+
+The page must automatically adapt to both themes already defined in the dashboard.
+
+
+---
+
+Ensure the page integrates visually with the existing Teacher Dashboard UI and remains consistent across both themes and all responsive breakpoints.
