@@ -11,7 +11,7 @@ import {
 import { useTheme } from '../../components/ThemeContext';
 import { getStoredAuthSession, getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
 const PAGE_SIZE = 50;
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -240,10 +240,39 @@ function formatDate(value: string | null | undefined) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
 
-  const year = date.getUTCFullYear();
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Tashkent',
+    day: 'numeric',
+    month: 'numeric',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(date);
+
+  const uzbekMonths = [
+    'yanvar',
+    'fevral',
+    'mart',
+    'aprel',
+    'may',
+    'iyun',
+    'iyul',
+    'avgust',
+    'sentyabr',
+    'oktyabr',
+    'noyabr',
+    'dekabr',
+  ];
+
+  const year = parts.find((part) => part.type === 'year')?.value ?? '0000';
+  const monthIndex = Number(parts.find((part) => part.type === 'month')?.value ?? '1') - 1;
+  const month = uzbekMonths[monthIndex] ?? 'yanvar';
+  const day = parts.find((part) => part.type === 'day')?.value ?? '0';
+  const hour = parts.find((part) => part.type === 'hour')?.value ?? '00';
+  const minute = parts.find((part) => part.type === 'minute')?.value ?? '00';
+
+  return `${day}-${month}, ${year} yil, ${hour}:${minute}`;
 }
 
 function diffMinutes(start: string | null | undefined, end: string | null | undefined) {

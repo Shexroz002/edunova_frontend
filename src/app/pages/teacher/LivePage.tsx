@@ -10,7 +10,7 @@ import {
 import { useTheme } from '../../components/ThemeContext.tsx';
 import { getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth.ts';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
 
 type SessionType = 'public' | 'group';
 
@@ -88,14 +88,24 @@ interface ActiveSessionItem {
   duration: string;
 }
 
-const PAST_SESSIONS = [
-  { id: 1, quizName: 'Mathematics Test',        date: '4 aprel',  participants: 32, avgScore: 71, subject: 'Matematika' },
-  { id: 2, quizName: 'Physics — Mechanics',     date: '2 aprel',  participants: 20, avgScore: 64, subject: 'Fizika'     },
-  { id: 3, quizName: 'Chemistry Bonds Quiz',    date: '31 mart',  participants: 18, avgScore: 78, subject: 'Kimyo'      },
-  { id: 4, quizName: 'Biology Cell Structures', date: '28 mart',  participants: 25, avgScore: 55, subject: 'Biologiya'  },
-  { id: 5, quizName: 'Algebra — Equations',     date: '26 mart',  participants: 30, avgScore: 83, subject: 'Matematika' },
-  { id: 6, quizName: 'Optics & Light',          date: '22 mart',  participants: 16, avgScore: 60, subject: 'Fizika'     },
-];
+interface PastSessionApiItem {
+  session_id: number;
+  quiz_id: number;
+  quiz_name: string | null;
+  subject_name: string | null;
+  session_date: string | null;
+  participants_count: number;
+  average_score: number;
+}
+
+interface PastSessionItem {
+  id: number;
+  quizName: string;
+  subject: string;
+  date: string;
+  participants: number;
+  avgScore: number;
+}
 
 const DURATIONS = ['10 daqiqa', '20 daqiqa', '30 daqiqa', '60 daqiqa'];
 
@@ -142,6 +152,37 @@ function mapGroup(item: GroupApiItem): GroupOption {
     id: item.id,
     name: item.name,
     count: item.students_count,
+  };
+}
+
+function formatPastSessionDate(value: string | null) {
+  if (!value) return 'Sana mavjud emas';
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Sana mavjud emas';
+
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: 'Asia/Tashkent',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).formatToParts(date);
+
+  const day = parts.find((part) => part.type === 'day')?.value ?? '00';
+  const month = parts.find((part) => part.type === 'month')?.value ?? '00';
+  const year = parts.find((part) => part.type === 'year')?.value ?? '0000';
+
+  return `${day}/${month}/${year}`;
+}
+
+function mapPastSession(item: PastSessionApiItem): PastSessionItem {
+  return {
+    id: item.session_id,
+    quizName: item.quiz_name ?? 'Quiz nomi mavjud emas',
+    subject: item.subject_name ?? 'Fan ko‘rsatilmagan',
+    date: formatPastSessionDate(item.session_date),
+    participants: item.participants_count,
+    avgScore: Number(item.average_score ?? 0),
   };
 }
 
@@ -222,6 +263,24 @@ async function fetchLiveSessions() {
   }
 
   return response.json() as Promise<LiveSessionListItem[]>;
+}
+
+async function fetchPastSessions(page: number, size = 20) {
+  const params = new URLSearchParams({
+    page: String(page),
+    size: String(size),
+  });
+
+  const response = await fetchWithAuthRetry(
+    `${API_BASE_URL}/api/v1/teacher/quiz-sessions/live/results?${params.toString()}`,
+    { method: 'GET' },
+  );
+
+  if (!response.ok) {
+    throw new Error(`O'tgan sessionlarni olishda xatolik: ${response.status}`);
+  }
+
+  return response.json() as Promise<PaginatedResponse<PastSessionApiItem>>;
 }
 
 function durationToMinutes(value: string) {
@@ -879,6 +938,9 @@ function ActiveSessionDropdown({
 function CreateSessionCard() {
   const { theme: t } = useTheme();
   const navigate = useNavigate();
+  const labelColor = t.isDark ? '#CBD5E1' : '#475569';
+  const helperTextColor = t.isDark ? '#94A3B8' : '#64748B';
+  const valueTextColor = t.isDark ? '#E2E8F0' : '#334155';
   const [step, setStep] = useState(0); // 0, 1, 2
   const [quiz, setQuiz] = useState<QuizListItem | null>(null);
   const [sessionType, setSessionType] = useState<SessionType | ''>('');
@@ -986,7 +1048,7 @@ function CreateSessionCard() {
       <div className="flex items-center justify-between mb-5">
         <div>
           <h2 className="text-base font-semibold" style={{ color: t.textPrimary }}>Yangi Session</h2>
-          <p className="text-xs mt-0.5" style={{ color: t.textMuted }}>
+          <p className="text-xs mt-0.5" style={{ color: helperTextColor }}>
             {STEP_LABELS[step]} — {step + 1}/{STEP_LABELS.length}
           </p>
         </div>
@@ -996,7 +1058,7 @@ function CreateSessionCard() {
       {/* ── Step 0: Select Quiz ── */}
       {step === 0 && (
         <div className="space-y-3 mb-5">
-          <label className="block text-xs font-semibold mb-1" style={{ color: t.textSecondary }}>
+          <label className="block text-xs font-semibold mb-1" style={{ color: labelColor }}>
             Quiz tanlang
           </label>
           <QuizDropdown value={quiz} onChange={setQuiz} />
@@ -1046,7 +1108,7 @@ function CreateSessionCard() {
               style={{ background: t.bgInner, border: `1px solid ${t.border}` }}
             >
               <BookOpen className="w-3.5 h-3.5 shrink-0" style={{ color: t.accent }} strokeWidth={1.75} />
-              <span className="text-xs font-medium truncate" style={{ color: t.textSecondary }}>
+              <span className="text-xs font-medium truncate" style={{ color: valueTextColor }}>
                 {quiz.title}
               </span>
             </div>
@@ -1077,7 +1139,7 @@ function CreateSessionCard() {
               style={{ background: t.bgInner, border: `1px solid ${t.border}` }}>
             <div className="flex items-center gap-2">
               <BookOpen className="w-3.5 h-3.5 shrink-0" style={{ color: t.accent }} strokeWidth={1.75} />
-              <span className="text-xs font-medium truncate" style={{ color: t.textSecondary }}>{quiz?.title}</span>
+              <span className="text-xs font-medium truncate" style={{ color: valueTextColor }}>{quiz?.title}</span>
             </div>
             <div className="flex items-center gap-2 flex-wrap">
               <span
@@ -1215,6 +1277,9 @@ function CreateSessionCard() {
 function ActiveSessionCard() {
   const { theme: t } = useTheme();
   const navigate = useNavigate();
+  const headerMetaColor = t.isDark ? '#94A3B8' : '#64748B';
+  const statLabelColor = t.isDark ? '#CBD5E1' : '#475569';
+  const infoTextColor = t.isDark ? '#E2E8F0' : '#334155';
   const [copied, setCopied] = useState(false);
   const [ended,  setEnded]  = useState(false);
   const [sessions, setSessions] = useState<ActiveSessionItem[]>([]);
@@ -1323,7 +1388,7 @@ function ActiveSessionCard() {
           </div>
           <div className="flex-1 min-w-0">
             <h2 className="text-base font-semibold" style={{ color: t.textPrimary }}>Faol Session</h2>
-            <p className="text-xs mt-0.5" style={{ color: t.textMuted }}>
+            <p className="text-xs mt-0.5" style={{ color: headerMetaColor }}>
               {sessions.length} ta session faol
             </p>
           </div>
@@ -1350,12 +1415,12 @@ function ActiveSessionCard() {
         <p className="text-sm font-semibold mb-1" style={{ color: t.textPrimary }}>{selectedSession.quizName}</p>
         <div className="flex items-center gap-3 flex-wrap">
           <div className="flex items-center gap-1.5">
-            <BookOpen className="w-3 h-3" style={{ color: t.textMuted }} strokeWidth={1.75} />
-            <span className="text-xs" style={{ color: t.textMuted }}>{selectedSession.subject}</span>
+            <BookOpen className="w-3 h-3" style={{ color: headerMetaColor }} strokeWidth={1.75} />
+            <span className="text-xs" style={{ color: infoTextColor }}>{selectedSession.subject}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <Users className="w-3 h-3" style={{ color: t.textMuted }} strokeWidth={1.75} />
-            <span className="text-xs" style={{ color: t.textMuted }}>{selectedSession.className}</span>
+            <Users className="w-3 h-3" style={{ color: headerMetaColor }} strokeWidth={1.75} />
+            <span className="text-xs" style={{ color: infoTextColor }}>{selectedSession.className}</span>
           </div>
         </div>
       </div>
@@ -1369,9 +1434,9 @@ function ActiveSessionCard() {
         ].map(({ Icon, val, label }) => (
           <div key={label} className="flex flex-col items-center justify-center gap-1 py-2.5 rounded-xl"
             style={{ background: t.bgInner, border: `1px solid ${t.border}` }}>
-            <Icon className="w-3.5 h-3.5" style={{ color: t.textMuted }} strokeWidth={1.75} />
+            <Icon className="w-3.5 h-3.5" style={{ color: headerMetaColor }} strokeWidth={1.75} />
             <span className="text-sm font-bold" style={{ color: t.textPrimary }}>{val}</span>
-            <span className="text-xs" style={{ color: t.textMuted }}>{label}</span>
+            <span className="text-xs" style={{ color: statLabelColor }}>{label}</span>
           </div>
         ))}
       </div>
@@ -1441,19 +1506,122 @@ function ActiveSessionCard() {
 function PastSessionsCard() {
   const { theme: t } = useTheme();
   const navigate = useNavigate();
+  const tableHeaderColor = t.isDark ? '#CBD5E1' : '#475569';
+  const tableValueColor = t.isDark ? '#E2E8F0' : '#334155';
+  const tableMetaColor = t.isDark ? '#94A3B8' : '#64748B';
+  const [pastSessions, setPastSessions] = useState<PastSessionItem[]>([]);
+  const [totalPastSessions, setTotalPastSessions] = useState(0);
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadInitialPastSessions = async () => {
+      setLoading(true);
+      setError('');
+
+      try {
+        const data = await fetchPastSessions(1);
+        if (cancelled) return;
+        setPastSessions(data.items.map(mapPastSession));
+        setTotalPastSessions(data.total);
+        setPage(data.page);
+        setPages(data.pages);
+      } catch (err) {
+        if (cancelled) return;
+        setPastSessions([]);
+        setTotalPastSessions(0);
+        setError(err instanceof Error ? err.message : "O'tgan sessionlarni yuklab bo‘lmadi");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    };
+
+    loadInitialPastSessions();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (loading) return undefined;
+
+    const handleScroll = () => {
+      if (loadingMore || page >= pages) return;
+
+      const threshold = 320;
+      const scrollPosition = window.innerHeight + window.scrollY;
+      const pageHeight = document.documentElement.scrollHeight;
+
+      if (scrollPosition < pageHeight - threshold) return;
+
+      setLoadingMore(true);
+      fetchPastSessions(page + 1)
+        .then((data) => {
+          setPastSessions((prev) => {
+            const seen = new Set(prev.map((item) => item.id));
+            const nextItems = data.items.map(mapPastSession).filter((item) => !seen.has(item.id));
+            return [...prev, ...nextItems];
+          });
+          setTotalPastSessions(data.total);
+          setPage(data.page);
+          setPages(data.pages);
+        })
+        .catch((err) => {
+          setError(err instanceof Error ? err.message : "O'tgan sessionlarni yuklab bo‘lmadi");
+        })
+        .finally(() => {
+          setLoadingMore(false);
+        });
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [loading, loadingMore, page, pages]);
 
   return (
     <Card>
       <div className="flex items-center justify-between mb-5">
         <div>
           <h2 className="text-base font-semibold" style={{ color: t.textPrimary }}>O'tgan Sessionlar</h2>
-          <p className="text-xs mt-0.5" style={{ color: t.textMuted }}>{PAST_SESSIONS.length} ta session yakunlangan</p>
+          <p className="text-xs mt-0.5" style={{ color: t.textMuted }}>{totalPastSessions} ta session yakunlangan</p>
         </div>
         <div className="w-9 h-9 rounded-xl flex items-center justify-center"
           style={{ background: t.bgInner, border: `1px solid ${t.border}` }}>
           <History className="w-4 h-4" style={{ color: t.textMuted }} strokeWidth={1.75} />
         </div>
       </div>
+
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-8 gap-3">
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
+            style={{ background: t.bgInner, border: `1px solid ${t.border}` }}>
+            <History className="w-6 h-6 animate-pulse" style={{ color: t.textMuted }} strokeWidth={1.5} />
+          </div>
+          <p className="text-sm" style={{ color: t.textMuted }}>Yuklanmoqda...</p>
+        </div>
+      ) : error && pastSessions.length === 0 ? (
+        <div
+          className="px-3.5 py-3 rounded-xl text-xs"
+          style={{ background: 'rgba(239,68,68,0.08)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.2)' }}
+        >
+          {error}
+        </div>
+      ) : pastSessions.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-8 gap-3">
+          <div className="w-14 h-14 rounded-2xl flex items-center justify-center"
+            style={{ background: t.bgInner, border: `1px solid ${t.border}` }}>
+            <History className="w-6 h-6" style={{ color: t.textMuted }} strokeWidth={1.5} />
+          </div>
+          <p className="text-sm" style={{ color: t.textMuted }}>O'tgan sessionlar mavjud emas</p>
+        </div>
+      ) : (
+        <>
 
       {/* Desktop table */}
       <div className="hidden sm:block rounded-xl overflow-hidden" style={{ border: `1px solid ${t.border}` }}>
@@ -1462,35 +1630,35 @@ function PastSessionsCard() {
             <tr style={{ background: t.bgInner, borderBottom: `1px solid ${t.border}` }}>
               {['Quiz nomi', 'Sana', 'Ishtirokchilar', "O'rtacha ball", ''].map((h, i) => (
                 <th key={i} className="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wider"
-                  style={{ color: t.textMuted }}>{h}</th>
+                  style={{ color: tableHeaderColor }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
-            {PAST_SESSIONS.map((s, idx) => {
+            {pastSessions.map((s, idx) => {
               const sc = scoreColor(s.avgScore);
               return (
                 <tr
                   key={s.id}
                   className="transition-colors"
-                  style={{ borderBottom: idx < PAST_SESSIONS.length - 1 ? `1px solid ${t.border}` : 'none' }}
+                  style={{ borderBottom: idx < pastSessions.length - 1 ? `1px solid ${t.border}` : 'none' }}
                   onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = t.bgCardHover; }}
                   onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                 >
                   <td className="px-4 py-3">
                     <p className="text-sm font-medium" style={{ color: t.textPrimary }}>{s.quizName}</p>
-                    <p className="text-xs mt-0.5" style={{ color: t.textMuted }}>{s.subject}</p>
+                    <p className="text-xs mt-0.5" style={{ color: tableMetaColor }}>{s.subject}</p>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1.5">
-                      <CalendarDays className="w-3.5 h-3.5 shrink-0" style={{ color: t.textMuted }} strokeWidth={1.75} />
-                      <span className="text-sm" style={{ color: t.textSecondary }}>{s.date}</span>
+                      <CalendarDays className="w-3.5 h-3.5 shrink-0" style={{ color: tableMetaColor }} strokeWidth={1.75} />
+                      <span className="text-sm" style={{ color: tableValueColor }}>{s.date}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1.5">
-                      <Users className="w-3.5 h-3.5 shrink-0" style={{ color: t.textMuted }} strokeWidth={1.75} />
-                      <span className="text-sm" style={{ color: t.textSecondary }}>{s.participants} o'quvchi</span>
+                      <Users className="w-3.5 h-3.5 shrink-0" style={{ color: tableMetaColor }} strokeWidth={1.75} />
+                      <span className="text-sm" style={{ color: tableValueColor }}>{s.participants} o'quvchi</span>
                     </div>
                   </td>
                   <td className="px-4 py-3">
@@ -1503,9 +1671,9 @@ function PastSessionsCard() {
                   <td className="px-4 py-3">
                     <button
                       className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap"
-                      style={{ background: t.bgInner, border: `1px solid ${t.border}`, color: t.textSecondary }}
+                      style={{ background: t.bgInner, border: `1px solid ${t.border}`, color: tableValueColor }}
                       onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = t.accentMuted; (e.currentTarget as HTMLElement).style.borderColor = t.accentBorder; (e.currentTarget as HTMLElement).style.color = t.accent; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = t.bgInner; (e.currentTarget as HTMLElement).style.borderColor = t.border; (e.currentTarget as HTMLElement).style.color = t.textSecondary; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = t.bgInner; (e.currentTarget as HTMLElement).style.borderColor = t.border; (e.currentTarget as HTMLElement).style.color = tableValueColor; }}
                       onClick={() => navigate(`/live/results/${s.id}`)}
                     >
                       Natijalar
@@ -1521,14 +1689,14 @@ function PastSessionsCard() {
 
       {/* Mobile cards */}
       <div className="block sm:hidden space-y-2.5">
-        {PAST_SESSIONS.map((s) => {
+        {pastSessions.map((s) => {
           const sc = scoreColor(s.avgScore);
           return (
             <div key={s.id} className="p-3.5 rounded-xl" style={{ background: t.bgInner, border: `1px solid ${t.border}` }}>
               <div className="flex items-start justify-between gap-2 mb-2.5">
                 <div className="min-w-0">
                   <p className="text-xs font-semibold truncate" style={{ color: t.textPrimary }}>{s.quizName}</p>
-                  <p className="text-xs mt-0.5" style={{ color: t.textMuted }}>{s.subject}</p>
+                  <p className="text-xs mt-0.5" style={{ color: tableMetaColor }}>{s.subject}</p>
                 </div>
                 <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-lg shrink-0"
                   style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
@@ -1537,17 +1705,17 @@ function PastSessionsCard() {
               </div>
               <div className="flex items-center gap-4 mb-3">
                 <div className="flex items-center gap-1">
-                  <CalendarDays className="w-3 h-3" style={{ color: t.textMuted }} />
-                  <span className="text-xs" style={{ color: t.textMuted }}>{s.date}</span>
+                  <CalendarDays className="w-3 h-3" style={{ color: tableMetaColor }} />
+                  <span className="text-xs" style={{ color: tableValueColor }}>{s.date}</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <Users className="w-3 h-3" style={{ color: t.textMuted }} />
-                  <span className="text-xs" style={{ color: t.textMuted }}>{s.participants} o'quvchi</span>
+                  <Users className="w-3 h-3" style={{ color: tableMetaColor }} />
+                  <span className="text-xs" style={{ color: tableValueColor }}>{s.participants} o'quvchi</span>
                 </div>
               </div>
               <button
                 className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all"
-                style={{ background: t.bgCard, border: `1px solid ${t.border}`, color: t.textSecondary }}
+                style={{ background: t.bgCard, border: `1px solid ${t.border}`, color: tableValueColor }}
                 onClick={() => navigate(`/live/results/${s.id}`)}
               >
                 Natijalar <ChevronRight className="w-3 h-3" strokeWidth={2} />
@@ -1556,6 +1724,18 @@ function PastSessionsCard() {
           );
         })}
       </div>
+      {loadingMore && (
+        <div className="pt-3 text-center text-xs" style={{ color: t.textMuted }}>
+          Yana sessionlar yuklanmoqda...
+        </div>
+      )}
+      {error && pastSessions.length > 0 && (
+        <div className="pt-3 text-center text-xs" style={{ color: '#EF4444' }}>
+          {error}
+        </div>
+      )}
+        </>
+      )}
     </Card>
   );
 }
@@ -1565,6 +1745,7 @@ function PastSessionsCard() {
 // ─────────────────────────────────────────────
 export function LivePage() {
   const { theme: t } = useTheme();
+  const pageSubtitleColor = t.isDark ? '#94A3B8' : '#64748B';
 
   return (
     <>
@@ -1579,7 +1760,7 @@ export function LivePage() {
             Jonli Sessionlar
           </h1>
         </div>
-        <p className="text-xs sm:text-sm mt-1 ml-12" style={{ color: t.textMuted }}>
+        <p className="text-xs sm:text-sm mt-1 ml-12" style={{ color: pageSubtitleColor }}>
           Jonli quiz sessionlarini boshqaring, faol sessionlarni kuzating va o'tgan natijalarni ko'ring.
         </p>
       </div>

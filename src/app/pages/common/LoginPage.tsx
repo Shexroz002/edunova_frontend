@@ -4,7 +4,7 @@ import { Eye, EyeOff, Sun, Moon, BookOpen, ArrowRight, Lock, Mail } from 'lucide
 import { useTheme } from '../../components/ThemeContext.tsx';
 import { getDefaultRouteForRole, persistAuthSession, type LoginResponse } from '../../lib/auth.ts';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
 
 // ── Telegram SVG icon ─────────────────────────────────────────────────────────
 function TelegramIcon({ size = 18 }: { size?: number }) {

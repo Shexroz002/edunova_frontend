@@ -36,6 +36,8 @@ import { StudentTestResultsPage } from './pages/student/StudentTestResultsPage';
 import { StudentErrorAnalysisPage } from './pages/student/StudentErrorAnalysisPage';
 import { StudentNotificationsPage } from './pages/student/StudentNotificationsPage';
 import { StudentProfileEditPage } from './pages/student/StudentProfileEditPage';
+import { StudentGroupsPage } from './pages/student/StudentGroupsPage';
+import { StudentGroupDetailPage } from './pages/student/StudentGroupDetailPage';
 
 function ThemedLayout() {
   return (
@@ -123,6 +125,8 @@ export const router = createBrowserRouter([
           { index: true, Component: StudentHomePage },
           { path: 'tests', Component: StudentTestsPage },
           { path: 'tests/:id', Component: StudentQuizDetailPage },
+          { path: 'group', Component: StudentGroupsPage },
+          { path: 'group/:id', Component: StudentGroupDetailPage },
           { path: 'friends', Component: StudentFriendsPage },
           { path: 'competition', Component: StudentCompetitionPage },
           { path: 'statistics', Component: StudentStatisticsPage },

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState, type UIEvent } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import {
   ArrowLeft, Trophy, Users, CalendarDays, Target,
@@ -6,91 +6,118 @@ import {
   BarChart3, Medal, Star, Download,
 } from 'lucide-react';
 import { useTheme } from '../../components/ThemeContext.tsx';
+import { getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth.ts';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
 
 // ─────────────────────────────────────────────
 //  Mock data (keyed by session id)
 // ─────────────────────────────────────────────
-const SESSION_META: Record<string, {
-  quizName: string; subject: string; date: string;
-  participants: number; duration: string; avgScore: number; totalQ: number;
-}> = {
-  '1': { quizName: 'Mathematics Test',        subject: 'Matematika', date: '4 aprel, 2025',  participants: 32, duration: '24 daq', avgScore: 71, totalQ: 10 },
-  '2': { quizName: 'Physics — Mechanics',     subject: 'Fizika',     date: '2 aprel, 2025',  participants: 20, duration: '19 daq', avgScore: 64, totalQ: 10 },
-  '3': { quizName: 'Chemistry Bonds Quiz',    subject: 'Kimyo',      date: '31 mart, 2025',  participants: 18, duration: '21 daq', avgScore: 78, totalQ: 10 },
-  '4': { quizName: 'Biology Cell Structures', subject: 'Biologiya',  date: '28 mart, 2025',  participants: 25, duration: '28 daq', avgScore: 55, totalQ: 10 },
-  '5': { quizName: 'Algebra — Equations',     subject: 'Matematika', date: '26 mart, 2025',  participants: 30, duration: '22 daq', avgScore: 83, totalQ: 10 },
-  '6': { quizName: 'Optics & Light',          subject: 'Fizika',     date: '22 mart, 2025',  participants: 16, duration: '18 daq', avgScore: 60, totalQ: 10 },
+interface SessionMeta {
+  sessionId: number;
+  quizId: number;
+  quizName: string;
+  subject: string;
+  status: string;
+  date: string;
+  participants: number;
+  duration: string;
+  avgScore: number;
+  highestScore: number;
+  lowestScore: number;
+  hardestQuestionNumber: number;
+  hardestQuestionAccuracy: number;
+  totalQ: number;
+}
+
+const DEFAULT_META: SessionMeta = {
+  sessionId: 0,
+  quizId: 0,
+  quizName: 'Mathematics Test',
+  subject: 'Matematika',
+  status: 'finished',
+  date: '4 aprel, 2025',
+  participants: 32,
+  duration: '24 daq',
+  avgScore: 71,
+  highestScore: 92,
+  lowestScore: 10,
+  hardestQuestionNumber: 9,
+  hardestQuestionAccuracy: 38,
+  totalQ: 10,
 };
 
-const DEFAULT_META = {
-  quizName: 'Mathematics Test', subject: 'Matematika', date: '4 aprel, 2025',
-  participants: 32, duration: '24 daq', avgScore: 71, totalQ: 10,
-};
+interface SessionResultDetailsResponse {
+  session_id: number;
+  quiz_id: number;
+  quiz_name: string;
+  subject_name: string;
+  status: string;
+  session_date: string;
+  participants_count: number;
+  duration_minutes: number;
+  average_score: number;
+  highest_score: number;
+  lowest_score: number;
+  hardest_question_number: number;
+  hardest_question_accuracy: number;
+}
 
-const QUESTION_ACCURACY = [
-  { q: 1,  accuracy: 94 },
-  { q: 2,  accuracy: 88 },
-  { q: 3,  accuracy: 75 },
-  { q: 4,  accuracy: 63 },
-  { q: 5,  accuracy: 81 },
-  { q: 6,  accuracy: 42 },
-  { q: 7,  accuracy: 57 },
-  { q: 8,  accuracy: 70 },
-  { q: 9,  accuracy: 38 },
-  { q: 10, accuracy: 85 },
-];
+interface QuestionAccuracyResponseItem {
+  question_id: number;
+  question_number: number;
+  label: string;
+  total_answers: number;
+  correct_answers: number;
+  accuracy_percent: number;
+  level: 'easy' | 'medium' | 'hard' | string;
+}
+
+interface QuestionAccuracyItem {
+  id: number;
+  q: number;
+  label: string;
+  accuracy: number;
+  level: string;
+}
+
+interface PaginatedResponse<T> {
+  items: T[];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+}
+
+interface LeaderboardResponseItem {
+  user_id: number;
+  first_name: string;
+  last_name: string;
+  profile_image: string | null;
+  score: number;
+  wrong_answers: number;
+  total_questions: number;
+  spend_time_seconds: string;
+}
 
 interface StudentResult {
   id: number;
   name: string;
   initials: string;
+  profileImage: string | null;
   color: string;
   score: number;
   correct: number;
   wrong: number;
   skipped: number;
   time: string;
+  scorePercent: number;
 }
 
 const COLORS = [
   '#6366F1','#8B5CF6','#3B82F6','#22C55E',
   '#F59E0B','#14B8A6','#EC4899','#0EA5E9',
   '#A855F7','#10B981','#F97316','#EF4444',
-];
-
-const STUDENT_RESULTS: StudentResult[] = [
-  { id:  1, name: 'Alibek Yusupov',     initials: 'AY', color: COLORS[0],  score: 92, correct: 9, wrong: 1, skipped: 0, time: '18:23' },
-  { id:  2, name: 'Malika Toshmatova',  initials: 'MT', color: COLORS[1],  score: 89, correct: 9, wrong: 1, skipped: 0, time: '19:44' },
-  { id:  3, name: 'Bobur Xasanov',      initials: 'BX', color: COLORS[2],  score: 85, correct: 8, wrong: 1, skipped: 1, time: '21:05' },
-  { id:  4, name: 'Zulfiya Ergasheva',  initials: 'ZE', color: COLORS[3],  score: 84, correct: 8, wrong: 2, skipped: 0, time: '20:30' },
-  { id:  5, name: 'Otabek Qodirov',     initials: 'OQ', color: COLORS[4],  score: 80, correct: 8, wrong: 2, skipped: 0, time: '22:10' },
-  { id:  6, name: 'Kamol Tursunov',     initials: 'KT', color: COLORS[5],  score: 78, correct: 8, wrong: 2, skipped: 0, time: '23:15' },
-  { id:  7, name: 'Sardor Mirzaev',     initials: 'SM', color: COLORS[6],  score: 75, correct: 7, wrong: 2, skipped: 1, time: '22:50' },
-  { id:  8, name: 'Shahlo Normatova',   initials: 'SN', color: COLORS[7],  score: 73, correct: 7, wrong: 3, skipped: 0, time: '24:00' },
-  { id:  9, name: 'Mohira Yuldasheva',  initials: 'MY', color: COLORS[8],  score: 70, correct: 7, wrong: 3, skipped: 0, time: '23:40' },
-  { id: 10, name: 'Feruza Nazarova',    initials: 'FN', color: COLORS[9],  score: 68, correct: 7, wrong: 3, skipped: 0, time: '24:00' },
-  { id: 11, name: 'Jasur Rahimov',      initials: 'JR', color: COLORS[10], score: 65, correct: 6, wrong: 3, skipped: 1, time: '24:00' },
-  { id: 12, name: 'Firdavs Razzaqov',   initials: 'FR', color: COLORS[11], score: 63, correct: 6, wrong: 4, skipped: 0, time: '24:00' },
-  { id: 13, name: 'Hulkar Yusupova',    initials: 'HY', color: COLORS[0],  score: 60, correct: 6, wrong: 4, skipped: 0, time: '24:00' },
-  { id: 14, name: 'Mirzo Fattoyev',     initials: 'MF', color: COLORS[1],  score: 58, correct: 6, wrong: 4, skipped: 0, time: '24:00' },
-  { id: 15, name: 'Lobar Xolmatova',    initials: 'LX', color: COLORS[2],  score: 55, correct: 5, wrong: 4, skipped: 1, time: '24:00' },
-  { id: 16, name: "Sanjar Norqo'lev",   initials: 'SN', color: COLORS[3],  score: 52, correct: 5, wrong: 5, skipped: 0, time: '24:00' },
-  { id: 17, name: 'Barno Tursunova',    initials: 'BT', color: COLORS[4],  score: 50, correct: 5, wrong: 5, skipped: 0, time: '24:00' },
-  { id: 18, name: 'Dildora Sultonova',  initials: 'DS', color: COLORS[5],  score: 48, correct: 5, wrong: 5, skipped: 0, time: '24:00' },
-  { id: 19, name: 'Davron Usmonov',     initials: 'DU', color: COLORS[6],  score: 45, correct: 4, wrong: 5, skipped: 1, time: '24:00' },
-  { id: 20, name: 'Nasiba Qoraboyeva',  initials: 'NQ', color: COLORS[7],  score: 42, correct: 4, wrong: 6, skipped: 0, time: '24:00' },
-  { id: 21, name: 'Behruz Xoliqov',     initials: 'BX', color: COLORS[8],  score: 40, correct: 4, wrong: 6, skipped: 0, time: '24:00' },
-  { id: 22, name: 'Gulnora Saidova',    initials: 'GS', color: COLORS[9],  score: 38, correct: 4, wrong: 6, skipped: 0, time: '24:00' },
-  { id: 23, name: 'Rustam Abdullayev',  initials: 'RA', color: COLORS[10], score: 35, correct: 3, wrong: 6, skipped: 1, time: '24:00' },
-  { id: 24, name: 'Madina Kalandarova', initials: 'MK', color: COLORS[11], score: 33, correct: 3, wrong: 7, skipped: 0, time: '24:00' },
-  { id: 25, name: 'Shahnoza Ergasheva', initials: 'SE', color: COLORS[0],  score: 30, correct: 3, wrong: 7, skipped: 0, time: '24:00' },
-  { id: 26, name: 'Oybek Yusupov',      initials: 'OY', color: COLORS[1],  score: 28, correct: 3, wrong: 7, skipped: 0, time: '24:00' },
-  { id: 27, name: 'Iroda Xolmatova',    initials: 'IX', color: COLORS[2],  score: 25, correct: 2, wrong: 7, skipped: 1, time: '24:00' },
-  { id: 28, name: 'Nurbek Sobirov',     initials: 'NS', color: COLORS[3],  score: 23, correct: 2, wrong: 8, skipped: 0, time: '24:00' },
-  { id: 29, name: 'Ziyoda Nazarova',    initials: 'ZN', color: COLORS[4],  score: 20, correct: 2, wrong: 8, skipped: 0, time: '24:00' },
-  { id: 30, name: 'Nilufar Karimova',   initials: 'NK', color: COLORS[5],  score: 18, correct: 2, wrong: 8, skipped: 0, time: '24:00' },
-  { id: 31, name: 'Ulugbek Hamidov',    initials: 'UH', color: COLORS[6],  score: 15, correct: 1, wrong: 8, skipped: 1, time: '24:00' },
-  { id: 32, name: "Akbar Toshpo'latov", initials: 'AT', color: COLORS[7],  score: 10, correct: 1, wrong: 9, skipped: 0, time: '24:00' },
 ];
 
 // ─────────────────────────────────────────────
@@ -115,6 +142,186 @@ function rankMedal(rank: number) {
   return null;
 }
 
+async function fetchWithAuthRetry(url: string, init: RequestInit = {}) {
+  let token = await getValidAccessToken();
+  if (!token) {
+    throw new Error('Tizimga qayta kiring');
+  }
+
+  const makeRequest = (accessToken: string) => fetch(url, {
+    ...init,
+    headers: {
+      accept: 'application/json',
+      ...(init.headers ?? {}),
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  let response = await makeRequest(token);
+
+  if (response.status === 401) {
+    const refreshed = await refreshStoredAuthToken();
+    token = refreshed?.access_token ?? null;
+    if (!token) {
+      throw new Error('Sessiya tugagan. Qayta kiring');
+    }
+    response = await makeRequest(token);
+  }
+
+  return response;
+}
+
+function formatSessionDate(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Sana mavjud emas';
+
+  const datePart = new Intl.DateTimeFormat('uz-UZ', {
+    day: '2-digit',
+    month: 'long',
+    year: 'numeric',
+  }).format(date);
+
+  const timePart = new Intl.DateTimeFormat('uz-UZ', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).format(date);
+
+  return `${datePart} ${timePart}`;
+}
+
+function mapSessionMeta(details: SessionResultDetailsResponse) {
+  return {
+    sessionId: details.session_id,
+    quizId: details.quiz_id,
+    quizName: details.quiz_name,
+    subject: details.subject_name,
+    status: details.status,
+    date: formatSessionDate(details.session_date),
+    participants: details.participants_count,
+    duration: `${details.duration_minutes} daq`,
+    avgScore: details.average_score,
+    highestScore: details.highest_score,
+    lowestScore: details.lowest_score,
+    hardestQuestionNumber: details.hardest_question_number,
+    hardestQuestionAccuracy: details.hardest_question_accuracy,
+    totalQ: Math.max(details.hardest_question_number, 10),
+  };
+}
+
+function mapQuestionAccuracy(item: QuestionAccuracyResponseItem): QuestionAccuracyItem {
+  return {
+    id: item.question_id,
+    q: item.question_number,
+    label: item.label,
+    accuracy: item.accuracy_percent,
+    level: item.level,
+  };
+}
+
+function secondsToDuration(value: string) {
+  const totalSeconds = Math.max(0, Math.round(Number.parseFloat(value) || 0));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+}
+
+function initialsFromName(firstName: string, lastName: string) {
+  return `${firstName.charAt(0)}${lastName.charAt(0)}`.toUpperCase();
+}
+
+function mapLeaderboardItem(item: LeaderboardResponseItem, index: number): StudentResult {
+  const correct = item.score;
+  const wrong = item.wrong_answers;
+  const skipped = Math.max(item.total_questions - correct - wrong, 0);
+  const scorePercent = item.total_questions > 0
+    ? Math.round((correct / item.total_questions) * 100)
+    : 0;
+
+  return {
+    id: item.user_id,
+    name: `${item.first_name} ${item.last_name}`.trim(),
+    initials: initialsFromName(item.first_name, item.last_name),
+    profileImage: item.profile_image,
+    color: COLORS[index % COLORS.length],
+    score: scorePercent,
+    correct,
+    wrong,
+    skipped,
+    time: secondsToDuration(item.spend_time_seconds),
+    scorePercent,
+  };
+}
+
+function sortStudentResults(items: StudentResult[], sortBy: 'score' | 'time' | 'correct') {
+  return [...items].sort((a, b) => {
+    if (sortBy === 'score') return b.scorePercent - a.scorePercent;
+    if (sortBy === 'correct') return b.correct - a.correct;
+    const toSecs = (ts: string) => {
+      const [m, s] = ts.split(':').map(Number);
+      return m * 60 + s;
+    };
+    return toSecs(a.time) - toSecs(b.time);
+  });
+}
+
+async function fetchSessionMeta(sessionId: string) {
+  const response = await fetchWithAuthRetry(`${API_BASE_URL}/api/v1/teacher/quiz-sessions/live/results/${sessionId}`, {
+    method: 'GET',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Session tafsilotlarini olishda xatolik: ${response.status}`);
+  }
+
+  return response.json() as Promise<SessionResultDetailsResponse>;
+}
+
+async function fetchQuestionAccuracy(sessionId: string) {
+  const response = await fetchWithAuthRetry(`${API_BASE_URL}/api/v1/teacher/quiz-sessions/live/${sessionId}/question-accuracy`, {
+    method: 'GET',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Savol aniqligini olishda xatolik: ${response.status}`);
+  }
+
+  return response.json() as Promise<QuestionAccuracyResponseItem[]>;
+}
+
+async function fetchLeaderboard(sessionId: string, page: number, size = 20) {
+  const params = new URLSearchParams({
+    page: String(page),
+    size: String(size),
+  });
+
+  const response = await fetchWithAuthRetry(
+    `${API_BASE_URL}/api/v1/teacher/quiz-sessions/live/${sessionId}/leaderboard/?${params.toString()}`,
+    { method: 'GET' },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Reyting jadvalini olishda xatolik: ${response.status}`);
+  }
+
+  return response.json() as Promise<PaginatedResponse<LeaderboardResponseItem>>;
+}
+
+async function fetchAllLeaderboardEntries(sessionId: string) {
+  const firstPage = await fetchLeaderboard(sessionId, 1, 50);
+  const allItems = Array.isArray(firstPage.items) ? [...firstPage.items] : [];
+  const totalPages = firstPage.pages ?? 1;
+
+  for (let currentPage = 2; currentPage <= totalPages; currentPage += 1) {
+    const nextPage = await fetchLeaderboard(sessionId, currentPage, 50);
+    if (Array.isArray(nextPage.items)) {
+      allItems.push(...nextPage.items);
+    }
+  }
+
+  return allItems.map((item, index) => mapLeaderboardItem(item, index));
+}
+
 // ─────────────────────────────────────────────
 //  Shared Card
 // ─────────────────────────────────────────────
@@ -137,33 +344,262 @@ export function SessionResultPage() {
   const { theme: t } = useTheme();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
-
-  const meta = id && SESSION_META[id] ? SESSION_META[id] : DEFAULT_META;
+  const [meta, setMeta] = useState<SessionMeta>(DEFAULT_META);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [questionAccuracy, setQuestionAccuracy] = useState<QuestionAccuracyItem[]>([]);
+  const [accuracyLoading, setAccuracyLoading] = useState(true);
+  const [accuracyError, setAccuracyError] = useState('');
+  const [leaderboard, setLeaderboard] = useState<StudentResult[]>([]);
+  const [leaderboardTotal, setLeaderboardTotal] = useState(0);
+  const [leaderboardPage, setLeaderboardPage] = useState(1);
+  const [leaderboardPages, setLeaderboardPages] = useState(1);
+  const [leaderboardLoading, setLeaderboardLoading] = useState(true);
+  const [leaderboardLoadingMore, setLeaderboardLoadingMore] = useState(false);
+  const [leaderboardError, setLeaderboardError] = useState('');
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState('');
 
   const [sortBy, setSortBy] = useState<'score' | 'time' | 'correct'>('score');
-  const [showAll, setShowAll] = useState(false);
 
-  const sorted = [...STUDENT_RESULTS].sort((a, b) => {
-    if (sortBy === 'score')   return b.score   - a.score;
-    if (sortBy === 'correct') return b.correct - a.correct;
-    const toSecs = (ts: string) => {
-      const [m, s] = ts.split(':').map(Number);
-      return m * 60 + s;
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!id) {
+      setLoading(false);
+      setError('Session ID topilmadi');
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const loadSessionMeta = async () => {
+      setLoading(true);
+      setError('');
+
+      try {
+        const data = await fetchSessionMeta(id);
+        if (cancelled) return;
+        setMeta(mapSessionMeta(data));
+      } catch (err) {
+        if (cancelled) return;
+        setError(err instanceof Error ? err.message : 'Session tafsilotlarini yuklab bo‘lmadi');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
     };
-    return toSecs(a.time) - toSecs(b.time);
-  });
 
-  const displayed     = showAll ? sorted : sorted.slice(0, 10);
-  const top3          = sorted.slice(0, 3);
-  const passCount     = STUDENT_RESULTS.filter((s) => s.score >= 60).length;
-  const passRate      = Math.round((passCount / meta.participants) * 100);
-  const highestScore  = sorted[0]?.score ?? 0;
-  const hardestQ      = QUESTION_ACCURACY.reduce((a, b) => (b.accuracy < a.accuracy ? b : a));
+    loadSessionMeta();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!id) {
+      setAccuracyLoading(false);
+      setAccuracyError('Session ID topilmadi');
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const loadQuestionAccuracy = async () => {
+      setAccuracyLoading(true);
+      setAccuracyError('');
+
+      try {
+        const data = await fetchQuestionAccuracy(id);
+        if (cancelled) return;
+        setQuestionAccuracy(data.map(mapQuestionAccuracy));
+      } catch (err) {
+        if (cancelled) return;
+        setAccuracyError(err instanceof Error ? err.message : 'Savol aniqligini yuklab bo‘lmadi');
+      } finally {
+        if (!cancelled) setAccuracyLoading(false);
+      }
+    };
+
+    loadQuestionAccuracy();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!id) {
+      setLeaderboardLoading(false);
+      setLeaderboardError('Session ID topilmadi');
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const loadLeaderboard = async () => {
+      setLeaderboardLoading(true);
+      setLeaderboardError('');
+
+      try {
+        const data = await fetchLeaderboard(id, 1);
+        if (cancelled) return;
+        setLeaderboard(data.items.map((item, index) => mapLeaderboardItem(item, index)));
+        setLeaderboardTotal(data.total);
+        setLeaderboardPage(data.page);
+        setLeaderboardPages(data.pages);
+      } catch (err) {
+        if (cancelled) return;
+        setLeaderboard([]);
+        setLeaderboardTotal(0);
+        setLeaderboardError(err instanceof Error ? err.message : "Reyting jadvalini yuklab bo‘lmadi");
+      } finally {
+        if (!cancelled) setLeaderboardLoading(false);
+      }
+    };
+
+    loadLeaderboard();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  const sorted = sortStudentResults(leaderboard, sortBy);
+
+  const top3 = sorted.slice(0, 3);
+  const hardestQ = questionAccuracy.length > 0
+    ? questionAccuracy.reduce((lowest, current) => (
+      current.accuracy < lowest.accuracy ? current : lowest
+    ))
+    : {
+      id: 0,
+      q: meta.hardestQuestionNumber,
+      label: `Q${meta.hardestQuestionNumber}`,
+      accuracy: meta.hardestQuestionAccuracy,
+      level: 'hard',
+    };
 
   // Scrollbar colors
   const scrollThumb  = t.isDark ? '#334155' : '#CBD5E1';
   const scrollThumbH = t.isDark ? '#475569' : '#94A3B8';
   const scrollTrack  = t.isDark ? '#0F172A' : '#F1F5F9';
+
+  const statusLabel = meta.status === 'finished' ? 'Yakunlangan' : meta.status;
+  const statusColor = meta.status === 'finished' ? '#22C55E' : '#F59E0B';
+  const statusBg = meta.status === 'finished' ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.1)';
+  const statusBorder = meta.status === 'finished' ? '1px solid rgba(34,197,94,0.25)' : '1px solid rgba(245,158,11,0.25)';
+
+  const loadMoreLeaderboard = async () => {
+    if (!id || leaderboardLoading || leaderboardLoadingMore || leaderboardPage >= leaderboardPages) return;
+
+    setLeaderboardLoadingMore(true);
+    setLeaderboardError('');
+
+    try {
+      const data = await fetchLeaderboard(id, leaderboardPage + 1);
+      setLeaderboard((prev) => {
+        const seen = new Set(prev.map((item) => item.id));
+        const nextItems = data.items
+          .map((item, index) => mapLeaderboardItem(item, prev.length + index))
+          .filter((item) => !seen.has(item.id));
+        return [...prev, ...nextItems];
+      });
+      setLeaderboardTotal(data.total);
+      setLeaderboardPage(data.page);
+      setLeaderboardPages(data.pages);
+    } catch (err) {
+      setLeaderboardError(err instanceof Error ? err.message : "Reyting jadvalini yuklab bo‘lmadi");
+    } finally {
+      setLeaderboardLoadingMore(false);
+    }
+  };
+
+  const handleLeaderboardScroll = (event: UIEvent<HTMLDivElement>) => {
+    const element = event.currentTarget;
+    const threshold = 32;
+    if (element.scrollTop + element.clientHeight >= element.scrollHeight - threshold) {
+      loadMoreLeaderboard().catch(() => {});
+    }
+  };
+
+  const handleDownloadPdf = async () => {
+    if (!id || exporting) return;
+
+    setExporting(true);
+    setExportError('');
+
+    try {
+      const [{ jsPDF }, autoTableModule] = await Promise.all([
+        import('jspdf'),
+        import('jspdf-autotable'),
+      ]);
+      const autoTable = autoTableModule.default;
+      const entries = sortStudentResults(await fetchAllLeaderboardEntries(id), sortBy);
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(16);
+      doc.text(meta.quizName, 14, 16);
+
+      doc.setFont('helvetica', 'normal');
+      doc.setFontSize(10);
+      doc.text(`Fan: ${meta.subject}`, 14, 24);
+      doc.text(`Sana: ${meta.date}`, 14, 29);
+      doc.text(`Ishtirokchilar: ${entries.length}`, 14, 34);
+      doc.text("O'quvchi Natijalari", 14, 39);
+
+      autoTable(doc, {
+        startY: 45,
+        head: [["#", "O'quvchi", 'Ball', "To'g'ri", "Noto'g'ri", "O'tkazilgan", 'Vaqt']],
+        body: entries.map((entry, index) => [
+          String(index + 1),
+          entry.name,
+          `${entry.scorePercent}%`,
+          String(entry.correct),
+          String(entry.wrong),
+          String(entry.skipped),
+          entry.time,
+        ]),
+        styles: {
+          font: 'helvetica',
+          fontSize: 10,
+          cellPadding: 2.5,
+        },
+        headStyles: {
+          fillColor: [99, 102, 241],
+          textColor: [255, 255, 255],
+        },
+        alternateRowStyles: {
+          fillColor: [248, 250, 252],
+        },
+        margin: { top: 14, right: 14, bottom: 14, left: 14 },
+      });
+
+      const safeTitle = meta.quizName.replace(/[\\/:*?"<>|]+/g, ' ').trim() || 'natijalar';
+      const pdfBlob = doc.output('blob');
+      const pdfUrl = URL.createObjectURL(pdfBlob);
+      const link = document.createElement('a');
+      link.href = pdfUrl;
+      link.download = `${safeTitle}-natijalar.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.setTimeout(() => URL.revokeObjectURL(pdfUrl), 1000);
+    } catch (err) {
+      setExportError(err instanceof Error ? err.message : "PDFni tayyorlab bo'lmadi");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
     <>
@@ -220,10 +656,10 @@ export function SessionResultPage() {
                 </h1>
                 <span
                   className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg"
-                  style={{ background: 'rgba(34,197,94,0.1)', color: '#22C55E', border: '1px solid rgba(34,197,94,0.25)' }}
+                  style={{ background: statusBg, color: statusColor, border: statusBorder }}
                 >
                   <CheckCircle2 className="w-3 h-3" strokeWidth={2} />
-                  Yakunlangan
+                  {statusLabel}
                 </span>
               </div>
               <p className="text-sm font-semibold mb-3" style={{ color: t.textSecondary }}>
@@ -246,8 +682,16 @@ export function SessionResultPage() {
 
             {/* Export button */}
             <button
+              onClick={() => { handleDownloadPdf().catch(() => {}); }}
+              disabled={exporting}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shrink-0"
-              style={{ background: t.bgCard, border: `1px solid ${t.border}`, color: t.textSecondary }}
+              style={{
+                background: t.bgCard,
+                border: `1px solid ${t.border}`,
+                color: t.textSecondary,
+                opacity: exporting ? 0.7 : 1,
+                cursor: exporting ? 'wait' : 'pointer',
+              }}
               onMouseEnter={(e) => {
                 (e.currentTarget as HTMLElement).style.background = t.accentMuted;
                 (e.currentTarget as HTMLElement).style.color = t.accent;
@@ -260,9 +704,24 @@ export function SessionResultPage() {
               }}
             >
               <Download className="w-4 h-4" strokeWidth={1.75} />
-              Yuklab olish
+              {exporting ? 'Tayyorlanmoqda...' : 'Yuklab olish'}
             </button>
           </div>
+          {loading && (
+            <p className="text-xs mt-4" style={{ color: t.textMuted }}>
+              Session tafsilotlari yuklanmoqda...
+            </p>
+          )}
+          {error && (
+            <p className="text-xs mt-4" style={{ color: '#EF4444' }}>
+              {error}
+            </p>
+          )}
+          {exportError && (
+            <p className="text-xs mt-4" style={{ color: '#EF4444' }}>
+              {exportError}
+            </p>
+          )}
         </div>
       </div>
 
@@ -272,8 +731,8 @@ export function SessionResultPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
         {[
           { label: "O'rtacha Ball",    val: `${meta.avgScore}%`,                          color: '#6366F1', bg: 'rgba(99,102,241,0.08)',  border: 'rgba(99,102,241,0.2)',  Icon: Target     },
-          { label: 'Eng Yuqori Ball',  val: `${highestScore}%`,                           color: '#22C55E', bg: 'rgba(34,197,94,0.08)',   border: 'rgba(34,197,94,0.2)',   Icon: Star       },
-          { label: "O'tish Darajasi",  val: `${passRate}%`,                               color: '#3B82F6', bg: 'rgba(59,130,246,0.08)',  border: 'rgba(59,130,246,0.2)',  Icon: TrendingUp },
+          { label: 'Eng Yuqori Ball',  val: `${meta.highestScore}%`,                      color: '#22C55E', bg: 'rgba(34,197,94,0.08)',   border: 'rgba(34,197,94,0.2)',   Icon: Star       },
+          { label: 'Eng Past Ball',    val: `${meta.lowestScore}%`,                       color: '#3B82F6', bg: 'rgba(59,130,246,0.08)',  border: 'rgba(59,130,246,0.2)',  Icon: TrendingUp },
           { label: 'Qiyin Savol',      val: `Q${hardestQ.q} (${hardestQ.accuracy}%)`,    color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)', Icon: BarChart3  },
         ].map(({ label, val, color, bg, border, Icon }) => (
           <div
@@ -315,82 +774,122 @@ export function SessionResultPage() {
             </div>
           </div>
 
-          {/* Top 3 podium strip — order: 2nd | 1st | 3rd */}
-          <div className="grid grid-cols-3 gap-2 mb-5">
-            {([top3[1], top3[0], top3[2]] as (StudentResult | undefined)[]).map((s, visualIdx) => {
-              if (!s) return <div key={visualIdx} />;
-              const actualRank = sorted.indexOf(s) + 1;
-              const heights = ['h-20', 'h-28', 'h-16'];
-              const medal = rankMedal(actualRank);
-              const sc = scoreColor(s.score);
-              return (
-                <div
-                  key={s.id}
-                  className={`flex flex-col items-center justify-end ${heights[visualIdx]} rounded-2xl px-2 pb-3 pt-2`}
-                  style={{
-                    background: visualIdx === 1
-                      ? (t.isDark ? 'rgba(245,158,11,0.12)' : 'rgba(245,158,11,0.07)')
-                      : t.bgInner,
-                    border: `1px solid ${visualIdx === 1 ? 'rgba(245,158,11,0.3)' : t.border}`,
-                  }}
-                >
-                  {medal && (
-                    <medal.Icon className="w-4 h-4 mb-1 shrink-0" style={{ color: medal.color }} strokeWidth={1.75} />
-                  )}
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 mb-1"
-                    style={{ background: s.color }}
-                  >
-                    {s.initials}
-                  </div>
-                  <p className="text-xs font-semibold text-center truncate w-full" style={{ color: t.textPrimary }}>
-                    {s.name.split(' ')[0]}
-                  </p>
-                  <span className="text-xs font-bold mt-0.5" style={{ color: sc.color }}>{s.score}%</span>
-                </div>
-              );
-            })}
-          </div>
+          {leaderboardLoading ? (
+            <div className="py-6 text-center text-sm" style={{ color: t.textMuted }}>
+              Reyting jadvali yuklanmoqda...
+            </div>
+          ) : leaderboardError && sorted.length === 0 ? (
+            <div className="py-6 text-center text-sm" style={{ color: '#EF4444' }}>
+              {leaderboardError}
+            </div>
+          ) : sorted.length === 0 ? (
+            <div className="py-6 text-center text-sm" style={{ color: t.textMuted }}>
+              Reyting jadvali mavjud emas
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-3 gap-2 mb-5">
+                {([top3[1], top3[0], top3[2]] as (StudentResult | undefined)[]).map((s, visualIdx) => {
+                  if (!s) return <div key={visualIdx} />;
+                  const actualRank = sorted.indexOf(s) + 1;
+                  const heights = ['h-20', 'h-28', 'h-16'];
+                  const medal = rankMedal(actualRank);
+                  const sc = scoreColor(s.scorePercent);
+                  return (
+                    <div
+                      key={s.id}
+                      className={`flex flex-col items-center justify-end ${heights[visualIdx]} rounded-2xl px-2 pb-3 pt-2`}
+                      style={{
+                        background: visualIdx === 1
+                          ? (t.isDark ? 'rgba(245,158,11,0.12)' : 'rgba(245,158,11,0.07)')
+                          : t.bgInner,
+                        border: `1px solid ${visualIdx === 1 ? 'rgba(245,158,11,0.3)' : t.border}`,
+                      }}
+                    >
+                      {medal && (
+                        <medal.Icon className="w-4 h-4 mb-1 shrink-0" style={{ color: medal.color }} strokeWidth={1.75} />
+                      )}
+                      {s.profileImage ? (
+                        <img
+                          src={s.profileImage}
+                          alt={s.name}
+                          className="w-8 h-8 rounded-full object-cover shrink-0 mb-1"
+                        />
+                      ) : (
+                        <div
+                          className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 mb-1"
+                          style={{ background: s.color }}
+                        >
+                          {s.initials}
+                        </div>
+                      )}
+                      <p className="text-xs font-semibold text-center truncate w-full" style={{ color: t.textPrimary }}>
+                        {s.name.split(' ')[0]}
+                      </p>
+                      <span className="text-xs font-bold mt-0.5" style={{ color: sc.color }}>{s.scorePercent}%</span>
+                    </div>
+                  );
+                })}
+              </div>
 
-          {/* Full rank list */}
-          <div className="lb-scroll space-y-1.5 max-h-72 overflow-y-auto">
-            {sorted.map((s, idx) => {
-              const rank = idx + 1;
-              const medal = rankMedal(rank);
-              const sc = scoreColor(s.score);
-              return (
-                <div
-                  key={s.id}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors"
-                  style={{ background: rank <= 3 ? (t.isDark ? 'rgba(245,158,11,0.06)' : 'rgba(245,158,11,0.04)') : 'transparent' }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = t.bgInner; }}
-                  onMouseLeave={(e) => {
-                    (e.currentTarget as HTMLElement).style.background =
-                      rank <= 3 ? (t.isDark ? 'rgba(245,158,11,0.06)' : 'rgba(245,158,11,0.04)') : 'transparent';
-                  }}
-                >
-                  <div className="w-6 text-center shrink-0">
-                    {medal
-                      ? <medal.Icon className="w-4 h-4 mx-auto" style={{ color: medal.color }} strokeWidth={1.75} />
-                      : <span className="text-xs tabular-nums" style={{ color: t.textMuted }}>{rank}</span>}
-                  </div>
-                  <div
-                    className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
-                    style={{ background: s.color }}
-                  >
-                    {s.initials}
-                  </div>
-                  <span className="flex-1 text-sm truncate" style={{ color: t.textPrimary }}>{s.name}</span>
-                  <span
-                    className="text-xs font-bold px-2 py-0.5 rounded-lg"
-                    style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}
-                  >
-                    {s.score}%
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+              <div className="lb-scroll space-y-1.5 max-h-72 overflow-y-auto" onScroll={handleLeaderboardScroll}>
+                {sorted.map((s, idx) => {
+                  const rank = idx + 1;
+                  const medal = rankMedal(rank);
+                  const sc = scoreColor(s.scorePercent);
+                  return (
+                    <div
+                      key={s.id}
+                      className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors"
+                      style={{ background: rank <= 3 ? (t.isDark ? 'rgba(245,158,11,0.06)' : 'rgba(245,158,11,0.04)') : 'transparent' }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = t.bgInner; }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.background =
+                          rank <= 3 ? (t.isDark ? 'rgba(245,158,11,0.06)' : 'rgba(245,158,11,0.04)') : 'transparent';
+                      }}
+                    >
+                      <div className="w-6 text-center shrink-0">
+                        {medal
+                          ? <medal.Icon className="w-4 h-4 mx-auto" style={{ color: medal.color }} strokeWidth={1.75} />
+                          : <span className="text-xs tabular-nums" style={{ color: t.textMuted }}>{rank}</span>}
+                      </div>
+                      {s.profileImage ? (
+                        <img
+                          src={s.profileImage}
+                          alt={s.name}
+                          className="w-7 h-7 rounded-full object-cover shrink-0"
+                        />
+                      ) : (
+                        <div
+                          className="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
+                          style={{ background: s.color }}
+                        >
+                          {s.initials}
+                        </div>
+                      )}
+                      <span className="flex-1 text-sm truncate" style={{ color: t.textPrimary }}>{s.name}</span>
+                      <span
+                        className="text-xs font-bold px-2 py-0.5 rounded-lg"
+                        style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}
+                      >
+                        {s.scorePercent}%
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+              {leaderboardLoadingMore && (
+                <p className="text-xs text-center mt-3" style={{ color: t.textMuted }}>
+                  Yana o'quvchilar yuklanmoqda...
+                </p>
+              )}
+              {leaderboardError && sorted.length > 0 && (
+                <p className="text-xs text-center mt-3" style={{ color: '#EF4444' }}>
+                  {leaderboardError}
+                </p>
+              )}
+            </>
+          )}
         </Card>
 
         {/* ─── QUESTION ACCURACY CHART ─── */}
@@ -409,13 +908,26 @@ export function SessionResultPage() {
           </div>
 
           {/* Horizontal bar chart */}
-          <div className="space-y-3">
-            {QUESTION_ACCURACY.map(({ q, accuracy }) => {
+          {accuracyLoading ? (
+            <div className="py-6 text-center text-sm" style={{ color: t.textMuted }}>
+              Savol aniqligi yuklanmoqda...
+            </div>
+          ) : accuracyError ? (
+            <div className="py-6 text-center text-sm" style={{ color: '#EF4444' }}>
+              {accuracyError}
+            </div>
+          ) : questionAccuracy.length === 0 ? (
+            <div className="py-6 text-center text-sm" style={{ color: t.textMuted }}>
+              Savol aniqligi mavjud emas
+            </div>
+          ) : (
+            <div className="lb-scroll space-y-3 max-h-[22.5rem] overflow-y-auto pr-1">
+            {questionAccuracy.map(({ id: questionId, q, label, accuracy }) => {
               const barColor = accuracyColor(accuracy);
               return (
-                <div key={q} className="flex items-center gap-3">
+                <div key={questionId} className="flex items-center gap-3">
                   <span className="text-xs font-semibold w-6 shrink-0 tabular-nums" style={{ color: t.textMuted }}>
-                    Q{q}
+                    {label || `Q${q}`}
                   </span>
                   <div className="flex-1 h-5 rounded-lg overflow-hidden relative" style={{ background: t.bgInner }}>
                     <div
@@ -437,7 +949,8 @@ export function SessionResultPage() {
                 </div>
               );
             })}
-          </div>
+            </div>
+          )}
 
           {/* Legend */}
           <div className="flex flex-wrap gap-4 mt-5 pt-4" style={{ borderTop: `1px solid ${t.border}` }}>
@@ -464,7 +977,7 @@ export function SessionResultPage() {
           <div>
             <h3 className="text-base font-semibold" style={{ color: t.textPrimary }}>O'quvchi Natijalari</h3>
             <p className="text-xs mt-0.5" style={{ color: t.textMuted }}>
-              {meta.participants} ta o'quvchi · tartib: {sortBy === 'score' ? 'ball' : sortBy === 'correct' ? "to'g'ri javoblar" : 'vaqt'}
+              {leaderboardTotal || meta.participants} ta o'quvchi · tartib: {sortBy === 'score' ? 'ball' : sortBy === 'correct' ? "to'g'ri javoblar" : 'vaqt'}
             </p>
           </div>
           {/* Sort pills */}
@@ -486,159 +999,183 @@ export function SessionResultPage() {
           </div>
         </div>
 
-        {/* Desktop table */}
-        <div className="hidden sm:block rounded-xl overflow-hidden" style={{ border: `1px solid ${t.border}` }}>
-          <table className="w-full">
-            <thead>
-              <tr style={{ background: t.bgInner, borderBottom: `1px solid ${t.border}` }}>
-                {['#', "O'quvchi", 'Ball', "To'g'ri", "Noto'g'ri", "O'tkazilgan", 'Vaqt'].map((h) => (
-                  <th
-                    key={h}
-                    className="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wider"
-                    style={{ color: t.textMuted }}
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {displayed.map((s, idx) => {
+        {leaderboardLoading ? (
+          <div className="py-6 text-center text-sm" style={{ color: t.textMuted }}>
+            O'quvchi natijalari yuklanmoqda...
+          </div>
+        ) : leaderboardError && sorted.length === 0 ? (
+          <div className="py-6 text-center text-sm" style={{ color: '#EF4444' }}>
+            {leaderboardError}
+          </div>
+        ) : sorted.length === 0 ? (
+          <div className="py-6 text-center text-sm" style={{ color: t.textMuted }}>
+            O'quvchi natijalari mavjud emas
+          </div>
+        ) : (
+          <>
+            <div
+              className="hidden sm:block rounded-xl overflow-hidden max-h-[34rem] overflow-y-auto lb-scroll"
+              style={{ border: `1px solid ${t.border}` }}
+              onScroll={handleLeaderboardScroll}
+            >
+              <table className="w-full">
+                <thead>
+                  <tr style={{ background: t.bgInner, borderBottom: `1px solid ${t.border}` }}>
+                    {['#', "O'quvchi", 'Ball', "To'g'ri", "Noto'g'ri", "O'tkazilgan", 'Vaqt'].map((h) => (
+                      <th
+                        key={h}
+                        className="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wider"
+                        style={{ color: t.textMuted }}
+                      >
+                        {h}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {sorted.map((s, idx) => {
+                    const rank = idx + 1;
+                    const medal = rankMedal(rank);
+                    const sc = scoreColor(s.scorePercent);
+                    return (
+                      <tr
+                        key={s.id}
+                        className="transition-colors"
+                        style={{ borderBottom: idx < sorted.length - 1 ? `1px solid ${t.border}` : 'none' }}
+                        onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = t.bgCardHover; }}
+                        onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                      >
+                        <td className="px-4 py-3 w-10">
+                          {medal
+                            ? <medal.Icon className="w-4 h-4" style={{ color: medal.color }} strokeWidth={1.75} />
+                            : <span className="text-xs tabular-nums" style={{ color: t.textMuted }}>{rank}</span>}
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2.5">
+                            {s.profileImage ? (
+                              <img
+                                src={s.profileImage}
+                                alt={s.name}
+                                className="w-8 h-8 rounded-full object-cover shrink-0"
+                              />
+                            ) : (
+                              <div
+                                className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
+                                style={{ background: s.color }}
+                              >
+                                {s.initials}
+                              </div>
+                            )}
+                            <span className="text-sm font-medium" style={{ color: t.textPrimary }}>{s.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className="inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-lg"
+                            style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}
+                          >
+                            {s.scorePercent}%
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1.5">
+                            <CheckCircle2 className="w-3.5 h-3.5 shrink-0" style={{ color: '#22C55E' }} strokeWidth={2} />
+                            <span className="text-sm tabular-nums font-medium" style={{ color: '#22C55E' }}>{s.correct}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1.5">
+                            <XCircle className="w-3.5 h-3.5 shrink-0" style={{ color: '#EF4444' }} strokeWidth={2} />
+                            <span className="text-sm tabular-nums font-medium" style={{ color: '#EF4444' }}>{s.wrong}</span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="text-sm tabular-nums" style={{ color: s.skipped > 0 ? '#F59E0B' : t.textMuted }}>
+                            {s.skipped}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 shrink-0" style={{ color: t.textMuted }} strokeWidth={1.75} />
+                            <span className="text-sm tabular-nums" style={{ color: t.textSecondary }}>{s.time}</span>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="block sm:hidden space-y-2.5 max-h-[34rem] overflow-y-auto lb-scroll pr-1" onScroll={handleLeaderboardScroll}>
+              {sorted.map((s, idx) => {
                 const rank = idx + 1;
                 const medal = rankMedal(rank);
-                const sc = scoreColor(s.score);
+                const sc = scoreColor(s.scorePercent);
                 return (
-                  <tr
+                  <div
                     key={s.id}
-                    className="transition-colors"
-                    style={{ borderBottom: idx < displayed.length - 1 ? `1px solid ${t.border}` : 'none' }}
-                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = t.bgCardHover; }}
-                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                    className="p-3.5 rounded-xl"
+                    style={{ background: t.bgInner, border: `1px solid ${t.border}` }}
                   >
-                    <td className="px-4 py-3 w-10">
-                      {medal
-                        ? <medal.Icon className="w-4 h-4" style={{ color: medal.color }} strokeWidth={1.75} />
-                        : <span className="text-xs tabular-nums" style={{ color: t.textMuted }}>{rank}</span>}
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2.5">
+                    <div className="flex items-center gap-3 mb-2.5">
+                      <div className="w-6 shrink-0 text-center">
+                        {medal
+                          ? <medal.Icon className="w-4 h-4 mx-auto" style={{ color: medal.color }} strokeWidth={1.75} />
+                          : <span className="text-xs" style={{ color: t.textMuted }}>{rank}</span>}
+                      </div>
+                      {s.profileImage ? (
+                        <img
+                          src={s.profileImage}
+                          alt={s.name}
+                          className="w-8 h-8 rounded-full object-cover shrink-0"
+                        />
+                      ) : (
                         <div
                           className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
                           style={{ background: s.color }}
                         >
                           {s.initials}
                         </div>
-                        <span className="text-sm font-medium" style={{ color: t.textPrimary }}>{s.name}</span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
+                      )}
+                      <span className="flex-1 text-sm font-medium truncate" style={{ color: t.textPrimary }}>{s.name}</span>
                       <span
-                        className="inline-flex items-center text-xs font-bold px-2.5 py-1 rounded-lg"
+                        className="text-xs font-bold px-2 py-0.5 rounded-lg"
                         style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}
                       >
-                        {s.score}%
+                        {s.scorePercent}%
                       </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5">
-                        <CheckCircle2 className="w-3.5 h-3.5 shrink-0" style={{ color: '#22C55E' }} strokeWidth={2} />
-                        <span className="text-sm tabular-nums font-medium" style={{ color: '#22C55E' }}>{s.correct}</span>
+                    </div>
+                    <div className="flex items-center gap-4 pl-9">
+                      <div className="flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" style={{ color: '#22C55E' }} strokeWidth={2} />
+                        <span className="text-xs font-medium" style={{ color: '#22C55E' }}>{s.correct}</span>
                       </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5">
-                        <XCircle className="w-3.5 h-3.5 shrink-0" style={{ color: '#EF4444' }} strokeWidth={2} />
-                        <span className="text-sm tabular-nums font-medium" style={{ color: '#EF4444' }}>{s.wrong}</span>
+                      <div className="flex items-center gap-1">
+                        <XCircle className="w-3 h-3" style={{ color: '#EF4444' }} strokeWidth={2} />
+                        <span className="text-xs font-medium" style={{ color: '#EF4444' }}>{s.wrong}</span>
                       </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-sm tabular-nums" style={{ color: s.skipped > 0 ? '#F59E0B' : t.textMuted }}>
-                        {s.skipped}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5 shrink-0" style={{ color: t.textMuted }} strokeWidth={1.75} />
-                        <span className="text-sm tabular-nums" style={{ color: t.textSecondary }}>{s.time}</span>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-3 h-3" style={{ color: t.textMuted }} strokeWidth={1.75} />
+                        <span className="text-xs" style={{ color: t.textSecondary }}>{s.time}</span>
                       </div>
-                    </td>
-                  </tr>
+                    </div>
+                  </div>
                 );
               })}
-            </tbody>
-          </table>
-        </div>
+            </div>
 
-        {/* Mobile cards */}
-        <div className="block sm:hidden space-y-2.5">
-          {displayed.map((s, idx) => {
-            const rank = idx + 1;
-            const medal = rankMedal(rank);
-            const sc = scoreColor(s.score);
-            return (
-              <div
-                key={s.id}
-                className="p-3.5 rounded-xl"
-                style={{ background: t.bgInner, border: `1px solid ${t.border}` }}
-              >
-                <div className="flex items-center gap-3 mb-2.5">
-                  <div className="w-6 shrink-0 text-center">
-                    {medal
-                      ? <medal.Icon className="w-4 h-4 mx-auto" style={{ color: medal.color }} strokeWidth={1.75} />
-                      : <span className="text-xs" style={{ color: t.textMuted }}>{rank}</span>}
-                  </div>
-                  <div
-                    className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0"
-                    style={{ background: s.color }}
-                  >
-                    {s.initials}
-                  </div>
-                  <span className="flex-1 text-sm font-medium truncate" style={{ color: t.textPrimary }}>{s.name}</span>
-                  <span
-                    className="text-xs font-bold px-2 py-0.5 rounded-lg"
-                    style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}
-                  >
-                    {s.score}%
-                  </span>
-                </div>
-                <div className="flex items-center gap-4 pl-9">
-                  <div className="flex items-center gap-1">
-                    <CheckCircle2 className="w-3 h-3" style={{ color: '#22C55E' }} strokeWidth={2} />
-                    <span className="text-xs font-medium" style={{ color: '#22C55E' }}>{s.correct}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <XCircle className="w-3 h-3" style={{ color: '#EF4444' }} strokeWidth={2} />
-                    <span className="text-xs font-medium" style={{ color: '#EF4444' }}>{s.wrong}</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" style={{ color: t.textMuted }} strokeWidth={1.75} />
-                    <span className="text-xs" style={{ color: t.textSecondary }}>{s.time}</span>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        {/* Show more / less */}
-        {sorted.length > 10 && (
-          <button
-            onClick={() => setShowAll((prev) => !prev)}
-            className="w-full mt-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
-            style={{ background: t.bgInner, border: `1px solid ${t.border}`, color: t.textMuted }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.background = t.accentMuted;
-              (e.currentTarget as HTMLElement).style.color = t.accent;
-              (e.currentTarget as HTMLElement).style.borderColor = t.accentBorder;
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.background = t.bgInner;
-              (e.currentTarget as HTMLElement).style.color = t.textMuted;
-              (e.currentTarget as HTMLElement).style.borderColor = t.border;
-            }}
-          >
-            {showAll ? "Faqat top 10 ni ko'rsatish" : `Barcha ${sorted.length} ta o'quvchini ko'rsatish`}
-          </button>
+            {leaderboardLoadingMore && (
+              <p className="text-xs text-center mt-4" style={{ color: t.textMuted }}>
+                Yana o'quvchilar yuklanmoqda...
+              </p>
+            )}
+            {leaderboardError && sorted.length > 0 && (
+              <p className="text-xs text-center mt-4" style={{ color: '#EF4444' }}>
+                {leaderboardError}
+              </p>
+            )}
+          </>
         )}
       </Card>
     </>

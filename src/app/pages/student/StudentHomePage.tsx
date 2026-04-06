@@ -22,11 +22,10 @@ import {
   CheckCircle2,
   XCircle,
   Radio,
-  LogIn,
   X,
 } from 'lucide-react';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
 
 type SubjectIconType = typeof Calculator | typeof FlaskConical | typeof BookOpen | typeof Languages;
 
@@ -367,108 +366,98 @@ function JoinRealtimeSessionModal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4"
       onClick={onClose}
-      style={{ background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(6px)' }}
+      style={{ background: 'rgba(2,6,23,0.72)', backdropFilter: 'blur(10px)' }}
     >
       <div
-        className="w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden"
+        className="w-full max-w-[420px] rounded-[28px] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: t.bgCard,
-          border: `1px solid ${t.border}`,
-          boxShadow: t.shadowHover,
+          background: t.isDark ? '#1E293B' : '#FFFFFF',
+          border: `1px solid ${t.isDark ? 'rgba(148,163,184,0.22)' : 'rgba(148,163,184,0.22)'}`,
+          boxShadow: t.isDark ? '0 28px 72px rgba(2,6,23,0.58)' : '0 24px 60px rgba(15,23,42,0.18)',
         }}
       >
-        <div
-          className="px-5 sm:px-6 py-5 sm:py-6"
-          style={{
-            background: t.isDark
-              ? 'linear-gradient(135deg, rgba(99,102,241,0.18), rgba(14,165,233,0.12))'
-              : 'linear-gradient(135deg, rgba(99,102,241,0.08), rgba(14,165,233,0.06))',
-            borderBottom: `1px solid ${t.border}`,
-          }}
-        >
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <div
-                className="w-11 h-11 rounded-2xl flex items-center justify-center shrink-0"
-                style={{
-                  background: t.isDark ? 'rgba(99,102,241,0.16)' : 'rgba(99,102,241,0.12)',
-                  border: '1px solid rgba(99,102,241,0.25)',
-                }}
-              >
-                <Radio className="w-5 h-5" style={{ color: '#6366F1' }} />
-              </div>
-              <div>
-                <h3 className="font-bold text-lg" style={{ color: t.textPrimary }}>
-                  Jonli sessiyaga qo'shilish
-                </h3>
-                <p className="text-sm mt-1" style={{ color: t.textMuted }}>
-                  Do'stingiz yuborgan sessiya kodini kiriting
-                </p>
-              </div>
-            </div>
+        <div className="px-5 sm:px-8 pt-5 sm:pt-6 pb-6 sm:pb-7">
+          <div className="flex justify-end">
             <button
               onClick={onClose}
               className="w-9 h-9 rounded-xl flex items-center justify-center transition-all"
               style={{
-                background: t.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)',
-                border: `1px solid ${t.border}`,
-                color: t.textMuted,
+                background: t.isDark ? 'rgba(15,23,42,0.58)' : 'rgba(15,23,42,0.05)',
+                border: `1px solid ${t.isDark ? 'rgba(148,163,184,0.18)' : 'rgba(148,163,184,0.2)'}`,
+                color: t.isDark ? '#94A3B8' : '#64748B',
               }}
             >
-              <X className="w-4 h-4" strokeWidth={2.5} />
+              <X className="w-4 h-4" strokeWidth={2.4} />
             </button>
           </div>
-        </div>
 
-        <div className="px-5 sm:px-6 py-5 sm:py-6">
-          <label className="block text-xs font-semibold mb-2" style={{ color: t.textMuted }}>
+          <div className="mt-1 flex flex-col items-center text-center">
+            <div
+              className="w-16 h-16 rounded-[18px] flex items-center justify-center mb-5"
+              style={{
+                background: t.isDark
+                  ? 'linear-gradient(135deg, rgba(236,72,153,0.18), rgba(190,24,93,0.12))'
+                  : 'linear-gradient(135deg, rgba(236,72,153,0.12), rgba(190,24,93,0.08))',
+                border: '1px solid rgba(236,72,153,0.35)',
+                boxShadow: '0 10px 24px rgba(190,24,93,0.12)',
+              }}
+            >
+              <Radio className="w-7 h-7" style={{ color: '#EC4899' }} />
+            </div>
+
+            <h3 className="font-bold text-[22px] leading-tight" style={{ color: t.isDark ? '#F8FAFC' : '#0F172A' }}>
+              Jonli sessionga qo'shilish
+            </h3>
+            <p className="text-sm mt-2 max-w-[300px]" style={{ color: t.isDark ? '#64748B' : '#6B7280' }}>
+              Session kodini kiriting va jonli testga qo'shiling
+            </p>
+          </div>
+
+          <div className="mt-7">
+            <label className="block text-xs font-semibold mb-2.5" style={{ color: t.isDark ? '#94A3B8' : '#64748B' }}>
             Sessiya kodi
-          </label>
-          <input
-            type="text"
-            value={sessionCode}
-            onChange={(e) => {
-              setSessionCode(e.target.value.toUpperCase());
-              if (error) setError('');
-            }}
-            maxLength={6}
-            placeholder="Masalan: 5EDV0V"
-            className="w-full px-4 py-3.5 rounded-2xl text-base tracking-[0.18em] font-bold uppercase focus:outline-none"
-            style={{
-              background: t.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-              border: `1.5px solid ${error ? '#EF4444' : t.border}`,
-              color: t.textPrimary,
-            }}
-          />
+            </label>
+            <input
+              type="text"
+              value={sessionCode}
+              onChange={(e) => {
+                setSessionCode(e.target.value.toUpperCase());
+                if (error) setError('');
+              }}
+              maxLength={6}
+              placeholder="ABC123"
+              className="w-full px-4 py-4 rounded-2xl text-[31px] leading-none tracking-[0.08em] font-extrabold uppercase text-center focus:outline-none"
+              style={{
+                background: t.isDark ? '#0F172A' : '#F8FAFC',
+                border: `1.5px solid ${error ? '#EF4444' : (t.isDark ? '#334155' : '#CBD5E1')}`,
+                color: t.isDark ? '#F8FAFC' : '#0F172A',
+                boxShadow: error ? '0 0 0 1px rgba(239,68,68,0.12)' : 'none',
+              }}
+            />
+          </div>
+
           {error && (
-            <p className="text-xs mt-2" style={{ color: '#EF4444' }}>
+            <p className="text-xs mt-2" style={{ color: '#F87171' }}>
               {error}
             </p>
           )}
 
-          <div
-            className="mt-4 rounded-2xl px-4 py-3 text-sm"
-            style={{
-              background: t.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)',
-              border: `1px solid ${t.border}`,
-              color: t.textSecondary,
-            }}
-          >
-            Join qilgandan keyin siz to'g'ridan-to'g'ri kutish xonasiga o'tasiz.
-          </div>
+          <p className="text-xs mt-2.5" style={{ color: t.isDark ? '#64748B' : '#6B7280' }}>
+            O'qituvchidan olgan 6 raqamli kodingizni kiriting
+          </p>
 
-          <div className="flex flex-col-reverse sm:flex-row gap-3 mt-5">
+          <div className="grid grid-cols-2 gap-3 mt-6">
             <button
               onClick={onClose}
               disabled={joining}
-              className="flex-1 py-3 rounded-2xl text-sm font-semibold transition-all"
+              className="py-3.5 rounded-2xl text-sm font-semibold transition-all"
               style={{
-                background: t.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)',
-                border: `1px solid ${t.border}`,
-                color: t.textSecondary,
+                background: t.isDark ? '#0F172A' : '#EFF6FF',
+                border: `1px solid ${t.isDark ? '#334155' : '#D7E3F4'}`,
+                color: t.isDark ? '#94A3B8' : '#475569',
                 opacity: joining ? 0.7 : 1,
               }}
             >
@@ -477,11 +466,13 @@ function JoinRealtimeSessionModal({
             <button
               onClick={handleJoin}
               disabled={joining}
-              className="flex-1 py-3 rounded-2xl text-sm font-bold text-white flex items-center justify-center gap-2 transition-all"
+              className="py-3.5 rounded-2xl text-sm font-bold flex items-center justify-center gap-2 transition-all"
               style={{
-                background: 'linear-gradient(135deg, #6366F1, #3B82F6)',
-                boxShadow: '0 6px 18px rgba(59,130,246,0.28)',
-                opacity: joining ? 0.8 : 1,
+                background: t.isDark ? '#162235' : '#172338',
+                border: `1px solid ${t.isDark ? '#1E293B' : '#172338'}`,
+                color: '#FFFFFF',
+                boxShadow: t.isDark ? '0 10px 24px rgba(15,23,42,0.3)' : '0 10px 24px rgba(15,23,42,0.16)',
+                opacity: joining ? 0.82 : 1,
               }}
             >
               {joining ? (
@@ -490,12 +481,29 @@ function JoinRealtimeSessionModal({
                   Qo'shilmoqda...
                 </>
               ) : (
-                <>
-                  <LogIn className="w-4 h-4" strokeWidth={2.5} />
-                  Qo'shilish
-                </>
+                'Qo\'shilish'
               )}
             </button>
+          </div>
+
+          <div
+            className="mt-4 rounded-2xl px-4 py-3.5"
+            style={{
+              background: t.isDark ? 'rgba(236,72,153,0.09)' : 'rgba(236,72,153,0.06)',
+              border: '1px solid rgba(236,72,153,0.22)',
+            }}
+          >
+            <div className="flex items-start gap-2.5">
+              <Radio className="w-4 h-4 mt-0.5 shrink-0" style={{ color: '#EC4899' }} />
+              <div>
+                <p className="text-sm font-semibold" style={{ color: '#EC4899' }}>
+                  Jonli rejim
+                </p>
+                <p className="text-xs mt-1 leading-5" style={{ color: t.isDark ? '#94A3B8' : '#64748B' }}>
+                  Real vaqt rejimida o'qituvchi va boshqa o'quvchilar bilan test ishlang
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -990,6 +998,40 @@ export function StudentHomePage() {
           </p>
           <div className="mt-3 flex items-center gap-1 text-xs font-medium" style={{ color: '#34D399' }}>
             <span>Yaratish</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </div>
+        </div>
+
+        {/* Testlar */}
+        <div
+          className="relative overflow-hidden rounded-2xl p-4 sm:p-5 cursor-pointer group transition-all hover:scale-[1.02]"
+          style={{
+            ...cardBase,
+            background: t.isDark
+              ? 'linear-gradient(135deg, rgba(99,102,241,0.14) 0%, rgba(59,130,246,0.08) 100%)'
+              : 'linear-gradient(135deg, rgba(99,102,241,0.07) 0%, rgba(59,130,246,0.04) 100%)',
+            border: `1px solid ${t.isDark ? 'rgba(129,140,248,0.25)' : 'rgba(99,102,241,0.2)'}`,
+          }}
+          onClick={() => navigate('/student/tests')}
+        >
+          <div
+            className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full opacity-10"
+            style={{ background: 'radial-gradient(circle, #818CF8, transparent)' }}
+          />
+          <div
+            className="w-10 h-10 rounded-xl flex items-center justify-center mb-3"
+            style={{ background: t.isDark ? 'rgba(129,140,248,0.16)' : 'rgba(99,102,241,0.1)' }}
+          >
+            <PlayCircle className="w-5 h-5" style={{ color: '#818CF8' }} />
+          </div>
+          <h4 className="font-bold text-sm sm:text-base mb-1" style={{ color: t.textPrimary }}>
+            Testlar
+          </h4>
+          <p className="text-xs leading-relaxed" style={{ color: t.isDark ? 'rgba(226,232,240,0.88)' : 'rgba(51,65,85,0.88)' }}>
+            Barcha testlarni oching va ishlashni boshlang
+          </p>
+          <div className="mt-3 flex items-center gap-1 text-xs font-medium" style={{ color: '#818CF8' }}>
+            <span>Ochish</span>
             <ChevronRight className="w-3.5 h-3.5" />
           </div>
         </div>

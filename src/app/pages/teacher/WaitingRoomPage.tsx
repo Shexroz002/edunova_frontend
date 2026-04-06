@@ -8,7 +8,7 @@ import {
 import { useTheme } from '../../components/ThemeContext.tsx';
 import { getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth.ts';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
 
 // ─────────────────────────────────────────────
 //  Types & Mock data
@@ -106,10 +106,29 @@ interface ParticipantStatusSocketData {
   participants_online?: number;
 }
 
-interface QuizSessionSocketEvent {
-  event: 'participant_joined' | 'participant_reconnected' | 'participant_read' | 'participant_ready' | 'participant_disconnected';
-  data: ParticipantJoinedSocketData | ParticipantStatusSocketData;
+interface ChatSocketData {
+  message?: string;
+  user_id?: number | string;
+  user_info?: {
+    first_name?: string | null;
+    last_name?: string | null;
+    avatar_url?: string | null;
+  };
 }
+
+type QuizSessionSocketEvent =
+  | {
+      event: 'participant_joined';
+      data: ParticipantJoinedSocketData;
+    }
+  | {
+      event: 'participant_reconnected' | 'participant_read' | 'participant_ready' | 'participant_disconnected';
+      data: ParticipantStatusSocketData;
+    }
+  | {
+      event: 'chat_message';
+      data: ChatSocketData;
+    };
 
 interface JoinNotification {
   id: number;
@@ -712,17 +731,7 @@ export function WaitingRoomPage() {
             const parsed = JSON.parse(message.data) as QuizSessionSocketEvent;
 
             if (parsed.event === 'chat_message') {
-              const chatPayload = (parsed as unknown as {
-                data?: {
-                  message?: string;
-                  user_id?: number | string;
-                  user_info?: {
-                    first_name?: string | null;
-                    last_name?: string | null;
-                    avatar_url?: string | null;
-                  };
-                };
-              }).data;
+              const chatPayload = parsed.data;
               const text = normalizeText(chatPayload?.message);
               if (!text) return;
 

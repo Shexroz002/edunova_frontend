@@ -3,7 +3,7 @@ import { UserPlus, X, Search, CheckCircle, Send } from 'lucide-react';
 import { useTheme } from '../../components/ThemeContext';
 import { getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Types

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router';
 import { User, Zap, Trophy, CheckCircle2, Settings, ChevronRight, Star, Flame } from 'lucide-react';
 import { getStoredAuthSession, getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
 
 const achievements = [
   { icon: '🏆', label: '10 test yutdim', earned: true },

@@ -11,10 +11,10 @@ import { useTheme } from '../../components/ThemeContext.tsx';
 import { getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth.ts';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
-const AI_API_BASE_URL = import.meta.env.VITE_AI_API_BASE_URL ?? 'http://127.0.0.1:8000';
-const WS_BASE_URL = import.meta.env.VITE_WS_BASE_URL ?? 'ws://127.0.0.1:8000';
-const AI_WS_BASE_URL = import.meta.env.VITE_AI_WS_BASE_URL ?? 'ws://127.0.0.1:8000';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
+const AI_API_BASE_URL = import.meta.env.VITE_AI_API_BASE_URL ?? 'https://api.myedunova.uz';
+const WS_BASE_URL = import.meta.env.VITE_WS_BASE_URL ?? 'wss://api.myedunova.uz';
+const AI_WS_BASE_URL = import.meta.env.VITE_AI_WS_BASE_URL ?? 'wss://api.myedunova.uz';
 const PAGE_SIZE = 10;
 const QUIZ_JOB_STORAGE_KEY = 'teacher_dashboard_quiz_job';
 
@@ -35,15 +35,15 @@ export interface Quiz {
 
 export const QUIZZES: Quiz[] = [];
 
-const SUBJECT_OPTIONS    = ['Barchasi', 'Matematika', 'Fizika', 'Kimyo', 'Biologiya'];
-const TYPE_OPTIONS       = ['Barchasi', "Qo'lda", 'PDF', 'AI Generated', 'Noma\'lum'];
+const SUBJECT_OPTIONS = ['Barchasi', 'Matematika', 'Fizika', 'Kimyo', 'Biologiya'];
+const TYPE_OPTIONS = ['Barchasi', "Qo'lda", 'PDF', 'AI Generated', 'Noma\'lum'];
 
 const TYPE_KEY_MAP: Record<string, QuizGenerateType | null> = {
-  'Barchasi':     null,
-  "Qo'lda":       'MANUAL',
-  'PDF':          'PDF',
+  'Barchasi': null,
+  "Qo'lda": 'MANUAL',
+  'PDF': 'PDF',
   'AI Generated': 'AI_GENERATE',
-  "Noma'lum":     'UNDEFINED',
+  "Noma'lum": 'UNDEFINED',
 };
 
 interface QuizApiItem {
@@ -96,9 +96,9 @@ interface StoredQuizJob {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function scoreColor(score: number) {
-  if (score >= 75) return { color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.25)'   };
+  if (score >= 75) return { color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.25)' };
   if (score >= 50) return { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)' };
-  return              { color: '#EF4444', bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.25)'   };
+  return { color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)' };
 }
 
 async function fetchWithAuthRetry(url: string, init: RequestInit = {}) {
@@ -349,9 +349,9 @@ function clearStoredQuizJob() {
 // ── Sub-components ────────────────────────────────────────────────────────────
 function QuizTypeBadge({ type }: { type: QuizType }) {
   const cfg = {
-    manual: { label: "Qo'lda",       Icon: PenLine, color: '#6366F1', bg: 'rgba(99,102,241,0.1)',  border: 'rgba(99,102,241,0.25)'  },
-    pdf:    { label: 'PDF',          Icon: Upload,  color: '#3B82F6', bg: 'rgba(59,130,246,0.1)',  border: 'rgba(59,130,246,0.25)'  },
-    ai:     { label: 'AI Generated', Icon: Cpu,     color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)',  border: 'rgba(139,92,246,0.25)'  },
+    manual: { label: "Qo'lda", Icon: PenLine, color: '#6366F1', bg: 'rgba(99,102,241,0.1)', border: 'rgba(99,102,241,0.25)' },
+    pdf: { label: 'PDF', Icon: Upload, color: '#3B82F6', bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.25)' },
+    ai: { label: 'AI Generated', Icon: Cpu, color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)', border: 'rgba(139,92,246,0.25)' },
     undefined: { label: "Noma'lum", Icon: FileText, color: '#64748B', bg: 'rgba(100,116,139,0.12)', border: 'rgba(100,116,139,0.22)' },
   }[type];
   const Icon = cfg.Icon;
@@ -387,7 +387,7 @@ function FilterSelect({
           boxShadow: t.shadowCard,
         }}
         onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#6366F1'; }}
-        onBlur={(e)  => { (e.target as HTMLElement).style.borderColor = t.border; }}
+        onBlur={(e) => { (e.target as HTMLElement).style.borderColor = t.border; }}
       >
         {options.map((o) => (
           <option key={o} value={o} style={{ background: t.bgCard }}>{o}</option>
@@ -436,9 +436,9 @@ function SummaryChips({ quizzes }: { quizzes: Quiz[] }) {
   const sc = scoreColor(avgScore);
 
   const chips = [
-    { Icon: FileText, val: `${quizzes.length}`,   label: 'Test',       color: t.accent,   bg: t.accentMuted,              border: t.accentBorder              },
-    { Icon: Users,    val: `${totalAttempts}`,     label: 'Urinish',    color: '#3B82F6',  bg: 'rgba(59,130,246,0.08)',    border: 'rgba(59,130,246,0.2)'      },
-    { Icon: BarChart3,val: `${avgScore}%`,         label: "O'rtacha",   color: sc.color,   bg: sc.bg,                      border: sc.border                   },
+    { Icon: FileText, val: `${quizzes.length}`, label: 'Test', color: t.accent, bg: t.accentMuted, border: t.accentBorder },
+    { Icon: Users, val: `${totalAttempts}`, label: 'Urinish', color: '#3B82F6', bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.2)' },
+    { Icon: BarChart3, val: `${avgScore}%`, label: "O'rtacha", color: sc.color, bg: sc.bg, border: sc.border },
   ];
 
   return (
@@ -481,11 +481,11 @@ function EmptyState() {
 function SubjectIcon({ type, color, size = 20 }: { type: string; color: string; size?: number }) {
   const props = { style: { color }, strokeWidth: 1.75, width: size, height: size };
   switch (type) {
-    case 'zap':      return <Zap {...props} />;
-    case 'flask':    return <FlaskConical {...props} />;
-    case 'leaf':     return <Leaf {...props} />;
+    case 'zap': return <Zap {...props} />;
+    case 'flask': return <FlaskConical {...props} />;
+    case 'leaf': return <Leaf {...props} />;
     case 'graduate': return <GraduationCap {...props} />;
-    default:         return <Calculator {...props} />;
+    default: return <Calculator {...props} />;
   }
 }
 
@@ -501,13 +501,13 @@ type CreateMethod = 'pdf' | 'ai' | null;
 
 const SUBJECTS = [
   { id: null, label: 'Matematika', icon: 'calculator', color: '#6366F1' },
-  { id: null, label: 'Fizika',     icon: 'zap',        color: '#3B82F6' },
-  { id: null, label: 'Kimyo',      icon: 'flask',      color: '#22C55E' },
-  { id: null, label: 'Biologiya',  icon: 'leaf',       color: '#8B5CF6' },
-  { id: null, label: 'Tarix',      icon: 'graduate',   color: '#F59E0B' },
-  { id: null, label: 'Geografiya', icon: 'graduate',   color: '#14B8A6' },
-  { id: null, label: 'Ingliz tili',icon: 'graduate',   color: '#EC4899' },
-  { id: null, label: 'Adabiyot',   icon: 'graduate',   color: '#EF4444' },
+  { id: null, label: 'Fizika', icon: 'zap', color: '#3B82F6' },
+  { id: null, label: 'Kimyo', icon: 'flask', color: '#22C55E' },
+  { id: null, label: 'Biologiya', icon: 'leaf', color: '#8B5CF6' },
+  { id: null, label: 'Tarix', icon: 'graduate', color: '#F59E0B' },
+  { id: null, label: 'Geografiya', icon: 'graduate', color: '#14B8A6' },
+  { id: null, label: 'Ingliz tili', icon: 'graduate', color: '#EC4899' },
+  { id: null, label: 'Adabiyot', icon: 'graduate', color: '#EF4444' },
 ];
 
 function PdfJobErrorModal({
@@ -574,22 +574,22 @@ export function CreateQuizModal({ open, onClose, onCreate, onPdfCreated }: Creat
   const pollRef = useRef<number | null>(null);
   const activeJobRef = useRef<string | null>(null);
   const closedManuallyRef = useRef(false);
-  
+
   const [step, setStep] = useState(1);
   const [method, setMethod] = useState<CreateMethod>(null);
   const [creating, setCreating] = useState(false);
-  
+
   // Common fields
   const [subject, setSubject] = useState(SUBJECTS[0]);
   const [subjectDropdownOpen, setSubjectDropdownOpen] = useState(false);
   const [subjectSearch, setSubjectSearch] = useState('');
   const [subjects, setSubjects] = useState(SUBJECTS);
   const [subjectsError, setSubjectsError] = useState('');
-  
+
   // PDF fields
   const [pdfFile, setPdfFile] = useState<File | null>(null);
   const [pdfDragActive, setPdfDragActive] = useState(false);
-  
+
   // AI fields
   const [aiTopic, setAiTopic] = useState('');
   const [aiQuestions, setAiQuestions] = useState(20);
@@ -601,14 +601,14 @@ export function CreateQuizModal({ open, onClose, onCreate, onPdfCreated }: Creat
     closedManuallyRef.current = true;
     onClose();
   };
-  
+
   // Filter subjects based on search
   const filteredSubjects = useMemo(() => {
     if (!subjectSearch.trim()) return subjects;
     const q = subjectSearch.toLowerCase();
     return subjects.filter((s) => s.label.toLowerCase().includes(q));
   }, [subjectSearch, subjects]);
-  
+
   // Reset on open/close
   useEffect(() => {
     if (open) {
@@ -667,7 +667,7 @@ export function CreateQuizModal({ open, onClose, onCreate, onPdfCreated }: Creat
       cancelled = true;
     };
   }, [open]);
-  
+
   // Escape key
   useEffect(() => {
     const h = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
@@ -794,12 +794,12 @@ export function CreateQuizModal({ open, onClose, onCreate, onPdfCreated }: Creat
       cancelled = true;
     };
   }, [open]);
-  
+
   function handleMethodSelect(m: CreateMethod) {
     setMethod(m);
     setStep(2);
   }
-  
+
   async function handleNext() {
     if (step === 2) {
       // Validate method-specific fields
@@ -821,7 +821,7 @@ export function CreateQuizModal({ open, onClose, onCreate, onPdfCreated }: Creat
         }
         setTopicError('');
       }
-      
+
       // Create quiz
       setCreating(true);
 
@@ -939,14 +939,14 @@ export function CreateQuizModal({ open, onClose, onCreate, onPdfCreated }: Creat
       onClose();
     }
   }
-  
+
   function handleBack() {
     if (step > 1) {
       setStep((s) => s - 1);
       if (step === 2) setMethod(null);
     }
   }
-  
+
   // PDF file handlers
   function handlePdfSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -954,7 +954,7 @@ export function CreateQuizModal({ open, onClose, onCreate, onPdfCreated }: Creat
       setPdfFile(file);
     }
   }
-  
+
   function handlePdfDrop(e: React.DragEvent) {
     e.preventDefault();
     setPdfDragActive(false);
@@ -963,9 +963,9 @@ export function CreateQuizModal({ open, onClose, onCreate, onPdfCreated }: Creat
       setPdfFile(file);
     }
   }
-  
+
   if (!open) return null;
-  
+
   const accentColor = method === 'pdf' ? '#3B82F6' : method === 'ai' ? '#8B5CF6' : '#6366F1';
   const isJobProcessing = creating && pdfJob !== null;
   const progressTitle = method === 'ai' ? 'AI test yaratilmoqda' : 'PDF testga aylantirilmoqda';
@@ -973,7 +973,7 @@ export function CreateQuizModal({ open, onClose, onCreate, onPdfCreated }: Creat
   const jobMilestones = method === 'ai'
     ? ['So‘rov qabul qilindi', 'AI tayyorlanmoqda', 'Savollar yaratilmoqda', 'Test saqlanmoqda']
     : ['Fayl qabul qilindi', 'PDF tahlil qilinmoqda', 'AI savollar yaratmoqda', 'Test tayyorlanmoqda'];
-  
+
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4"
@@ -994,7 +994,7 @@ export function CreateQuizModal({ open, onClose, onCreate, onPdfCreated }: Creat
         {/* Gradient top bar */}
         <div className="h-1 w-full shrink-0"
           style={{ background: `linear-gradient(90deg, ${accentColor}, ${accentColor}80, #8B5CF6)` }} />
-        
+
         {/* ── Header ── */}
         <div className="flex items-center justify-between px-6 py-4 shrink-0"
           style={{ borderBottom: `1px solid ${t.border}` }}>
@@ -1031,7 +1031,7 @@ export function CreateQuizModal({ open, onClose, onCreate, onPdfCreated }: Creat
             <X style={{ width: 15, height: 15 }} strokeWidth={2} />
           </button>
         </div>
-        
+
         {/* ── Scrollable body ── */}
         <div className="flex-1 overflow-y-auto min-h-0 px-6 pt-5 pb-1"
           style={{ scrollbarWidth: 'thin', scrollbarColor: `${t.border} transparent` } as React.CSSProperties}>
@@ -1132,389 +1132,389 @@ export function CreateQuizModal({ open, onClose, onCreate, onPdfCreated }: Creat
               </div>
             </div>
           ) : (
-          <>
-          {/* ═════ STEP 1: Choose Method ═════ */}
-          {step === 1 && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-5">
-              {/* PDF Option */}
-              <button
-                onClick={() => handleMethodSelect('pdf')}
-                className="group p-6 rounded-2xl text-left transition-all relative overflow-hidden"
-                style={{
-                  background: t.isDark ? t.bgInner : t.bgCard,
-                  border: `2px solid ${t.border}`,
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = '#3B82F6';
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(59,130,246,0.04)';
-                  (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
-                  (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(59,130,246,0.15)';
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = t.border;
-                  (e.currentTarget as HTMLElement).style.background = t.isDark ? t.bgInner : t.bgCard;
-                  (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
-                  (e.currentTarget as HTMLElement).style.boxShadow = 'none';
-                }}
-              >
-                <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-                  style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)' }}
-                >
-                  <FileUp style={{ width: 24, height: 24, color: '#3B82F6' }} strokeWidth={1.75} />
-                </div>
-                <h3 className="text-base font-bold mb-2" style={{ color: t.textPrimary }}>
-                  PDF fayldan
-                </h3>
-                <p className="text-xs leading-relaxed" style={{ color: t.textMuted }}>
-                  Mavjud PDF hujjatingizdan testni avtomatik yarating. AI savollarni tahlil qiladi va test tuzadi.
-                </p>
-                <div className="mt-4 pt-3 border-t flex items-center gap-2" style={{ borderColor: t.border }}>
-                  <div className="flex items-center gap-1.5 text-xs" style={{ color: t.textSecondary }}>
-                    <Clock style={{ width: 12, height: 12 }} strokeWidth={1.75} />
-                    <span>~2-3 daqiqa</span>
-                  </div>
-                  <div className="w-1 h-1 rounded-full" style={{ background: t.textMuted }} />
-                  <div className="flex items-center gap-1.5 text-xs" style={{ color: t.textSecondary }}>
-                    <Zap style={{ width: 12, height: 12 }} strokeWidth={1.75} />
-                    <span>Avtomatik</span>
-                  </div>
-                </div>
-              </button>
-              
-              {/* AI Option */}
-              <button
-                onClick={() => handleMethodSelect('ai')}
-                className="group p-6 rounded-2xl text-left transition-all relative overflow-hidden"
-                style={{
-                  background: t.isDark ? t.bgInner : t.bgCard,
-                  border: `2px solid ${t.border}`,
-                }}
-                onMouseEnter={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = '#8B5CF6';
-                  (e.currentTarget as HTMLElement).style.background = 'rgba(139,92,246,0.04)';
-                  (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
-                  (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(139,92,246,0.15)';
-                }}
-                onMouseLeave={(e) => {
-                  (e.currentTarget as HTMLElement).style.borderColor = t.border;
-                  (e.currentTarget as HTMLElement).style.background = t.isDark ? t.bgInner : t.bgCard;
-                  (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
-                  (e.currentTarget as HTMLElement).style.boxShadow = 'none';
-                }}
-              >
-                <div
-                  className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
-                  style={{ background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.25)' }}
-                >
-                  <Sparkles style={{ width: 24, height: 24, color: '#8B5CF6' }} strokeWidth={1.75} />
-                </div>
-                <h3 className="text-base font-bold mb-2" style={{ color: t.textPrimary }}>
-                  AI bilan yaratish
-                </h3>
-                <p className="text-xs leading-relaxed" style={{ color: t.textMuted }}>
-                  Mavzu va parametrlarni kiriting, AI sizga qiyin va sifatli test savollarini yaratib beradi.
-                </p>
-                <div className="mt-4 pt-3 border-t flex items-center gap-2" style={{ borderColor: t.border }}>
-                  <div className="flex items-center gap-1.5 text-xs" style={{ color: t.textSecondary }}>
-                    <Clock style={{ width: 12, height: 12 }} strokeWidth={1.75} />
-                    <span>~1-2 daqiqa</span>
-                  </div>
-                  <div className="w-1 h-1 rounded-full" style={{ background: t.textMuted }} />
-                  <div className="flex items-center gap-1.5 text-xs" style={{ color: t.textSecondary }}>
-                    <Sparkles style={{ width: 12, height: 12 }} strokeWidth={1.75} />
-                    <span>Intellektual</span>
-                  </div>
-                </div>
-              </button>
-            </div>
-          )}
-          
-          {/* ═════ STEP 2: Create Form ═════ */}
-          {step === 2 && (
-            <div className="space-y-5 pb-5">
-              {method === 'ai' && (
-                <>
-                  {/* Subject selection */}
-                  <div className="relative">
-                    <label className="block text-xs font-semibold mb-2" style={{ color: t.textSecondary }}>
-                      Fan *
-                    </label>
-                    <button
-                      type="button"
-                      onClick={() => setSubjectDropdownOpen((current) => !current)}
-                      className="w-full rounded-2xl px-4 py-3 text-left transition-all"
-                      style={{
-                        background: t.bgInner,
-                        border: `1.5px solid ${subjectDropdownOpen ? accentColor : t.border}`,
-                        boxShadow: subjectDropdownOpen ? `0 0 0 3px ${accentColor}15` : 'none',
-                      }}
+            <>
+              {/* ═════ STEP 1: Choose Method ═════ */}
+              {step === 1 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pb-5">
+                  {/* PDF Option */}
+                  <button
+                    onClick={() => handleMethodSelect('pdf')}
+                    className="group p-6 rounded-2xl text-left transition-all relative overflow-hidden"
+                    style={{
+                      background: t.isDark ? t.bgInner : t.bgCard,
+                      border: `2px solid ${t.border}`,
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor = '#3B82F6';
+                      (e.currentTarget as HTMLElement).style.background = 'rgba(59,130,246,0.04)';
+                      (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
+                      (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(59,130,246,0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor = t.border;
+                      (e.currentTarget as HTMLElement).style.background = t.isDark ? t.bgInner : t.bgCard;
+                      (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
+                      (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                    }}
+                  >
+                    <div
+                      className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
+                      style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)' }}
                     >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                          style={{ background: `${subject.color}18`, border: `1px solid ${subject.color}35` }}
-                        >
-                          <SubjectIcon type={subject.icon} color={subject.color} size={18} />
-                        </div>
-                        <div className="min-w-0 flex-1">
-                          <div className="text-sm font-semibold truncate" style={{ color: t.textPrimary }}>
-                            {subject.label}
-                          </div>
-                          <div className="text-xs truncate" style={{ color: t.textMuted }}>
-                            AI test shu fan asosida yaratiladi
-                          </div>
-                        </div>
-                        <ChevronDown
-                          className={`shrink-0 transition-transform ${subjectDropdownOpen ? 'rotate-180' : ''}`}
-                          style={{ width: 16, height: 16, color: t.textMuted }}
-                        />
+                      <FileUp style={{ width: 24, height: 24, color: '#3B82F6' }} strokeWidth={1.75} />
+                    </div>
+                    <h3 className="text-base font-bold mb-2" style={{ color: t.textPrimary }}>
+                      PDF fayldan
+                    </h3>
+                    <p className="text-xs leading-relaxed" style={{ color: t.textMuted }}>
+                      Mavjud PDF hujjatingizdan testni avtomatik yarating. AI savollarni tahlil qiladi va test tuzadi.
+                    </p>
+                    <div className="mt-4 pt-3 border-t flex items-center gap-2" style={{ borderColor: t.border }}>
+                      <div className="flex items-center gap-1.5 text-xs" style={{ color: t.textSecondary }}>
+                        <Clock style={{ width: 12, height: 12 }} strokeWidth={1.75} />
+                        <span>~2-3 daqiqa</span>
                       </div>
-                    </button>
+                      <div className="w-1 h-1 rounded-full" style={{ background: t.textMuted }} />
+                      <div className="flex items-center gap-1.5 text-xs" style={{ color: t.textSecondary }}>
+                        <Zap style={{ width: 12, height: 12 }} strokeWidth={1.75} />
+                        <span>Avtomatik</span>
+                      </div>
+                    </div>
+                  </button>
 
-                    {subjectDropdownOpen && (
-                      <div
-                        className="mt-3 overflow-hidden rounded-2xl"
-                        style={{
-                          background: t.bgCard,
-                          border: `1px solid ${t.border}`,
-                          boxShadow: t.isDark
-                            ? '0 20px 48px rgba(15,23,42,0.42)'
-                            : '0 18px 40px rgba(15,23,42,0.12)',
-                        }}
-                      >
-                        <div className="p-3 border-b" style={{ borderColor: t.border }}>
-                          <div
-                            className="flex items-center gap-2 rounded-xl px-3"
-                            style={{ background: t.bgInner, border: `1px solid ${t.border}`, height: '42px' }}
-                          >
-                            <Search style={{ width: 15, height: 15, color: t.textMuted }} strokeWidth={1.75} />
-                            <input
-                              type="text"
-                              value={subjectSearch}
-                              onChange={(e) => setSubjectSearch(e.target.value)}
-                              placeholder="Qidirish..."
-                              className="w-full bg-transparent text-sm focus:outline-none"
-                              style={{ color: t.textPrimary }}
+                  {/* AI Option */}
+                  <button
+                    onClick={() => handleMethodSelect('ai')}
+                    className="group p-6 rounded-2xl text-left transition-all relative overflow-hidden"
+                    style={{
+                      background: t.isDark ? t.bgInner : t.bgCard,
+                      border: `2px solid ${t.border}`,
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor = '#8B5CF6';
+                      (e.currentTarget as HTMLElement).style.background = 'rgba(139,92,246,0.04)';
+                      (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)';
+                      (e.currentTarget as HTMLElement).style.boxShadow = '0 8px 24px rgba(139,92,246,0.15)';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.currentTarget as HTMLElement).style.borderColor = t.border;
+                      (e.currentTarget as HTMLElement).style.background = t.isDark ? t.bgInner : t.bgCard;
+                      (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
+                      (e.currentTarget as HTMLElement).style.boxShadow = 'none';
+                    }}
+                  >
+                    <div
+                      className="w-14 h-14 rounded-2xl flex items-center justify-center mb-4"
+                      style={{ background: 'rgba(139,92,246,0.1)', border: '1px solid rgba(139,92,246,0.25)' }}
+                    >
+                      <Sparkles style={{ width: 24, height: 24, color: '#8B5CF6' }} strokeWidth={1.75} />
+                    </div>
+                    <h3 className="text-base font-bold mb-2" style={{ color: t.textPrimary }}>
+                      AI bilan yaratish
+                    </h3>
+                    <p className="text-xs leading-relaxed" style={{ color: t.textMuted }}>
+                      Mavzu va parametrlarni kiriting, AI sizga qiyin va sifatli test savollarini yaratib beradi.
+                    </p>
+                    <div className="mt-4 pt-3 border-t flex items-center gap-2" style={{ borderColor: t.border }}>
+                      <div className="flex items-center gap-1.5 text-xs" style={{ color: t.textSecondary }}>
+                        <Clock style={{ width: 12, height: 12 }} strokeWidth={1.75} />
+                        <span>~1-2 daqiqa</span>
+                      </div>
+                      <div className="w-1 h-1 rounded-full" style={{ background: t.textMuted }} />
+                      <div className="flex items-center gap-1.5 text-xs" style={{ color: t.textSecondary }}>
+                        <Sparkles style={{ width: 12, height: 12 }} strokeWidth={1.75} />
+                        <span>Intellektual</span>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+              )}
+
+              {/* ═════ STEP 2: Create Form ═════ */}
+              {step === 2 && (
+                <div className="space-y-5 pb-5">
+                  {method === 'ai' && (
+                    <>
+                      {/* Subject selection */}
+                      <div className="relative">
+                        <label className="block text-xs font-semibold mb-2" style={{ color: t.textSecondary }}>
+                          Fan *
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setSubjectDropdownOpen((current) => !current)}
+                          className="w-full rounded-2xl px-4 py-3 text-left transition-all"
+                          style={{
+                            background: t.bgInner,
+                            border: `1.5px solid ${subjectDropdownOpen ? accentColor : t.border}`,
+                            boxShadow: subjectDropdownOpen ? `0 0 0 3px ${accentColor}15` : 'none',
+                          }}
+                        >
+                          <div className="flex items-center gap-3">
+                            <div
+                              className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                              style={{ background: `${subject.color}18`, border: `1px solid ${subject.color}35` }}
+                            >
+                              <SubjectIcon type={subject.icon} color={subject.color} size={18} />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <div className="text-sm font-semibold truncate" style={{ color: t.textPrimary }}>
+                                {subject.label}
+                              </div>
+                              <div className="text-xs truncate" style={{ color: t.textMuted }}>
+                                AI test shu fan asosida yaratiladi
+                              </div>
+                            </div>
+                            <ChevronDown
+                              className={`shrink-0 transition-transform ${subjectDropdownOpen ? 'rotate-180' : ''}`}
+                              style={{ width: 16, height: 16, color: t.textMuted }}
                             />
                           </div>
-                        </div>
+                        </button>
 
-                        <div className="max-h-64 overflow-y-auto py-1">
-                          {filteredSubjects.map((s) => {
-                            const isSelected = subject.id === s.id;
-                            return (
-                              <button
-                                key={s.id}
-                                type="button"
-                                onClick={() => {
-                                  setSubject(s);
-                                  setSubjectDropdownOpen(false);
-                                  setSubjectSearch('');
-                                }}
-                                className="w-full px-4 py-3 text-left transition-colors"
-                                style={{
-                                  background: isSelected ? `${s.color}14` : 'transparent',
-                                  borderBottom: `1px solid ${t.border}`,
-                                }}
+                        {subjectDropdownOpen && (
+                          <div
+                            className="mt-3 overflow-hidden rounded-2xl"
+                            style={{
+                              background: t.bgCard,
+                              border: `1px solid ${t.border}`,
+                              boxShadow: t.isDark
+                                ? '0 20px 48px rgba(15,23,42,0.42)'
+                                : '0 18px 40px rgba(15,23,42,0.12)',
+                            }}
+                          >
+                            <div className="p-3 border-b" style={{ borderColor: t.border }}>
+                              <div
+                                className="flex items-center gap-2 rounded-xl px-3"
+                                style={{ background: t.bgInner, border: `1px solid ${t.border}`, height: '42px' }}
                               >
-                                <div className="flex items-center gap-3">
-                                  <div
-                                    className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                                    style={{ background: `${s.color}15`, border: `1px solid ${s.color}2E` }}
-                                  >
-                                    <SubjectIcon type={s.icon} color={s.color} size={16} />
-                                  </div>
-                                  <div className="min-w-0 flex-1">
-                                    <div
-                                      className="text-sm font-semibold truncate"
-                                      style={{ color: isSelected ? s.color : t.textPrimary }}
-                                    >
-                                      {s.label}
-                                    </div>
-                                    <div className="text-xs truncate" style={{ color: t.textMuted }}>
-                                      Fan
-                                    </div>
-                                  </div>
-                                  {isSelected && (
-                                    <div
-                                      className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
-                                      style={{ border: `1px solid ${s.color}66`, background: `${s.color}15` }}
-                                    >
-                                      <Check style={{ width: 12, height: 12, color: s.color }} strokeWidth={2.5} />
-                                    </div>
-                                  )}
-                                </div>
-                              </button>
-                            );
-                          })}
-                          {filteredSubjects.length === 0 && (
-                            <div className="px-4 py-6 text-sm text-center" style={{ color: t.textMuted }}>
-                              Hech qanday fan topilmadi
+                                <Search style={{ width: 15, height: 15, color: t.textMuted }} strokeWidth={1.75} />
+                                <input
+                                  type="text"
+                                  value={subjectSearch}
+                                  onChange={(e) => setSubjectSearch(e.target.value)}
+                                  placeholder="Qidirish..."
+                                  className="w-full bg-transparent text-sm focus:outline-none"
+                                  style={{ color: t.textPrimary }}
+                                />
+                              </div>
                             </div>
+
+                            <div className="max-h-64 overflow-y-auto py-1">
+                              {filteredSubjects.map((s) => {
+                                const isSelected = subject.id === s.id;
+                                return (
+                                  <button
+                                    key={s.id}
+                                    type="button"
+                                    onClick={() => {
+                                      setSubject(s);
+                                      setSubjectDropdownOpen(false);
+                                      setSubjectSearch('');
+                                    }}
+                                    className="w-full px-4 py-3 text-left transition-colors"
+                                    style={{
+                                      background: isSelected ? `${s.color}14` : 'transparent',
+                                      borderBottom: `1px solid ${t.border}`,
+                                    }}
+                                  >
+                                    <div className="flex items-center gap-3">
+                                      <div
+                                        className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+                                        style={{ background: `${s.color}15`, border: `1px solid ${s.color}2E` }}
+                                      >
+                                        <SubjectIcon type={s.icon} color={s.color} size={16} />
+                                      </div>
+                                      <div className="min-w-0 flex-1">
+                                        <div
+                                          className="text-sm font-semibold truncate"
+                                          style={{ color: isSelected ? s.color : t.textPrimary }}
+                                        >
+                                          {s.label}
+                                        </div>
+                                        <div className="text-xs truncate" style={{ color: t.textMuted }}>
+                                          Fan
+                                        </div>
+                                      </div>
+                                      {isSelected && (
+                                        <div
+                                          className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+                                          style={{ border: `1px solid ${s.color}66`, background: `${s.color}15` }}
+                                        >
+                                          <Check style={{ width: 12, height: 12, color: s.color }} strokeWidth={2.5} />
+                                        </div>
+                                      )}
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                              {filteredSubjects.length === 0 && (
+                                <div className="px-4 py-6 text-sm text-center" style={{ color: t.textMuted }}>
+                                  Hech qanday fan topilmadi
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+                        {subjectsError && (
+                          <p className="text-xs mt-2" style={{ color: '#EF4444' }}>
+                            {subjectsError}
+                          </p>
+                        )}
+                      </div>
+                    </>
+                  )}
+
+                  {/* ─── PDF specific fields ─── */}
+                  {method === 'pdf' && (
+                    <div>
+                      <label className="block text-xs font-semibold mb-2" style={{ color: t.textSecondary }}>
+                        PDF fayl *
+                      </label>
+                      <div
+                        className="relative rounded-2xl border-2 border-dashed transition-all"
+                        style={{
+                          borderColor: pdfDragActive ? '#3B82F6' : pdfFile ? '#22C55E' : t.border,
+                          background: pdfDragActive ? 'rgba(59,130,246,0.05)' : pdfFile ? 'rgba(34,197,94,0.03)' : t.bgInner,
+                        }}
+                        onDragEnter={() => setPdfDragActive(true)}
+                        onDragLeave={() => setPdfDragActive(false)}
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={handlePdfDrop}
+                      >
+                        <input
+                          type="file"
+                          accept=".pdf"
+                          onChange={handlePdfSelect}
+                          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                        />
+                        <div className="p-8 flex flex-col items-center text-center">
+                          {pdfFile ? (
+                            <>
+                              <div
+                                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-3"
+                                style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)' }}
+                              >
+                                <FileUp style={{ width: 28, height: 28, color: '#22C55E' }} strokeWidth={1.75} />
+                              </div>
+                              <p className="text-sm font-semibold mb-1" style={{ color: t.textPrimary }}>
+                                {pdfFile.name}
+                              </p>
+                              <p className="text-xs" style={{ color: t.textMuted }}>
+                                {(pdfFile.size / 1024 / 1024).toFixed(2)} MB
+                              </p>
+                              <button
+                                onClick={(e) => { e.stopPropagation(); setPdfFile(null); }}
+                                className="mt-3 text-xs font-medium px-3 py-1.5 rounded-lg transition-all"
+                                style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.25)' }}
+                                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.15)'; }}
+                                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.1)'; }}
+                              >
+                                O'chirish
+                              </button>
+                            </>
+                          ) : (
+                            <>
+                              <div
+                                className="w-16 h-16 rounded-2xl flex items-center justify-center mb-3"
+                                style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)' }}
+                              >
+                                <FileUp style={{ width: 28, height: 28, color: '#3B82F6' }} strokeWidth={1.75} />
+                              </div>
+                              <p className="text-sm font-semibold mb-1" style={{ color: t.textPrimary }}>
+                                PDF faylni yuklang
+                              </p>
+                              <p className="text-xs" style={{ color: t.textMuted }}>
+                                Faylni bu yerga sudrab oling yoki tanlash uchun bosing
+                              </p>
+                              <p className="text-xs mt-2" style={{ color: t.textMuted }}>
+                                Maksimal: 10 MB
+                              </p>
+                            </>
                           )}
                         </div>
                       </div>
-                    )}
-                    {subjectsError && (
-                      <p className="text-xs mt-2" style={{ color: '#EF4444' }}>
-                        {subjectsError}
-                      </p>
-                    )}
-                  </div>
-                </>
-              )}
-              
-              {/* ─── PDF specific fields ─── */}
-              {method === 'pdf' && (
-                <div>
-                  <label className="block text-xs font-semibold mb-2" style={{ color: t.textSecondary }}>
-                    PDF fayl *
-                  </label>
-                  <div
-                    className="relative rounded-2xl border-2 border-dashed transition-all"
-                    style={{
-                      borderColor: pdfDragActive ? '#3B82F6' : pdfFile ? '#22C55E' : t.border,
-                      background: pdfDragActive ? 'rgba(59,130,246,0.05)' : pdfFile ? 'rgba(34,197,94,0.03)' : t.bgInner,
-                    }}
-                    onDragEnter={() => setPdfDragActive(true)}
-                    onDragLeave={() => setPdfDragActive(false)}
-                    onDragOver={(e) => e.preventDefault()}
-                    onDrop={handlePdfDrop}
-                  >
-                    <input
-                      type="file"
-                      accept=".pdf"
-                      onChange={handlePdfSelect}
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-                    />
-                    <div className="p-8 flex flex-col items-center text-center">
-                      {pdfFile ? (
-                        <>
-                          <div
-                            className="w-16 h-16 rounded-2xl flex items-center justify-center mb-3"
-                            style={{ background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.25)' }}
-                          >
-                            <FileUp style={{ width: 28, height: 28, color: '#22C55E' }} strokeWidth={1.75} />
-                          </div>
-                          <p className="text-sm font-semibold mb-1" style={{ color: t.textPrimary }}>
-                            {pdfFile.name}
-                          </p>
-                          <p className="text-xs" style={{ color: t.textMuted }}>
-                            {(pdfFile.size / 1024 / 1024).toFixed(2)} MB
-                          </p>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); setPdfFile(null); }}
-                            className="mt-3 text-xs font-medium px-3 py-1.5 rounded-lg transition-all"
-                            style={{ background: 'rgba(239,68,68,0.1)', color: '#EF4444', border: '1px solid rgba(239,68,68,0.25)' }}
-                            onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.15)'; }}
-                            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.1)'; }}
-                          >
-                            O'chirish
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          <div
-                            className="w-16 h-16 rounded-2xl flex items-center justify-center mb-3"
-                            style={{ background: 'rgba(59,130,246,0.1)', border: '1px solid rgba(59,130,246,0.25)' }}
-                          >
-                            <FileUp style={{ width: 28, height: 28, color: '#3B82F6' }} strokeWidth={1.75} />
-                          </div>
-                          <p className="text-sm font-semibold mb-1" style={{ color: t.textPrimary }}>
-                            PDF faylni yuklang
-                          </p>
-                          <p className="text-xs" style={{ color: t.textMuted }}>
-                            Faylni bu yerga sudrab oling yoki tanlash uchun bosing
-                          </p>
-                          <p className="text-xs mt-2" style={{ color: t.textMuted }}>
-                            Maksimal: 10 MB
-                          </p>
-                        </>
-                      )}
                     </div>
-                  </div>
+                  )}
+
+                  {/* ─── AI specific fields ─── */}
+                  {method === 'ai' && (
+                    <>
+                      {/* Description */}
+                      <div>
+                        <label className="block text-xs font-semibold mb-2" style={{ color: t.textSecondary }}>
+                          Tavsif *
+                        </label>
+                        <textarea
+                          value={aiTopic}
+                          onChange={(e) => { setAiTopic(e.target.value); setTopicError(''); }}
+                          placeholder="Masalan: Fizika fanidan dinamika va saqlanish qonunlari bo'yicha test yaratib ber"
+                          rows={4}
+                          className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none transition-all resize-none"
+                          style={{
+                            background: t.bgInner,
+                            border: `1.5px solid ${topicError ? '#EF4444' : t.border}`,
+                            color: t.textPrimary,
+                          }}
+                          onFocus={(e) => {
+                            (e.target as HTMLElement).style.borderColor = topicError ? '#EF4444' : accentColor;
+                            (e.target as HTMLElement).style.boxShadow = `0 0 0 3px ${topicError ? 'rgba(239,68,68,0.15)' : accentColor + '15'}`;
+                          }}
+                          onBlur={(e) => {
+                            (e.target as HTMLElement).style.borderColor = topicError ? '#EF4444' : t.border;
+                            (e.target as HTMLElement).style.boxShadow = 'none';
+                          }}
+                        />
+                        {topicError && (
+                          <div className="flex items-center gap-1.5 mt-1.5">
+                            <AlertCircle style={{ width: 12, height: 12, color: '#EF4444' }} strokeWidth={2} />
+                            <p className="text-xs" style={{ color: '#EF4444' }}>{topicError}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Questions count */}
+                      <div>
+                        <label className="block text-xs font-semibold mb-2" style={{ color: t.textSecondary }}>
+                          Savollar soni
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            value={aiQuestions}
+                            onChange={(e) => setAiQuestions(Math.max(5, Math.min(50, parseInt(e.target.value) || 10)))}
+                            min={5}
+                            max={50}
+                            className="w-full px-4 rounded-xl text-sm focus:outline-none transition-all"
+                            style={{
+                              background: t.bgInner,
+                              border: `1.5px solid ${t.border}`,
+                              color: t.textPrimary,
+                              height: '48px',
+                            }}
+                            onFocus={(e) => {
+                              (e.target as HTMLElement).style.borderColor = accentColor;
+                              (e.target as HTMLElement).style.boxShadow = `0 0 0 3px ${accentColor}15`;
+                            }}
+                            onBlur={(e) => {
+                              (e.target as HTMLElement).style.borderColor = t.border;
+                              (e.target as HTMLElement).style.boxShadow = 'none';
+                            }}
+                          />
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+                            <Hash style={{ width: 14, height: 14, color: t.textMuted }} strokeWidth={1.75} />
+                          </div>
+                        </div>
+                        <p className="text-xs mt-1" style={{ color: t.textMuted }}>5-50 oralig'ida</p>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
-              
-              {/* ─── AI specific fields ─── */}
-              {method === 'ai' && (
-                <>
-                  {/* Description */}
-                  <div>
-                    <label className="block text-xs font-semibold mb-2" style={{ color: t.textSecondary }}>
-                      Tavsif *
-                    </label>
-                    <textarea
-                      value={aiTopic}
-                      onChange={(e) => { setAiTopic(e.target.value); setTopicError(''); }}
-                      placeholder="Masalan: Fizika fanidan dinamika va saqlanish qonunlari bo'yicha test yaratib ber"
-                      rows={4}
-                      className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none transition-all resize-none"
-                      style={{
-                        background: t.bgInner,
-                        border: `1.5px solid ${topicError ? '#EF4444' : t.border}`,
-                        color: t.textPrimary,
-                      }}
-                      onFocus={(e) => {
-                        (e.target as HTMLElement).style.borderColor = topicError ? '#EF4444' : accentColor;
-                        (e.target as HTMLElement).style.boxShadow = `0 0 0 3px ${topicError ? 'rgba(239,68,68,0.15)' : accentColor + '15'}`;
-                      }}
-                      onBlur={(e) => {
-                        (e.target as HTMLElement).style.borderColor = topicError ? '#EF4444' : t.border;
-                        (e.target as HTMLElement).style.boxShadow = 'none';
-                      }}
-                    />
-                    {topicError && (
-                      <div className="flex items-center gap-1.5 mt-1.5">
-                        <AlertCircle style={{ width: 12, height: 12, color: '#EF4444' }} strokeWidth={2} />
-                        <p className="text-xs" style={{ color: '#EF4444' }}>{topicError}</p>
-                      </div>
-                    )}
-                  </div>
-                  
-                  {/* Questions count */}
-                  <div>
-                    <label className="block text-xs font-semibold mb-2" style={{ color: t.textSecondary }}>
-                      Savollar soni
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="number"
-                        value={aiQuestions}
-                        onChange={(e) => setAiQuestions(Math.max(5, Math.min(50, parseInt(e.target.value) || 10)))}
-                        min={5}
-                        max={50}
-                        className="w-full px-4 rounded-xl text-sm focus:outline-none transition-all"
-                        style={{
-                          background: t.bgInner,
-                          border: `1.5px solid ${t.border}`,
-                          color: t.textPrimary,
-                          height: '48px',
-                        }}
-                        onFocus={(e) => {
-                          (e.target as HTMLElement).style.borderColor = accentColor;
-                          (e.target as HTMLElement).style.boxShadow = `0 0 0 3px ${accentColor}15`;
-                        }}
-                        onBlur={(e) => {
-                          (e.target as HTMLElement).style.borderColor = t.border;
-                          (e.target as HTMLElement).style.boxShadow = 'none';
-                        }}
-                      />
-                      <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
-                        <Hash style={{ width: 14, height: 14, color: t.textMuted }} strokeWidth={1.75} />
-                      </div>
-                    </div>
-                    <p className="text-xs mt-1" style={{ color: t.textMuted }}>5-50 oralig'ida</p>
-                  </div>
-                </>
-              )}
-            </div>
-          )}
-          </>
+            </>
           )}
         </div>
-        
+
         {/* ── Footer ── */}
         {!isJobProcessing && step > 0 && (
           <div
@@ -1543,7 +1543,7 @@ export function CreateQuizModal({ open, onClose, onCreate, onPdfCreated }: Creat
                 Bekor qilish
               </button>
             )}
-            
+
             {step === 2 && (
               <button
                 onClick={handleNext}
@@ -1593,9 +1593,9 @@ export function CreateQuizModal({ open, onClose, onCreate, onPdfCreated }: Creat
 export function QuizzesPage() {
   const { theme: t } = useTheme();
   const navigate = useNavigate();
-  const [search,   setSearch]   = useState('');
+  const [search, setSearch] = useState('');
   const [subjectF, setSubjectF] = useState('Barchasi');
-  const [typeF,    setTypeF]    = useState('Barchasi');
+  const [typeF, setTypeF] = useState('Barchasi');
   const deferredSearch = useDeferredValue(search);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [page, setPage] = useState(1);
@@ -1696,7 +1696,7 @@ export function QuizzesPage() {
         {/* Filters */}
         <div className="flex items-center gap-2 flex-wrap">
           <FilterSelect value={subjectF} options={SUBJECT_OPTIONS} onChange={setSubjectF} />
-          <FilterSelect value={typeF}    options={TYPE_OPTIONS}    onChange={setTypeF}    />
+          <FilterSelect value={typeF} options={TYPE_OPTIONS} onChange={setTypeF} />
         </div>
 
         {/* Create button */}
@@ -1776,26 +1776,26 @@ export function QuizzesPage() {
                             background: q.type === 'ai'
                               ? 'rgba(139,92,246,0.1)'
                               : q.type === 'pdf'
-                              ? 'rgba(59,130,246,0.1)'
-                              : q.type === 'undefined'
-                              ? 'rgba(100,116,139,0.12)'
-                              : t.accentMuted,
+                                ? 'rgba(59,130,246,0.1)'
+                                : q.type === 'undefined'
+                                  ? 'rgba(100,116,139,0.12)'
+                                  : t.accentMuted,
                             border: `1px solid ${q.type === 'ai'
                               ? 'rgba(139,92,246,0.25)'
                               : q.type === 'pdf'
-                              ? 'rgba(59,130,246,0.25)'
-                              : q.type === 'undefined'
-                              ? 'rgba(100,116,139,0.22)'
-                              : t.accentBorder}`,
+                                ? 'rgba(59,130,246,0.25)'
+                                : q.type === 'undefined'
+                                  ? 'rgba(100,116,139,0.22)'
+                                  : t.accentBorder}`,
                           }}
                         >
                           {q.type === 'ai'
-                            ? <Cpu       className="w-4 h-4" style={{ color: '#8B5CF6' }} strokeWidth={1.75} />
+                            ? <Cpu className="w-4 h-4" style={{ color: '#8B5CF6' }} strokeWidth={1.75} />
                             : q.type === 'pdf'
-                            ? <Upload    className="w-4 h-4" style={{ color: '#3B82F6' }} strokeWidth={1.75} />
-                            : q.type === 'undefined'
-                            ? <FileText  className="w-4 h-4" style={{ color: '#64748B' }} strokeWidth={1.75} />
-                            : <PenLine   className="w-4 h-4" style={{ color: t.accent   }} strokeWidth={1.75} />}
+                              ? <Upload className="w-4 h-4" style={{ color: '#3B82F6' }} strokeWidth={1.75} />
+                              : q.type === 'undefined'
+                                ? <FileText className="w-4 h-4" style={{ color: '#64748B' }} strokeWidth={1.75} />
+                                : <PenLine className="w-4 h-4" style={{ color: t.accent }} strokeWidth={1.75} />}
                         </div>
                         <div className="min-w-0">
                           <p className="text-sm font-semibold truncate" style={{ color: t.textPrimary }}>{q.title}</p>
@@ -1857,7 +1857,7 @@ export function QuizzesPage() {
                     {/* Action buttons */}
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-1.5 justify-end">
-                        <IconBtn icon={Eye}      label="Ko'rish"   color="#6366F1" onClick={() => navigate(`/quizzes/${q.id}`)} />
+                        <IconBtn icon={Eye} label="Ko'rish" color="#6366F1" onClick={() => navigate(`/quizzes/${q.id}`)} />
                         {/*<IconBtn icon={Edit2}    label="Tahrirlash" color="#3B82F6" />*/}
                         {/*<IconBtn icon={BarChart3} label="Tahlil"   color="#8B5CF6" />*/}
                       </div>
@@ -1905,26 +1905,26 @@ export function QuizzesPage() {
                       background: q.type === 'ai'
                         ? 'rgba(139,92,246,0.1)'
                         : q.type === 'pdf'
-                        ? 'rgba(59,130,246,0.1)'
-                        : q.type === 'undefined'
-                        ? 'rgba(100,116,139,0.12)'
-                        : t.accentMuted,
+                          ? 'rgba(59,130,246,0.1)'
+                          : q.type === 'undefined'
+                            ? 'rgba(100,116,139,0.12)'
+                            : t.accentMuted,
                       border: `1px solid ${q.type === 'ai'
                         ? 'rgba(139,92,246,0.25)'
                         : q.type === 'pdf'
-                        ? 'rgba(59,130,246,0.25)'
-                        : q.type === 'undefined'
-                        ? 'rgba(100,116,139,0.22)'
-                        : t.accentBorder}`,
+                          ? 'rgba(59,130,246,0.25)'
+                          : q.type === 'undefined'
+                            ? 'rgba(100,116,139,0.22)'
+                            : t.accentBorder}`,
                     }}
                   >
                     {q.type === 'ai'
-                      ? <Cpu     className="w-4.5 h-4.5" style={{ color: '#8B5CF6' }} strokeWidth={1.75} />
+                      ? <Cpu className="w-4.5 h-4.5" style={{ color: '#8B5CF6' }} strokeWidth={1.75} />
                       : q.type === 'pdf'
-                      ? <Upload  className="w-4.5 h-4.5" style={{ color: '#3B82F6' }} strokeWidth={1.75} />
-                      : q.type === 'undefined'
-                      ? <FileText className="w-4.5 h-4.5" style={{ color: '#64748B' }} strokeWidth={1.75} />
-                      : <PenLine className="w-4.5 h-4.5" style={{ color: t.accent   }} strokeWidth={1.75} />}
+                        ? <Upload className="w-4.5 h-4.5" style={{ color: '#3B82F6' }} strokeWidth={1.75} />
+                        : q.type === 'undefined'
+                          ? <FileText className="w-4.5 h-4.5" style={{ color: '#64748B' }} strokeWidth={1.75} />
+                          : <PenLine className="w-4.5 h-4.5" style={{ color: t.accent }} strokeWidth={1.75} />}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-semibold leading-snug" style={{ color: t.textPrimary }}>{q.title}</p>
@@ -1936,9 +1936,9 @@ export function QuizzesPage() {
                 {/* Stats row */}
                 <div className="grid grid-cols-3 gap-2 mb-3">
                   {[
-                    { Icon: Hash,      val: `${q.questions}`,  label: 'Savol',      color: t.textPrimary },
-                    { Icon: Users,     val: `${q.attempts}`,   label: 'Urinish',    color: '#3B82F6'      },
-                    { Icon: BarChart3, val: `${q.avgScore}%`,  label: "O'rtacha",   color: sc.color       },
+                    { Icon: Hash, val: `${q.questions}`, label: 'Savol', color: t.textPrimary },
+                    { Icon: Users, val: `${q.attempts}`, label: 'Urinish', color: '#3B82F6' },
+                    { Icon: BarChart3, val: `${q.avgScore}%`, label: "O'rtacha", color: sc.color },
                   ].map(({ Icon, val, label, color }) => (
                     <div
                       key={label}
@@ -1958,7 +1958,7 @@ export function QuizzesPage() {
                     <span className="text-xs" style={{ color: t.textMuted }}>{q.createdDate}</span>
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <IconBtn icon={Eye}       label="Ko'rish"    color="#6366F1" onClick={() => navigate(`/quizzes/${q.id}`)} />
+                    <IconBtn icon={Eye} label="Ko'rish" color="#6366F1" onClick={() => navigate(`/quizzes/${q.id}`)} />
                     {/*<IconBtn icon={Edit2}     label="Tahrirlash" color="#3B82F6" />*/}
                     {/*<IconBtn icon={BarChart3} label="Tahlil"     color="#8B5CF6" />*/}
                   </div>
