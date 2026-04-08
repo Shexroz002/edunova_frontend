@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router';
 import {
     Search, ChevronDown, Users, ClipboardCheck,
@@ -7,6 +7,9 @@ import {
     Palette, AlignLeft, UserCheck,
 } from 'lucide-react';
 import { useTheme } from '../../components/ThemeContext';
+import { getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth.ts';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 export interface GroupItem {
@@ -25,16 +28,150 @@ export interface GroupItem {
     memberIds?: number[];
 }
 
-// ── Mock data ──────────────────────────────────────────────────────────────────
-const INITIAL_GROUPS: GroupItem[] = [
-    { id: 1, name: '9-A', subject: 'Matematika', subjectIcon: 'calculator', color: '#6366F1', students: 28, quizzes: 8,  lastActivity: '2 soat oldin',  activityLevel: 'active',   avgScore: 76, description: "Algebra va geometriya bo'yicha asosiy grupalar kursi" },
-    { id: 2, name: '10-B', subject: 'Matematika', subjectIcon: 'calculator', color: '#3B82F6', students: 24, quizzes: 6,  lastActivity: 'Kecha',         activityLevel: 'moderate', avgScore: 68, description: "Yuqori daraja algebra va trigonometriya" },
-    { id: 3, name: 'Fizika tayyorlov', subject: 'Fizika', subjectIcon: 'zap', color: '#8B5CF6', students: 18, quizzes: 12, lastActivity: '3 soat oldin',  activityLevel: 'active',   avgScore: 72, description: "Olimpiada va imtixonlarga tayyorlov kursi" },
-    { id: 4, name: '9-sinf kimyo', subject: 'Kimyo', subjectIcon: 'flask', color: '#10B981', students: 22, quizzes: 5,  lastActivity: '1 kun oldin',   activityLevel: 'moderate', avgScore: 65, description: "Umumiy kimyo va organik birikmalar" },
-    { id: 5, name: 'Biologiya', subject: 'Biologiya', subjectIcon: 'leaf', color: '#22C55E', students: 20, quizzes: 7,  lastActivity: '5 soat oldin',  activityLevel: 'active',   avgScore: 70, description: "Tirik organizmlar va ularning hayoti" },
-];
+interface GroupApiItem {
+    id: number;
+    name: string;
+    subject_name: string;
+    description: string;
+    students_count: number;
+    tests_count: number;
+    average_score: number;
+    status: 'ACTIVE' | 'INACTIVE' | string;
+    last_activity: string | null;
+    color: string | null;
+    cover_image: string | null;
+}
 
-export const ALL_GROUPS = INITIAL_GROUPS;
+interface PaginatedResponse<T> {
+    items: T[];
+    total: number;
+    page: number;
+    size: number;
+    pages: number;
+}
+
+interface ApiEnvelope<T> {
+    data: T;
+}
+
+export const ALL_GROUPS: GroupItem[] = [];
+
+function unwrapApiData<T>(payload: T | ApiEnvelope<T>): T {
+    if (payload && typeof payload === 'object' && 'data' in payload) {
+        return (payload as ApiEnvelope<T>).data;
+    }
+    return payload as T;
+}
+
+function colorFromApi(value: string | null) {
+    const map: Record<string, string> = {
+        BLUE: '#3B82F6',
+        GREEN: '#22C55E',
+        YELLOW: '#F59E0B',
+        RED: '#EF4444',
+        PURPLE: '#8B5CF6',
+        PINK: '#EC4899',
+        ORANGE: '#F97316',
+        TEAL: '#14B8A6',
+        INDIGO: '#6366F1',
+        CYAN: '#0891B2',
+    };
+
+    return value ? map[value] ?? '#6366F1' : '#6366F1';
+}
+
+function subjectIconFromName(subject: string) {
+    const normalized = subject.trim().toLowerCase();
+    if (normalized.includes('fiz')) return 'zap';
+    if (normalized.includes('kim')) return 'flask';
+    if (normalized.includes('bio')) return 'leaf';
+    return 'calculator';
+}
+
+function formatRelativeActivity(value: string | null) {
+    if (!value) return "Noma'lum";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "Noma'lum";
+
+    const diffMs = Date.now() - date.getTime();
+    const minutes = Math.max(1, Math.floor(diffMs / 60000));
+    const hours = Math.floor(diffMs / 3600000);
+    const days = Math.floor(diffMs / 86400000);
+
+    if (minutes < 60) return `${minutes} daqiqa oldin`;
+    if (hours < 24) return `${hours} soat oldin`;
+    if (days === 1) return 'Kecha';
+    if (days < 7) return `${days} kun oldin`;
+    return `${Math.floor(days / 7)} hafta oldin`;
+}
+
+function mapApiGroup(item: GroupApiItem): GroupItem {
+    return {
+        id: item.id,
+        name: item.name || "Noma'lum guruh",
+        subject: item.subject_name || 'Fan',
+        subjectIcon: subjectIconFromName(item.subject_name || 'Fan'),
+        color: colorFromApi(item.color),
+        students: item.students_count ?? 0,
+        quizzes: item.tests_count ?? 0,
+        lastActivity: formatRelativeActivity(item.last_activity),
+        activityLevel: item.status === 'ACTIVE' ? 'active' : 'low',
+        avgScore: item.average_score ?? 0,
+        description: item.description || "Tavsif yo'q",
+        coverImage: item.cover_image ?? undefined,
+    };
+}
+
+async function fetchWithAuthRetry(url: string, init: RequestInit = {}) {
+    let token = await getValidAccessToken();
+    if (!token) {
+        throw new Error("Tizimga qayta kiring");
+    }
+
+    const makeRequest = (accessToken: string) => fetch(url, {
+        ...init,
+        headers: {
+            accept: 'application/json',
+            ...(init.headers ?? {}),
+            Authorization: `Bearer ${accessToken}`,
+        },
+    });
+
+    let response = await makeRequest(token);
+    if (response.status === 401) {
+        const refreshed = await refreshStoredAuthToken();
+        token = refreshed?.access_token ?? null;
+        if (!token) {
+            throw new Error("Sessiya tugagan. Qayta kiring");
+        }
+        response = await makeRequest(token);
+    }
+
+    return response;
+}
+
+async function fetchStudentGroups(search: string, page = 1, size = 50) {
+    const params = new URLSearchParams({
+        page: String(page),
+        size: String(size),
+    });
+
+    const trimmed = search.trim();
+    if (trimmed) {
+        params.set('search', trimmed);
+    }
+
+    const response = await fetchWithAuthRetry(`${API_BASE_URL}/api/v1/student/group/?${params.toString()}`, {
+        method: 'GET',
+    });
+
+    if (!response.ok) {
+        throw new Error(`Guruhlarni olishda xatolik: ${response.status}`);
+    }
+
+    const raw = await response.json();
+    return unwrapApiData<PaginatedResponse<GroupApiItem>>(raw);
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 function SubjectIcon({ type, color, size = 20 }: { type: string; color: string; size?: number }) {
@@ -69,17 +206,33 @@ export function StudentGroupsPage() {
     const navigate = useNavigate();
     const { theme: t } = useTheme();
 
+    const [groups, setGroups] = useState<GroupItem[]>([]);
     const [searchQuery, setSearchQuery] = useState('');
     const [sortBy, setSortBy] = useState<'name' | 'subject' | 'activity'>('name');
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
+    useEffect(() => {
+        let isMounted = true;
+        const timeoutId = window.setTimeout(async () => {
+            try {
+                const data = await fetchStudentGroups(searchQuery, 1, 50);
+                if (!isMounted) return;
+                setGroups((data.items ?? []).map(mapApiGroup));
+            } catch {
+                if (!isMounted) return;
+                setGroups([]);
+            }
+        }, 300);
+
+        return () => {
+            isMounted = false;
+            window.clearTimeout(timeoutId);
+        };
+    }, [searchQuery]);
+
     // Filter and sort
     const filteredGroups = useMemo(() => {
-        let result = ALL_GROUPS.filter((g) =>
-            g.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            g.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            g.description.toLowerCase().includes(searchQuery.toLowerCase())
-        );
+        const result = [...groups];
 
         // Sort
         if (sortBy === 'name') {
@@ -92,14 +245,16 @@ export function StudentGroupsPage() {
         }
 
         return result;
-    }, [searchQuery, sortBy]);
+    }, [groups, sortBy]);
 
     // Stats
     const stats = {
-        total: ALL_GROUPS.length,
-        active: ALL_GROUPS.filter((g) => g.activityLevel === 'active').length,
-        totalStudents: ALL_GROUPS.reduce((sum, g) => sum + g.students, 0),
-        avgScore: Math.round(ALL_GROUPS.reduce((sum, g) => sum + g.avgScore, 0) / ALL_GROUPS.length),
+        total: groups.length,
+        active: groups.filter((g) => g.activityLevel === 'active').length,
+        totalStudents: groups.reduce((sum, g) => sum + g.students, 0),
+        avgScore: groups.length > 0
+            ? Math.round(groups.reduce((sum, g) => sum + g.avgScore, 0) / groups.length)
+            : 0,
     };
 
     return (

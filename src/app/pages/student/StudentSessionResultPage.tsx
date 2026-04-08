@@ -1,4 +1,4 @@
-import { useEffect, useState, type UIEvent } from 'react';
+import { useEffect, useMemo, useState, type UIEvent } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import {
   ArrowLeft, Trophy, Users, CalendarDays, Target,
@@ -265,8 +265,8 @@ function sortStudentResults(items: StudentResult[], sortBy: 'score' | 'time' | '
   });
 }
 
-async function fetchSessionMeta(sessionId: string) {
-  const response = await fetchWithAuthRetry(`${API_BASE_URL}/api/v1/teacher/quiz-sessions/live/results/${sessionId}`, {
+async function fetchSessionMeta(groupId: number, sessionId: string) {
+  const response = await fetchWithAuthRetry(`${API_BASE_URL}/api/v1/student/group/${groupId}/results/${sessionId}`, {
     method: 'GET',
   });
 
@@ -277,8 +277,8 @@ async function fetchSessionMeta(sessionId: string) {
   return response.json() as Promise<SessionResultDetailsResponse>;
 }
 
-async function fetchQuestionAccuracy(sessionId: string) {
-  const response = await fetchWithAuthRetry(`${API_BASE_URL}/api/v1/teacher/quiz-sessions/live/${sessionId}/question-accuracy`, {
+async function fetchQuestionAccuracy(groupId: number, sessionId: string) {
+  const response = await fetchWithAuthRetry(`${API_BASE_URL}/api/v1/student/group/${groupId}/question-accuracy/${sessionId}`, {
     method: 'GET',
   });
 
@@ -289,14 +289,14 @@ async function fetchQuestionAccuracy(sessionId: string) {
   return response.json() as Promise<QuestionAccuracyResponseItem[]>;
 }
 
-async function fetchLeaderboard(sessionId: string, page: number, size = 20) {
+async function fetchLeaderboard(groupId: number, sessionId: string, page: number, size = 50) {
   const params = new URLSearchParams({
     page: String(page),
     size: String(size),
   });
 
   const response = await fetchWithAuthRetry(
-    `${API_BASE_URL}/api/v1/teacher/quiz-sessions/live/${sessionId}/leaderboard/?${params.toString()}`,
+    `${API_BASE_URL}/api/v1/student/group/${groupId}/leaderboard/${sessionId}?${params.toString()}`,
     { method: 'GET' },
   );
 
@@ -307,13 +307,13 @@ async function fetchLeaderboard(sessionId: string, page: number, size = 20) {
   return response.json() as Promise<PaginatedResponse<LeaderboardResponseItem>>;
 }
 
-async function fetchAllLeaderboardEntries(sessionId: string) {
-  const firstPage = await fetchLeaderboard(sessionId, 1, 50);
+async function fetchAllLeaderboardEntries(groupId: number, sessionId: string) {
+  const firstPage = await fetchLeaderboard(groupId, sessionId, 1, 50);
   const allItems = Array.isArray(firstPage.items) ? [...firstPage.items] : [];
   const totalPages = firstPage.pages ?? 1;
 
   for (let currentPage = 2; currentPage <= totalPages; currentPage += 1) {
-    const nextPage = await fetchLeaderboard(sessionId, currentPage, 50);
+    const nextPage = await fetchLeaderboard(groupId, sessionId, currentPage, 50);
     if (Array.isArray(nextPage.items)) {
       allItems.push(...nextPage.items);
     }
@@ -340,7 +340,7 @@ function Card({ children, className = '' }: { children: React.ReactNode; classNa
 // ─────────────────────────────────────────────
 //  Main Page
 // ─────────────────────────────────────────────
-export function SessionResultPage() {
+export function StudentSessionResultPage() {
   const { theme: t } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -362,9 +362,32 @@ export function SessionResultPage() {
   const [exportError, setExportError] = useState('');
 
   const [sortBy, setSortBy] = useState<'score' | 'time' | 'correct'>('score');
+  const locationState = location.state as { returnTo?: unknown; groupId?: unknown } | null;
   const returnTo = typeof (location.state as { returnTo?: unknown } | null)?.returnTo === 'string'
     ? (location.state as { returnTo?: string }).returnTo
     : null;
+  const groupId = useMemo(() => {
+    if (typeof locationState?.groupId === 'number' && Number.isFinite(locationState.groupId) && locationState.groupId > 0) {
+      return locationState.groupId;
+    }
+
+    if (typeof returnTo === 'string') {
+      const match = returnTo.match(/\/student\/group\/(\d+)/);
+      if (match?.[1]) {
+        const parsed = Number.parseInt(match[1], 10);
+        if (Number.isFinite(parsed) && parsed > 0) return parsed;
+      }
+    }
+
+    const params = new URLSearchParams(location.search);
+    const queryGroupId = params.get('group_id');
+    if (queryGroupId) {
+      const parsed = Number.parseInt(queryGroupId, 10);
+      if (Number.isFinite(parsed) && parsed > 0) return parsed;
+    }
+
+    return null;
+  }, [location.search, locationState?.groupId, returnTo]);
 
   useEffect(() => {
     let cancelled = false;
@@ -376,13 +399,20 @@ export function SessionResultPage() {
         cancelled = true;
       };
     }
+    if (!groupId) {
+      setLoading(false);
+      setError('Guruh ID topilmadi');
+      return () => {
+        cancelled = true;
+      };
+    }
 
     const loadSessionMeta = async () => {
       setLoading(true);
       setError('');
 
       try {
-        const data = await fetchSessionMeta(id);
+        const data = await fetchSessionMeta(groupId, id);
         if (cancelled) return;
         setMeta(mapSessionMeta(data));
       } catch (err) {
@@ -398,7 +428,7 @@ export function SessionResultPage() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [groupId, id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -410,13 +440,20 @@ export function SessionResultPage() {
         cancelled = true;
       };
     }
+    if (!groupId) {
+      setAccuracyLoading(false);
+      setAccuracyError('Guruh ID topilmadi');
+      return () => {
+        cancelled = true;
+      };
+    }
 
     const loadQuestionAccuracy = async () => {
       setAccuracyLoading(true);
       setAccuracyError('');
 
       try {
-        const data = await fetchQuestionAccuracy(id);
+        const data = await fetchQuestionAccuracy(groupId, id);
         if (cancelled) return;
         setQuestionAccuracy(data.map(mapQuestionAccuracy));
       } catch (err) {
@@ -432,7 +469,7 @@ export function SessionResultPage() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [groupId, id]);
 
   useEffect(() => {
     let cancelled = false;
@@ -444,13 +481,20 @@ export function SessionResultPage() {
         cancelled = true;
       };
     }
+    if (!groupId) {
+      setLeaderboardLoading(false);
+      setLeaderboardError('Guruh ID topilmadi');
+      return () => {
+        cancelled = true;
+      };
+    }
 
     const loadLeaderboard = async () => {
       setLeaderboardLoading(true);
       setLeaderboardError('');
 
       try {
-        const data = await fetchLeaderboard(id, 1);
+        const data = await fetchLeaderboard(groupId, id, 1, 50);
         if (cancelled) return;
         setLeaderboard(data.items.map((item, index) => mapLeaderboardItem(item, index)));
         setLeaderboardTotal(data.total);
@@ -471,7 +515,7 @@ export function SessionResultPage() {
     return () => {
       cancelled = true;
     };
-  }, [id]);
+  }, [groupId, id]);
 
   const sorted = sortStudentResults(leaderboard, sortBy);
 
@@ -499,13 +543,13 @@ export function SessionResultPage() {
   const statusBorder = meta.status === 'finished' ? '1px solid rgba(34,197,94,0.25)' : '1px solid rgba(245,158,11,0.25)';
 
   const loadMoreLeaderboard = async () => {
-    if (!id || leaderboardLoading || leaderboardLoadingMore || leaderboardPage >= leaderboardPages) return;
+    if (!id || !groupId || leaderboardLoading || leaderboardLoadingMore || leaderboardPage >= leaderboardPages) return;
 
     setLeaderboardLoadingMore(true);
     setLeaderboardError('');
 
     try {
-      const data = await fetchLeaderboard(id, leaderboardPage + 1);
+      const data = await fetchLeaderboard(groupId, id, leaderboardPage + 1, 50);
       setLeaderboard((prev) => {
         const seen = new Set(prev.map((item) => item.id));
         const nextItems = data.items
@@ -532,7 +576,7 @@ export function SessionResultPage() {
   };
 
   const handleDownloadPdf = async () => {
-    if (!id || exporting) return;
+    if (!id || !groupId || exporting) return;
 
     setExporting(true);
     setExportError('');
@@ -543,7 +587,7 @@ export function SessionResultPage() {
         import('jspdf-autotable'),
       ]);
       const autoTable = autoTableModule.default;
-      const entries = sortStudentResults(await fetchAllLeaderboardEntries(id), sortBy);
+      const entries = sortStudentResults(await fetchAllLeaderboardEntries(groupId, id), sortBy);
       const doc = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -622,7 +666,7 @@ export function SessionResultPage() {
       <div className="mb-6">
         {/* Back */}
         <button
-          onClick={() => navigate(returnTo ?? '/live')}
+          onClick={() => navigate(returnTo ?? '/student/tests')}
           className="flex items-center gap-1.5 mb-4 text-sm transition-colors group"
           style={{ color: t.textMuted }}
           onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.color = t.accent; }}

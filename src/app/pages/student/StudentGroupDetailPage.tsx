@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
     ArrowLeft, Users, ClipboardCheck, BarChart3,
     Clock, CheckCircle, AlertTriangle, Zap,
@@ -9,26 +9,236 @@ import {
 import { useTheme } from '../../components/ThemeContext';
 import { ALL_GROUPS } from './StudentGroupsPage';
 import type { GroupItem } from './StudentGroupsPage';
+import { getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth.ts';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
+
+interface GroupDetailApi {
+    id: number;
+    name: string;
+    subject_name: string;
+    description: string;
+    students_count: number;
+    tests_count: number;
+    average_score: number;
+    last_activity: string | null;
+    status: 'ACTIVE' | 'INACTIVE' | string;
+    color: string | null;
+    cover_image: string | null;
+}
+
+interface GroupSessionApiItem {
+    session_id: number;
+    quiz_id: number;
+    quiz_name: string;
+    average_score: number;
+    completed_students: number;
+    total_students: number;
+    session_date: string;
+}
+
+interface StudentPerformanceApiItem {
+    student_id: number;
+    full_name: string;
+    profile_image: string | null;
+    correct_answers: number;
+    wrong_answers: number;
+    tests_count: number;
+    average_score: number;
+}
+
+interface PaginatedResponse<T> {
+    items: T[];
+    total: number;
+    page: number;
+    size: number;
+    pages: number;
+}
+
+interface ApiEnvelope<T> {
+    data: T;
+}
+
+type GroupPerformanceStudent = {
+    initials: string;
+    name: string;
+    profileImage?: string | null;
+    correct: number;
+    incorrect: number;
+    tests: number;
+    avgScore: number;
+};
+
+type GroupQuizCard = {
+    sessionId: number;
+    name: string;
+    date: string;
+    avgScore: number;
+    submissions: number;
+};
+
+const DEFAULT_GROUP: GroupItem = {
+    id: 0,
+    name: "Noma'lum guruh",
+    subject: 'Fan',
+    subjectIcon: 'calculator',
+    color: '#6366F1',
+    students: 0,
+    quizzes: 0,
+    lastActivity: "Noma'lum",
+    activityLevel: 'low',
+    avgScore: 0,
+    description: "Tavsif yo'q",
+};
+
+function unwrapApiData<T>(payload: T | ApiEnvelope<T>): T {
+    if (payload && typeof payload === 'object' && 'data' in payload) {
+        return (payload as ApiEnvelope<T>).data;
+    }
+    return payload as T;
+}
 
 // ── Per-group mock detail data ─────────────────────────────────────────────────
 function getGroupDetails(grp: GroupItem) {
     const seed = grp.id * 13;
-    const students = [
-        { initials: 'NR', name: 'Nilufar Rahimova',   correct: 145, incorrect: 28, tests: 12, avgScore: 85 },
-        { initials: 'BS', name: 'Bobur Saidov',       correct: 138, incorrect: 35, tests: 11, avgScore: 82 },
-        { initials: 'AK', name: 'Ali Karimov',        correct: 132, incorrect: 41, tests: 11, avgScore: 78 },
-        { initials: 'MY', name: 'Malika Yusupova',    correct: 125, incorrect: 48, tests: 10, avgScore: 74 },
-        { initials: 'DS', name: 'Dilshod Sharipov',   correct: 118, incorrect: 55, tests: 10, avgScore: 70 },
+    const students: GroupPerformanceStudent[] = [
+        { initials: 'NR', name: 'Nilufar Rahimova',   profileImage: null, correct: 145, incorrect: 28, tests: 12, avgScore: 85 },
+        { initials: 'BS', name: 'Bobur Saidov',       profileImage: null, correct: 138, incorrect: 35, tests: 11, avgScore: 82 },
+        { initials: 'AK', name: 'Ali Karimov',        profileImage: null, correct: 132, incorrect: 41, tests: 11, avgScore: 78 },
+        { initials: 'MY', name: 'Malika Yusupova',    profileImage: null, correct: 125, incorrect: 48, tests: 10, avgScore: 74 },
+        { initials: 'DS', name: 'Dilshod Sharipov',   profileImage: null, correct: 118, incorrect: 55, tests: 10, avgScore: 70 },
     ].sort((a, b) => b.avgScore - a.avgScore).slice(0, 5);
 
-    const quizzes = [
-        { name: `${grp.subject} — 1-bo'lim testi`,    date: '14 mart', avgScore: Math.min(98, 72 + seed % 20), submissions: Math.min(grp.students, 22 + seed % 8) },
-        { name: `${grp.subject} — Amaliyot testi`,    date: '10 mart', avgScore: Math.min(98, 65 + seed % 25), submissions: Math.min(grp.students, 18 + seed % 6) },
-        { name: `${grp.subject} — Oraliq nazorat`,    date: '5 mart',  avgScore: Math.min(98, 78 + seed % 18), submissions: Math.min(grp.students, 25 + seed % 5) },
-        { name: `${grp.subject} — Mustaqil topshiriq`,date: '1 mart',  avgScore: Math.min(98, 60 + seed % 30), submissions: Math.min(grp.students, 15 + seed % 7) },
+    const quizzes: GroupQuizCard[] = [
+        { sessionId: seed + 1, name: `${grp.subject} — 1-bo'lim testi`,    date: '14 mart', avgScore: Math.min(98, 72 + seed % 20), submissions: Math.min(grp.students, 22 + seed % 8) },
+        { sessionId: seed + 2, name: `${grp.subject} — Amaliyot testi`,    date: '10 mart', avgScore: Math.min(98, 65 + seed % 25), submissions: Math.min(grp.students, 18 + seed % 6) },
+        { sessionId: seed + 3, name: `${grp.subject} — Oraliq nazorat`,    date: '5 mart',  avgScore: Math.min(98, 78 + seed % 18), submissions: Math.min(grp.students, 25 + seed % 5) },
+        { sessionId: seed + 4, name: `${grp.subject} — Mustaqil topshiriq`,date: '1 mart',  avgScore: Math.min(98, 60 + seed % 30), submissions: Math.min(grp.students, 15 + seed % 7) },
     ].slice(0, grp.quizzes > 4 ? 4 : Math.max(2, grp.quizzes));
 
     return { students, quizzes };
+}
+
+function initialsFromName(name: string) {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return 'NN';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase();
+}
+
+function subjectIconFromName(subject: string) {
+    const normalized = subject.trim().toLowerCase();
+    if (normalized.includes('fiz')) return 'zap';
+    if (normalized.includes('kim')) return 'flask';
+    if (normalized.includes('bio')) return 'leaf';
+    return 'calculator';
+}
+
+function colorFromApi(value: string | null) {
+    const map: Record<string, string> = {
+        BLUE: '#3B82F6',
+        GREEN: '#22C55E',
+        YELLOW: '#F59E0B',
+        RED: '#EF4444',
+        PURPLE: '#8B5CF6',
+        PINK: '#EC4899',
+        ORANGE: '#F97316',
+        TEAL: '#14B8A6',
+        INDIGO: '#6366F1',
+        CYAN: '#0891B2',
+    };
+    return value ? map[value] ?? '#6366F1' : '#6366F1';
+}
+
+function formatRelativeActivity(value: string | null) {
+    if (!value) return "Noma'lum";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "Noma'lum";
+
+    const diffMs = Date.now() - date.getTime();
+    const minutes = Math.max(1, Math.floor(diffMs / 60000));
+    const hours = Math.floor(diffMs / 3600000);
+    const days = Math.floor(diffMs / 86400000);
+
+    if (minutes < 60) return `${minutes} daqiqa oldin`;
+    if (hours < 24) return `${hours} soat oldin`;
+    if (days === 1) return 'Kecha';
+    if (days < 7) return `${days} kun oldin`;
+    return `${Math.floor(days / 7)} hafta oldin`;
+}
+
+function formatQuizDate(value: string | null | undefined) {
+    if (!value) return "Noma'lum";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "Noma'lum";
+    return date.toLocaleDateString('uz-UZ', { day: 'numeric', month: 'short' });
+}
+
+function mapApiGroup(detail: GroupDetailApi, fallback: GroupItem): GroupItem {
+    return {
+        id: detail.id ?? fallback.id,
+        name: detail.name || fallback.name,
+        subject: detail.subject_name || fallback.subject,
+        subjectIcon: subjectIconFromName(detail.subject_name || fallback.subject),
+        color: colorFromApi(detail.color) || fallback.color,
+        students: detail.students_count ?? fallback.students ?? 0,
+        quizzes: detail.tests_count ?? fallback.quizzes ?? 0,
+        lastActivity: formatRelativeActivity(detail.last_activity),
+        activityLevel: detail.status === 'ACTIVE' ? 'active' : 'low',
+        avgScore: detail.average_score ?? fallback.avgScore ?? 0,
+        description: detail.description || fallback.description || "Tavsif yo'q",
+        coverImage: detail.cover_image ?? fallback.coverImage,
+    };
+}
+
+function mapApiPerformanceStudent(item: StudentPerformanceApiItem): GroupPerformanceStudent {
+    return {
+        initials: initialsFromName(item.full_name || ''),
+        name: item.full_name || "Noma'lum",
+        profileImage: item.profile_image ?? null,
+        correct: item.correct_answers ?? 0,
+        incorrect: item.wrong_answers ?? 0,
+        tests: item.tests_count ?? 0,
+        avgScore: item.average_score ?? 0,
+    };
+}
+
+function mapApiSession(item: GroupSessionApiItem): GroupQuizCard {
+    return {
+        sessionId: item.session_id ?? 0,
+        name: item.quiz_name || "Noma'lum test",
+        date: formatQuizDate(item.session_date),
+        avgScore: item.average_score ?? 0,
+        submissions: item.completed_students ?? 0,
+    };
+}
+
+async function fetchWithAuthRetry(url: string, init: RequestInit = {}) {
+    let token = await getValidAccessToken();
+    if (!token) {
+        throw new Error("Tizimga qayta kiring");
+    }
+
+    const makeRequest = (accessToken: string) => fetch(url, {
+        ...init,
+        headers: {
+            accept: 'application/json',
+            ...(init.headers ?? {}),
+            Authorization: `Bearer ${accessToken}`,
+        },
+    });
+
+    let response = await makeRequest(token);
+    if (response.status === 401) {
+        const refreshed = await refreshStoredAuthToken();
+        token = refreshed?.access_token ?? null;
+        if (!token) {
+            throw new Error("Sessiya tugagan. Qayta kiring");
+        }
+        response = await makeRequest(token);
+    }
+
+    return response;
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -141,12 +351,97 @@ export function StudentGroupDetailPage() {
     const navigate = useNavigate();
     const { theme: t } = useTheme();
 
-    const grp = ALL_GROUPS.find((c) => c.id === parseInt(id || '1', 10)) ?? ALL_GROUPS[0];
-    const { students, quizzes } = getGroupDetails(grp);
-    const overallSc = scoreColor(grp.avgScore);
+    const groupId = useMemo(() => {
+        const parsed = Number.parseInt(id || '1', 10);
+        return Number.isFinite(parsed) && parsed > 0 ? parsed : 1;
+    }, [id]);
+
+    const fallbackGroup = useMemo(() => {
+        return ALL_GROUPS.find((c) => c.id === groupId) ?? ALL_GROUPS[0] ?? { ...DEFAULT_GROUP, id: groupId };
+    }, [groupId]);
+
+    const fallbackDetails = useMemo(() => getGroupDetails(fallbackGroup), [fallbackGroup]);
+
+    const [grp, setGrp] = useState<GroupItem>(fallbackGroup);
+    const [leaderboardStudents, setLeaderboardStudents] = useState<GroupPerformanceStudent[]>(fallbackDetails.students);
+    const [students, setStudents] = useState<GroupPerformanceStudent[]>(fallbackDetails.students);
+    const [quizzes, setQuizzes] = useState<GroupQuizCard[]>(fallbackDetails.quizzes);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [showAllStudents, setShowAllStudents] = useState(false);
+
+    useEffect(() => {
+        setGrp(fallbackGroup);
+        setLeaderboardStudents(fallbackDetails.students);
+        setStudents(fallbackDetails.students);
+        setQuizzes(fallbackDetails.quizzes);
+    }, [fallbackGroup, fallbackDetails]);
+
+    useEffect(() => {
+        let isMounted = true;
+        (async () => {
+            try {
+                const [detailRes, sessionsRes, studentsRes] = await Promise.all([
+                    fetchWithAuthRetry(`${API_BASE_URL}/api/v1/student/group/${groupId}/detail-card`, { method: 'GET' }),
+                    fetchWithAuthRetry(`${API_BASE_URL}/api/v1/student/group/${groupId}/sessions?page=1&size=50`, { method: 'GET' }),
+                    fetchWithAuthRetry(`${API_BASE_URL}/api/v1/student/group/${groupId}/students-performance?page=1&size=50`, { method: 'GET' }),
+                ]);
+                if (!detailRes.ok || !sessionsRes.ok || !studentsRes.ok || !isMounted) return;
+
+                const detail = unwrapApiData<GroupDetailApi>(await detailRes.json());
+                const sessionsData = unwrapApiData<PaginatedResponse<GroupSessionApiItem>>(await sessionsRes.json());
+                const studentsData = unwrapApiData<PaginatedResponse<StudentPerformanceApiItem>>(await studentsRes.json());
+
+                setGrp(mapApiGroup(detail, fallbackGroup));
+
+                const mappedStudents = (studentsData.items ?? []).map(mapApiPerformanceStudent).sort((a, b) => b.avgScore - a.avgScore);
+                setLeaderboardStudents(mappedStudents.length > 0 ? mappedStudents : fallbackDetails.students);
+                setStudents(mappedStudents.length > 0 ? mappedStudents : fallbackDetails.students);
+
+                const mappedQuizzes = (sessionsData.items ?? []).map(mapApiSession);
+                setQuizzes(mappedQuizzes.length > 0 ? mappedQuizzes : fallbackDetails.quizzes);
+            } catch {
+                // Keep fallback values on API errors.
+            }
+        })();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [groupId, fallbackGroup, fallbackDetails]);
+
+    useEffect(() => {
+        let isMounted = true;
+        const timeoutId = window.setTimeout(async () => {
+            try {
+                const params = new URLSearchParams({
+                    page: '1',
+                    size: '50',
+                });
+                if (searchQuery.trim()) {
+                    params.set('search', searchQuery.trim());
+                }
+
+                const response = await fetchWithAuthRetry(
+                    `${API_BASE_URL}/api/v1/student/group/${groupId}/students-performance?${params.toString()}`,
+                    { method: 'GET' },
+                );
+                if (!response.ok || !isMounted) return;
+                const data = unwrapApiData<PaginatedResponse<StudentPerformanceApiItem>>(await response.json());
+                const mapped = (data.items ?? []).map(mapApiPerformanceStudent).sort((a, b) => b.avgScore - a.avgScore);
+                setStudents(mapped);
+            } catch {
+                // Keep current list if search API fails.
+            }
+        }, 300);
+
+        return () => {
+            isMounted = false;
+            window.clearTimeout(timeoutId);
+        };
+    }, [groupId, searchQuery]);
+
+    const overallSc = scoreColor(grp.avgScore);
 
     // Filter students based on search query
     const filteredStudents = students.filter((s) =>
@@ -276,7 +571,7 @@ export function StudentGroupDetailPage() {
                         {/* Podium Layout - Modern Design */}
                         <div className="flex items-end justify-center gap-2 sm:gap-4 md:gap-6 py-2 sm:py-3">
                             {/* 2nd Place - Left */}
-                            {students[1] && (
+                            {leaderboardStudents[1] && (
                                 <div className="flex flex-col items-center flex-1 max-w-[140px]">
                                     {/* Avatar with decorative elements */}
                                     <div className="relative mb-2">
@@ -287,9 +582,9 @@ export function StudentGroupDetailPage() {
                                         {/* Avatar circle */}
                                         <div className="relative">
                                             <StudentAvatar
-                                                name={students[1].name}
-                                                initials={students[1].initials}
-                                                profileImage={null}
+                                                name={leaderboardStudents[1].name}
+                                                initials={leaderboardStudents[1].initials}
+                                                profileImage={leaderboardStudents[1].profileImage}
                                                 color={t.isDark
                                                     ? 'linear-gradient(135deg, #E8E8E8 0%, #C0C0C0 100%)'
                                                     : 'linear-gradient(135deg, #F5F5F5 0%, #D1D1D1 100%)'}
@@ -317,10 +612,10 @@ export function StudentGroupDetailPage() {
 
                                     {/* Name */}
                                     <p className="text-xs sm:text-sm md:text-base font-bold text-center truncate w-full mb-0.5" style={{ color: t.textPrimary }}>
-                                        {students[1].name.split(' ')[0]}
+                                        {leaderboardStudents[1].name.split(' ')[0]}
                                     </p>
                                     <p className="text-[10px] sm:text-xs text-center mb-2" style={{ color: t.textMuted }}>
-                                        {students[1].name.split(' ')[1] || ''}
+                                        {leaderboardStudents[1].name.split(' ')[1] || ''}
                                     </p>
 
                                     {/* Score bar */}
@@ -334,7 +629,7 @@ export function StudentGroupDetailPage() {
                                             <div
                                                 className="h-full rounded-full transition-all"
                                                 style={{
-                                                    width: `${students[1].avgScore}%`,
+                                                    width: `${leaderboardStudents[1].avgScore}%`,
                                                     background: 'linear-gradient(90deg, #E8E8E8, #C0C0C0)',
                                                 }}
                                             />
@@ -346,14 +641,14 @@ export function StudentGroupDetailPage() {
                                                 color: t.isDark ? '#C0C0C0' : '#808080',
                                             }}
                                         >
-                                            {students[1].avgScore}%
+                                            {leaderboardStudents[1].avgScore}%
                                         </div>
                                     </div>
                                 </div>
                             )}
 
                             {/* 1st Place - Center (Taller) */}
-                            {students[0] && (
+                            {leaderboardStudents[0] && (
                                 <div className="flex flex-col items-center flex-1 max-w-[160px] -mt-4 sm:-mt-6">
                                     {/* Avatar with decorative elements */}
                                     <div className="relative mb-2">
@@ -364,9 +659,9 @@ export function StudentGroupDetailPage() {
                                         {/* Avatar circle */}
                                         <div className="relative">
                                             <StudentAvatar
-                                                name={students[0].name}
-                                                initials={students[0].initials}
-                                                profileImage={null}
+                                                name={leaderboardStudents[0].name}
+                                                initials={leaderboardStudents[0].initials}
+                                                profileImage={leaderboardStudents[0].profileImage}
                                                 color={t.isDark
                                                     ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)'
                                                     : 'linear-gradient(135deg, #FBBF24 0%, #F59E0B 100%)'}
@@ -393,10 +688,10 @@ export function StudentGroupDetailPage() {
 
                                     {/* Name */}
                                     <p className="text-sm sm:text-base md:text-lg font-bold text-center truncate w-full mb-0.5" style={{ color: t.textPrimary }}>
-                                        {students[0].name.split(' ')[0]}
+                                        {leaderboardStudents[0].name.split(' ')[0]}
                                     </p>
                                     <p className="text-xs sm:text-sm text-center mb-2" style={{ color: t.textMuted }}>
-                                        {students[0].name.split(' ')[1] || ''}
+                                        {leaderboardStudents[0].name.split(' ')[1] || ''}
                                     </p>
 
                                     {/* Score bar */}
@@ -410,7 +705,7 @@ export function StudentGroupDetailPage() {
                                             <div
                                                 className="h-full rounded-full transition-all"
                                                 style={{
-                                                    width: `${students[0].avgScore}%`,
+                                                    width: `${leaderboardStudents[0].avgScore}%`,
                                                     background: 'linear-gradient(90deg, #FFD700, #FFA500)',
                                                     boxShadow: '0 2px 8px rgba(255,215,0,0.3)',
                                                 }}
@@ -423,14 +718,14 @@ export function StudentGroupDetailPage() {
                                                 color: t.isDark ? '#FFD700' : '#F59E0B',
                                             }}
                                         >
-                                            {students[0].avgScore}%
+                                            {leaderboardStudents[0].avgScore}%
                                         </div>
                                     </div>
                                 </div>
                             )}
 
                             {/* 3rd Place - Right */}
-                            {students[2] && (
+                            {leaderboardStudents[2] && (
                                 <div className="flex flex-col items-center flex-1 max-w-[140px]">
                                     {/* Avatar with decorative elements */}
                                     <div className="relative mb-2">
@@ -441,9 +736,9 @@ export function StudentGroupDetailPage() {
                                         {/* Avatar circle */}
                                         <div className="relative">
                                             <StudentAvatar
-                                                name={students[2].name}
-                                                initials={students[2].initials}
-                                                profileImage={null}
+                                                name={leaderboardStudents[2].name}
+                                                initials={leaderboardStudents[2].initials}
+                                                profileImage={leaderboardStudents[2].profileImage}
                                                 color={t.isDark
                                                     ? 'linear-gradient(135deg, #D97706 0%, #B45309 100%)'
                                                     : 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)'}
@@ -471,10 +766,10 @@ export function StudentGroupDetailPage() {
 
                                     {/* Name */}
                                     <p className="text-xs sm:text-sm md:text-base font-bold text-center truncate w-full mb-0.5" style={{ color: t.textPrimary }}>
-                                        {students[2].name.split(' ')[0]}
+                                        {leaderboardStudents[2].name.split(' ')[0]}
                                     </p>
                                     <p className="text-[10px] sm:text-xs text-center mb-2" style={{ color: t.textMuted }}>
-                                        {students[2].name.split(' ')[1] || ''}
+                                        {leaderboardStudents[2].name.split(' ')[1] || ''}
                                     </p>
 
                                     {/* Score bar */}
@@ -488,7 +783,7 @@ export function StudentGroupDetailPage() {
                                             <div
                                                 className="h-full rounded-full transition-all"
                                                 style={{
-                                                    width: `${students[2].avgScore}%`,
+                                                    width: `${leaderboardStudents[2].avgScore}%`,
                                                     background: 'linear-gradient(90deg, #D97706, #B45309)',
                                                 }}
                                             />
@@ -500,7 +795,7 @@ export function StudentGroupDetailPage() {
                                                 color: t.isDark ? '#CD7F32' : '#D97706',
                                             }}
                                         >
-                                            {students[2].avgScore}%
+                                            {leaderboardStudents[2].avgScore}%
                                         </div>
                                     </div>
                                 </div>
@@ -518,7 +813,7 @@ export function StudentGroupDetailPage() {
                                 const sc = scoreColor(q.avgScore);
                                 return (
                                     <div
-                                        key={idx}
+                                        key={`${q.sessionId}-${idx}`}
                                         className="p-3.5 rounded-xl transition-colors cursor-default"
                                         style={{ background: t.bgInner, border: `1px solid ${t.border}` }}
                                         onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = t.accentBorder; }}
@@ -541,12 +836,27 @@ export function StudentGroupDetailPage() {
                         </span>
                                                 <span className="text-xs" style={{ color: t.textMuted }}>{q.submissions}/{grp.students} ta</span>
                                             </div>
-                                            <span className="text-xs" style={{ color: t.textMuted }}>{q.date}</span>
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-xs" style={{ color: t.textMuted }}>{q.date}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => navigate(`/student/session-results/${q.sessionId}`, {
+                                                        state: { returnTo: `/student/group/${groupId}`, groupId },
+                                                    })}
+                                                    className="inline-flex items-center gap-1.5 text-xs font-semibold px-2 py-1 rounded-lg transition-colors"
+                                                    style={{ background: t.accentMuted, color: t.accent, border: `1px solid ${t.accentBorder}` }}
+                                                    onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = '0.9'; }}
+                                                    onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = '1'; }}
+                                                >
+                                                    <Eye className="w-3.5 h-3.5" />
+                                                    Ko'rish
+                                                </button>
+                                            </div>
                                         </div>
                                         {/* Submissions bar */}
                                         <div className="mt-2 w-full h-1 rounded-full overflow-hidden" style={{ background: t.border }}>
                                             <div className="h-1 rounded-full transition-all duration-500"
-                                                 style={{ width: `${(q.submissions / grp.students) * 100}%`, background: t.accent, opacity: 0.7 }} />
+                                                 style={{ width: `${grp.students > 0 ? (q.submissions / grp.students) * 100 : 0}%`, background: t.accent, opacity: 0.7 }} />
                                         </div>
                                     </div>
                                 );
@@ -619,7 +929,7 @@ export function StudentGroupDetailPage() {
                                                 <StudentAvatar
                                                     name={s.name}
                                                     initials={s.initials}
-                                                    profileImage={null}
+                                                    profileImage={s.profileImage}
                                                     color={AVATAR_COLORS[idx % AVATAR_COLORS.length]}
                                                     sizeClass="w-9 h-9"
                                                     textClass="text-xs text-white"
@@ -689,7 +999,7 @@ export function StudentGroupDetailPage() {
                                             <StudentAvatar
                                                 name={s.name}
                                                 initials={s.initials}
-                                                profileImage={null}
+                                                profileImage={s.profileImage}
                                                 color={AVATAR_COLORS[idx % AVATAR_COLORS.length]}
                                                 sizeClass="w-12 h-12"
                                                 textClass="text-sm text-white"
