@@ -3,11 +3,24 @@ import { useTheme } from './ThemeContext';
 
 interface TopNavigationProps {
   onMenuClick: () => void;
+  profile: {
+    fullName: string;
+    roleLabel: string;
+    profileImage: string | null;
+  };
 }
 
-export function TopNavigation({ onMenuClick }: TopNavigationProps) {
+function initialsFromName(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return 'U';
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase();
+}
+
+export function TopNavigation({ onMenuClick, profile }: TopNavigationProps) {
   const { theme, toggleTheme } = useTheme();
   const t = theme;
+  const initials = initialsFromName(profile.fullName);
 
   return (
     <header
@@ -108,15 +121,21 @@ export function TopNavigation({ onMenuClick }: TopNavigationProps) {
             className="hidden lg:flex items-center gap-3 px-3 py-2 rounded-xl cursor-pointer transition-colors"
             style={{ background: t.bgButton, border: `1px solid ${t.border}` }}
           >
-            <img
-              src="https://images.unsplash.com/photo-1551989745-347c28b620e5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB0ZWFjaGVyJTIwd29tYW58ZW58MXx8fHwxNzczNTc3NjAxfDA&ixlib=rb-4.1.0&q=80&w=400"
-              alt="Teacher profile"
-              className="w-8 h-8 rounded-full object-cover"
-              style={{ border: '2px solid #6366F1' }}
-            />
+            <div
+              className="w-8 h-8 rounded-full overflow-hidden flex items-center justify-center text-xs font-bold text-white shrink-0"
+              style={{ border: '2px solid #6366F1', background: '#6366F1' }}
+            >
+              {profile.profileImage ? (
+                <img
+                  src={profile.profileImage}
+                  alt={profile.fullName}
+                  className="w-full h-full rounded-full object-cover"
+                />
+              ) : initials}
+            </div>
             <div>
-              <p className="text-sm font-semibold leading-tight" style={{ color: t.textPrimary }}>Anna Smirnova</p>
-              <p className="text-xs leading-tight" style={{ color: t.textSecondary }}>Matematika o'qituvchisi</p>
+              <p className="text-sm font-semibold leading-tight" style={{ color: t.textPrimary }}>{profile.fullName}</p>
+              <p className="text-xs leading-tight" style={{ color: t.textSecondary }}>{profile.roleLabel}</p>
             </div>
             <ChevronDown className="w-4 h-4 ml-1" style={{ color: t.textMuted }} />
           </div>

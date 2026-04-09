@@ -1,12 +1,116 @@
+import { useEffect, useMemo, useState } from 'react';
 import { StatsCard } from '../../components/StatsCard.tsx';
 import { StudentActivityChart } from '../../components/StudentActivityChart.tsx';
 import { WeakTopics } from '../../components/WeakTopics.tsx';
 import { RecentActivity } from '../../components/RecentActivity.tsx';
 import { useTheme } from '../../components/ThemeContext.tsx';
 import { Users, ClipboardCheck, BarChart3, Activity, Flame, BookOpen } from 'lucide-react';
+import { getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth.ts';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
+
+interface MeResponse {
+  id: number;
+  username: string;
+  first_name: string;
+  last_name: string;
+  role: string | null;
+  profile_image: string | null;
+  email?: string | null;
+  phone_number?: string | null;
+  school_name?: string | null;
+  education_level?: string | null;
+}
+
+interface TeacherProfile {
+  firstName: string;
+  lastName: string;
+  fullName: string;
+  profileImage: string | null;
+}
+
+async function fetchWithAuthRetry(url: string, init: RequestInit = {}) {
+  let token = await getValidAccessToken();
+  if (!token) {
+    throw new Error("Tizimga qayta kiring");
+  }
+
+  const makeRequest = (accessToken: string) => fetch(url, {
+    ...init,
+    headers: {
+      accept: 'application/json',
+      ...(init.headers ?? {}),
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  let response = await makeRequest(token);
+
+  if (response.status === 401) {
+    const refreshed = await refreshStoredAuthToken();
+    token = refreshed?.access_token ?? null;
+    if (!token) {
+      throw new Error("Sessiya tugagan. Qayta kiring");
+    }
+    response = await makeRequest(token);
+  }
+
+  return response;
+}
 
 export function DashboardPage() {
   const { theme: t } = useTheme();
+  const [teacherProfile, setTeacherProfile] = useState<TeacherProfile>({
+    firstName: 'Anna',
+    lastName: '',
+    fullName: 'Anna',
+    profileImage: null,
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadTeacherProfile() {
+      try {
+        const response = await fetchWithAuthRetry(`${API_BASE_URL}/api/v1/auth/me/`, {
+          method: 'GET',
+        });
+
+        if (!response.ok) {
+          throw new Error(`Profilni olishda xatolik: ${response.status}`);
+        }
+
+        const data: MeResponse = await response.json();
+        if (!isMounted) return;
+
+        const firstName = data.first_name?.trim() || data.username || 'Ustoz';
+        const lastName = data.last_name?.trim() || '';
+        const fullName = `${firstName} ${lastName}`.trim();
+
+        setTeacherProfile({
+          firstName,
+          lastName,
+          fullName,
+          profileImage: data.profile_image ?? null,
+        });
+      } catch {
+        if (!isMounted) return;
+      }
+    }
+
+    loadTeacherProfile();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const teacherInitials = useMemo(() => {
+    const parts = teacherProfile.fullName.split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return 'U';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase();
+  }, [teacherProfile.fullName]);
 
   return (
     <>
@@ -30,10 +134,18 @@ export function DashboardPage() {
                 className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl flex items-center justify-center shrink-0"
                 style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(8px)', border: '1px solid rgba(255,255,255,0.2)' }}
               >
-                <BarChart3 className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                {teacherProfile.profileImage ? (
+                  <img
+                    src={teacherProfile.profileImage}
+                    alt={teacherProfile.fullName}
+                    className="w-full h-full object-cover rounded-xl sm:rounded-2xl"
+                  />
+                ) : (
+                  <span className="text-white font-bold text-sm sm:text-base">{teacherInitials}</span>
+                )}
               </div>
               <div className="flex-1 min-w-0">
-                <h2 className="text-lg sm:text-xl font-bold text-white">Xush kelibsiz, Anna! 👋</h2>
+                <h2 className="text-lg sm:text-xl font-bold text-white">Xush kelibsiz, {teacherProfile.firstName}! 👋</h2>
                 <p className="text-white/80 text-sm mt-1">
                   O'quvchilaringizning o'rtacha rivojlanishi{' '}
                   <span className="font-bold text-white bg-white/20 px-2 py-0.5 rounded-lg">73%</span>
@@ -82,11 +194,21 @@ export function DashboardPage() {
                 className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center shrink-0"
                 style={{ background: 'rgba(99,102,241,0.08)', border: '1.5px solid rgba(99,102,241,0.2)' }}
               >
-                <BookOpen className="w-5 h-5 sm:w-6 sm:h-6" style={{ color: '#6366F1' }} strokeWidth={1.75} />
+                {teacherProfile.profileImage ? (
+                  <img
+                    src={teacherProfile.profileImage}
+                    alt={teacherProfile.fullName}
+                    className="w-full h-full object-cover rounded-xl"
+                  />
+                ) : (
+                  <span className="font-bold text-sm sm:text-base" style={{ color: '#6366F1' }}>
+                    {teacherInitials}
+                  </span>
+                )}
               </div>
               <div className="flex-1 min-w-0">
                 <h2 className="text-lg sm:text-xl font-bold" style={{ color: t.textPrimary }}>
-                  Xayrli tong, Anna
+                  Xayrli tong, {teacherProfile.firstName}
                 </h2>
                 <p className="text-sm mt-0.5" style={{ color: t.textSecondary }}>
                   O'quvchilaringizning o'rtacha rivojlanishi{' '}
