@@ -6,6 +6,12 @@ import {
 import {useTheme} from '../../components/ThemeContext.tsx';
 import {useNavigate} from 'react-router';
 import {getValidAccessToken, refreshStoredAuthToken} from '../../lib/auth.ts';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '../../components/ui/dropdown-menu.tsx';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
 const PAGE_SIZE = 50;
@@ -18,6 +24,7 @@ interface Student {
     email: string;
     profileImage: string | null;
     classGroup: string;
+    groupNames: string[];
     avgScore: number;
     testsCompleted: number;
     lastActivity: string;
@@ -29,7 +36,7 @@ interface StudentsApiItem {
     username: string;
     profile_image: string | null;
     full_name: string;
-    class_name: string;
+    group_names?: string[] | null;
     average_score: number;
     tests_count: number;
     last_activity: string | null;
@@ -124,13 +131,18 @@ function formatLastActivity(value: string | null) {
 }
 
 function mapApiStudent(item: StudentsApiItem): Student {
+    const groupNames = Array.isArray(item.group_names)
+        ? item.group_names.map((group) => group.trim()).filter(Boolean)
+        : [];
+
     return {
         id: item.student_id,
         name: item.full_name,
         initials: getInitials(item.full_name),
         email: item.username,
         profileImage: item.profile_image,
-        classGroup: item.class_name,
+        classGroup: groupNames[0] ?? "Guruh yo'q",
+        groupNames,
         avgScore: Number(item.average_score.toFixed(2)),
         testsCompleted: item.tests_count,
         lastActivity: formatLastActivity(item.last_activity),
@@ -220,6 +232,102 @@ function ProfileAvatar({
                 />
             ) : initials}
         </div>
+    );
+}
+
+function GroupNamesDropdown({
+                                groups,
+                                t,
+                                compact = false,
+                            }: {
+    groups: string[];
+    t: ReturnType<typeof useTheme>['theme'];
+    compact?: boolean;
+}) {
+    const normalizedGroups = groups.map((group) => group.trim()).filter(Boolean);
+    const primaryGroup = normalizedGroups[0] ?? "Guruh yo'q";
+    const extraCount = Math.max(normalizedGroups.length - 1, 0);
+    const isExpandable = normalizedGroups.length > 1;
+
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <button
+                    type="button"
+                    disabled={!isExpandable}
+                    className={`inline-flex max-w-full items-center gap-2 rounded-lg border transition-all ${
+                        compact ? 'px-2.5 py-1.5 text-xs' : 'px-2.5 py-1 text-sm'
+                    }`}
+                    style={{
+                        background: t.bgInner,
+                        color: t.textSecondary,
+                        borderColor: t.border,
+                        cursor: isExpandable ? 'pointer' : 'default',
+                        opacity: isExpandable ? 1 : 0.95,
+                    }}
+                    onMouseEnter={(e) => {
+                        if (!isExpandable) return;
+                        (e.currentTarget as HTMLElement).style.borderColor = t.accentBorder;
+                        (e.currentTarget as HTMLElement).style.background = t.isDark
+                            ? 'rgba(99,102,241,0.14)'
+                            : 'rgba(99,102,241,0.08)';
+                    }}
+                    onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.borderColor = t.border;
+                        (e.currentTarget as HTMLElement).style.background = t.bgInner;
+                    }}
+                >
+                    <span className="truncate">{primaryGroup}</span>
+                    {extraCount > 0 && (
+                        <span
+                            className="shrink-0 rounded-full px-1.5 py-0.5 text-[10px] font-semibold"
+                            style={{
+                                background: t.accentMuted,
+                                color: t.accent,
+                                border: `1px solid ${t.accentBorder}`,
+                            }}
+                        >
+                            +{extraCount}
+                        </span>
+                    )}
+                    {isExpandable && (
+                        <ChevronDown className="h-3.5 w-3.5 shrink-0" style={{color: t.textMuted}}/>
+                    )}
+                </button>
+            </DropdownMenuTrigger>
+            {isExpandable && (
+                <DropdownMenuContent
+                    align="start"
+                    sideOffset={8}
+                    className="w-64 rounded-xl p-1.5"
+                    style={{
+                        background: t.bgCard,
+                        color: t.textPrimary,
+                        border: `1px solid ${t.border}`,
+                        boxShadow: t.isDark
+                            ? '0 16px 40px rgba(0,0,0,0.45)'
+                            : '0 16px 40px rgba(15,23,42,0.14)',
+                    }}
+                >
+                    {normalizedGroups.map((group, index) => (
+                        <DropdownMenuItem
+                            key={`${group}-${index}`}
+                            className="flex items-center justify-between rounded-lg px-3 py-2 text-sm outline-none"
+                            style={{
+                                color: t.textPrimary,
+                            }}
+                        >
+                            <span className="truncate">{group}</span>
+                            {index === 0 && (
+                                <span className="shrink-0 text-[11px] font-semibold" style={{color: t.textMuted}}>
+                                    Asosiy
+                                </span>
+                            )}
+                        </DropdownMenuItem>
+                    ))}
+                </DropdownMenuContent>
+            )}
+        </DropdownMenu>
     );
 }
 
@@ -789,6 +897,9 @@ function AddStudentModal({
 export function StudentsPage() {
     const {theme: t} = useTheme();
     const navigate = useNavigate();
+    const scrollTrack = t.isDark ? 'rgba(148,163,184,0.12)' : 'rgba(148,163,184,0.18)';
+    const scrollThumb = t.isDark ? 'rgba(148,163,184,0.4)' : 'rgba(100,116,139,0.38)';
+    const scrollThumbHover = t.isDark ? 'rgba(148,163,184,0.58)' : 'rgba(100,116,139,0.54)';
 
     const [students, setStudents] = useState<Student[]>([]);
     const [showModal, setShowModal] = useState(false);
@@ -810,7 +921,7 @@ export function StudentsPage() {
 
     const classOptions = useMemo(() => {
         const dynamicClasses = students
-            .map((student) => student.classGroup)
+            .flatMap((student) => student.groupNames)
             .filter(Boolean);
 
         return Array.from(new Set([...DEFAULT_CLASS_OPTIONS, ...dynamicClasses]));
@@ -919,6 +1030,39 @@ export function StudentsPage() {
 
     return (
         <>
+            <style>{`
+                .students-scroll {
+                    scrollbar-width: thin;
+                    scrollbar-color: ${scrollThumb} ${scrollTrack};
+                }
+
+                .students-scroll::-webkit-scrollbar {
+                    width: 10px;
+                    height: 10px;
+                }
+
+                .students-scroll::-webkit-scrollbar-track {
+                    background: ${scrollTrack};
+                    border-radius: 999px;
+                }
+
+                .students-scroll::-webkit-scrollbar-thumb {
+                    background: ${scrollThumb};
+                    border-radius: 999px;
+                    border: 2px solid transparent;
+                    background-clip: padding-box;
+                }
+
+                .students-scroll::-webkit-scrollbar-thumb:hover {
+                    background: ${scrollThumbHover};
+                    border: 2px solid transparent;
+                    background-clip: padding-box;
+                }
+
+                .students-scroll::-webkit-scrollbar-corner {
+                    background: transparent;
+                }
+            `}</style>
             {/* ── Modal ── */}
             <AddStudentModal
                 open={showModal}
@@ -1109,7 +1253,7 @@ export function StudentsPage() {
                 ) : (
                     <>
                         {/* ── Desktop / Tablet Table ── */}
-                        <div className="hidden sm:block overflow-x-auto overflow-y-auto" style={{maxHeight: 560}}>
+                        <div className="students-scroll hidden sm:block overflow-x-auto overflow-y-auto" style={{maxHeight: 560}}>
                             <table className="w-full">
                                 <thead>
                                 <tr style={{
@@ -1174,16 +1318,7 @@ export function StudentsPage() {
 
                                             {/* Class */}
                                             <td className="px-5 py-3.5">
-                          <span
-                              className="text-sm px-2.5 py-1 rounded-lg font-medium"
-                              style={{
-                                  background: t.bgInner,
-                                  color: t.textSecondary,
-                                  border: `1px solid ${t.border}`,
-                              }}
-                          >
-                            {student.classGroup}
-                          </span>
+                                                <GroupNamesDropdown groups={student.groupNames} t={t}/>
                                             </td>
 
                                             {/* Average Score */}
@@ -1355,9 +1490,9 @@ export function StudentsPage() {
                                         >
                                             <div className="text-center">
                                                 <p className="text-xs mb-0.5" style={{color: t.textMuted}}>Sinf</p>
-                                                <p className="text-xs font-semibold" style={{color: t.textPrimary}}>
-                                                    {student.classGroup}
-                                                </p>
+                                                <div className="flex justify-center">
+                                                    <GroupNamesDropdown groups={student.groupNames} t={t} compact/>
+                                                </div>
                                             </div>
                                             <div className="text-center" style={{
                                                 borderLeft: `1px solid ${t.border}`,

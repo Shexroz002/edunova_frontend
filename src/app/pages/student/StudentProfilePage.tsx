@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useTheme } from '../../components/ThemeContext';
 import { useNavigate } from 'react-router';
-import { User, Zap, Trophy, CheckCircle2, Settings, ChevronRight, Star, Flame } from 'lucide-react';
-import { getStoredAuthSession, getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth';
+import { User, Zap, Trophy, CheckCircle2, Settings, ChevronRight, Star, Flame, LogOut } from 'lucide-react';
+import { LogoutModal } from '../../components/LogoutModal';
+import { clearStoredAuthSession, getStoredAuthSession, getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
 
@@ -105,6 +106,13 @@ export function StudentProfilePage() {
     educationLevel: "Sinf ko'rsatilmagan",
     roleLabel: "O'quvchi",
   });
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
+  function handleLogout() {
+    clearStoredAuthSession();
+    setIsLogoutModalOpen(false);
+    navigate('/login', { replace: true });
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -232,16 +240,17 @@ export function StudentProfilePage() {
       {/* Settings menu */}
       <div className="rounded-2xl overflow-hidden" style={cardBase}>
         {[
-          { icon: User, label: 'Profilni tahrirlash' },
-          { icon: Settings, label: 'Sozlamalar' },
+          { icon: User, label: 'Profilni tahrirlash', onClick: () => navigate('/student/edit-profile') },
+          { icon: Settings, label: 'Sozlamalar', onClick: () => navigate('/student/edit-profile') },
+          { icon: LogOut, label: 'Logout', onClick: () => setIsLogoutModalOpen(true) },
         ].map((item, i) => {
           const Icon = item.icon;
           return (
             <button
               key={i}
               className="w-full flex items-center justify-between px-5 py-4 transition-colors hover:opacity-80"
-              style={{ borderBottom: i < 1 ? `1px solid ${t.border}` : 'none' }}
-              onClick={() => navigate('/student/edit-profile')}
+              style={{ borderBottom: i < 2 ? `1px solid ${t.border}` : 'none' }}
+              onClick={item.onClick}
             >
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: t.bgInner }}>
@@ -254,6 +263,12 @@ export function StudentProfilePage() {
           );
         })}
       </div>
+
+      <LogoutModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirm={handleLogout}
+      />
     </div>
   );
 }
