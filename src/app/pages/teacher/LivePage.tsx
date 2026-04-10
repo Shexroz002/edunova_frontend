@@ -935,7 +935,7 @@ function ActiveSessionDropdown({
 }
 
 // ─── Create New Session Card (Multi-step wizard) ──
-function CreateSessionCard() {
+export function CreateSessionCard({ onRequestClose }: { onRequestClose?: () => void } = {}) {
   const { theme: t } = useTheme();
   const navigate = useNavigate();
   const labelColor = t.isDark ? '#CBD5E1' : '#475569';
@@ -1021,6 +1021,7 @@ function CreateSessionCard() {
       };
 
       const createdSession = await createLiveSession(payload);
+      onRequestClose?.();
       navigate('/live/waiting-room', {
         state: {
           session: createdSession,
@@ -1052,7 +1053,30 @@ function CreateSessionCard() {
             {STEP_LABELS[step]} — {step + 1}/{STEP_LABELS.length}
           </p>
         </div>
-        <StepDots current={step} total={STEP_LABELS.length} />
+        <div className="flex items-center gap-2">
+          <StepDots current={step} total={STEP_LABELS.length} />
+          {onRequestClose && (
+            <button
+              type="button"
+              onClick={onRequestClose}
+              className="w-8 h-8 rounded-xl flex items-center justify-center transition-all"
+              style={{ background: t.bgInner, border: `1px solid ${t.border}`, color: t.textMuted }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLElement).style.background = t.bgCardHover;
+                (e.currentTarget as HTMLElement).style.borderColor = t.accentBorder;
+                (e.currentTarget as HTMLElement).style.color = t.accent;
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLElement).style.background = t.bgInner;
+                (e.currentTarget as HTMLElement).style.borderColor = t.border;
+                (e.currentTarget as HTMLElement).style.color = t.textMuted;
+              }}
+              aria-label="Yopish"
+            >
+              <X className="w-4 h-4" strokeWidth={2} />
+            </button>
+          )}
+        </div>
       </div>
 
       {/* ── Step 0: Select Quiz ── */}
@@ -1270,6 +1294,39 @@ function CreateSessionCard() {
         )}
       </div>
     </Card>
+  );
+}
+
+export function CreateSessionModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  useEffect(() => {
+    if (!open) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [open, onClose]);
+
+  if (!open) return null;
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4"
+      style={{ background: 'rgba(15,23,42,0.64)', backdropFilter: 'blur(6px)' }}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) {
+          onClose();
+        }
+      }}
+    >
+      <div className="w-full max-w-2xl">
+        <CreateSessionCard onRequestClose={onClose} />
+      </div>
+    </div>
   );
 }
 

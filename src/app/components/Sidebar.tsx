@@ -20,7 +20,7 @@ const navigationItems = [
   { name: 'Testlar',          icon: FileText,         path: '/quizzes'            },
   { name: 'Sessions',         icon: Video,            path: '/live'               },
   { name: 'Tahlil',           icon: BarChart3,        path: '/analytics'          },
-  { name: "O'quvchi tahlili", icon: PieChart,         path: '/student-analytics'  },
+  // { name: "O'quvchi tahlili", icon: PieChart,         path: '/student-analytics'  },
   { name: 'Reyting',          icon: Trophy,           path: '/leaderboard'        },
   { name: 'Sozlamalar',       icon: Settings,         path: '/settings'           },
 ];
