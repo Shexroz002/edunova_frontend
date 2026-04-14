@@ -90,9 +90,9 @@ interface UploadedImage {
 // ─────────────────────────────────────────────────────────────────────────────
 function diffStyle(d: Difficulty) {
   switch (d) {
-    case 'Oson':  return { color: '#22C55E', bg: 'rgba(34,197,94,0.12)',  border: 'rgba(34,197,94,0.28)'  };
-    case "O'rta": return { color: '#FBBF24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.3)'  };
-    case 'Qiyin': return { color: '#EF4444', bg: 'rgba(239,68,68,0.12)',  border: 'rgba(239,68,68,0.28)'  };
+    case 'Oson': return { color: '#22C55E', bg: 'rgba(34,197,94,0.12)', border: 'rgba(34,197,94,0.28)' };
+    case "O'rta": return { color: '#FBBF24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.3)' };
+    case 'Qiyin': return { color: '#EF4444', bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.28)' };
   }
 }
 
@@ -105,12 +105,12 @@ function correctColor(pct: number) {
 function SubjectIcon({ type, color, size = 18 }: { type: string; color: string; size?: number }) {
   const p = { style: { color }, strokeWidth: 1.75, width: size, height: size };
   switch (type) {
-    case 'flask':     return <FlaskConical {...p} />;
-    case 'leaf':      return <Leaf {...p} />;
-    case 'book':      return <BookOpen {...p} />;
+    case 'flask': return <FlaskConical {...p} />;
+    case 'leaf': return <Leaf {...p} />;
+    case 'book': return <BookOpen {...p} />;
     case 'languages': return <Languages {...p} />;
-    case 'globe':     return <Globe {...p} />;
-    default:          return <Calculator {...p} />;
+    case 'globe': return <Globe {...p} />;
+    default: return <Calculator {...p} />;
   }
 }
 
@@ -201,10 +201,10 @@ function parseMathSegments(value: string): MathSegment[] {
     const mathValue = match.startsWith('$$')
       ? match.slice(2, -2)
       : match.startsWith('\\[')
-      ? match.slice(2, -2)
-      : match.startsWith('\\(')
-      ? match.slice(2, -2)
-      : match.slice(1, -1);
+        ? match.slice(2, -2)
+        : match.startsWith('\\(')
+          ? match.slice(2, -2)
+          : match.slice(1, -1);
 
     segments.push({ type: 'math', value: mathValue, displayMode });
     lastIndex = offset + match.length;
@@ -593,7 +593,7 @@ const OPTION_SEEDS: Record<string, string[][]> = {
 // Build QuestionDetail for the view modal
 function buildQuestionDetail(q: QuizQuestion, quiz: Quiz): QuestionDetail {
   const seeds = OPTION_SEEDS[quiz.subject] ?? OPTION_SEEDS['Matematika'];
-  const row   = seeds[(q.order - 1) % seeds.length];
+  const row = seeds[(q.order - 1) % seeds.length];
   const correctIdx = (q.order * 3 + 2) % 4;
 
   const sampleTables = [
@@ -631,19 +631,19 @@ interface EditOption {
 }
 
 const OPTION_COLORS: Record<string, { color: string; bg: string; border: string }> = {
-  A: { color: '#6366F1', bg: 'rgba(99,102,241,0.1)',  border: 'rgba(99,102,241,0.25)'  },
-  B: { color: '#3B82F6', bg: 'rgba(59,130,246,0.1)',  border: 'rgba(59,130,246,0.25)'  },
-  C: { color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)',  border: 'rgba(139,92,246,0.25)'  },
-  D: { color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.25)'   },
-  E: { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)',  border: 'rgba(245,158,11,0.25)'  },
-  F: { color: '#EF4444', bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.25)'   },
+  A: { color: '#6366F1', bg: 'rgba(99,102,241,0.1)', border: 'rgba(99,102,241,0.25)' },
+  B: { color: '#3B82F6', bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.25)' },
+  C: { color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)', border: 'rgba(139,92,246,0.25)' },
+  D: { color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.25)' },
+  E: { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)' },
+  F: { color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)' },
 };
 
 const QUIZ_SUBJECTS = ['Matematika', 'Fizika', 'Kimyo', 'Biologiya'];
 const QUIZ_TYPE_OPTIONS: { value: QuizType; label: string; Icon: ComponentType<any>; color: string; bg: string; border: string }[] = [
-  { value: 'manual', label: "Qo'lda",      Icon: PenLine, color: '#6366F1', bg: 'rgba(99,102,241,0.1)',  border: 'rgba(99,102,241,0.3)' },
-  { value: 'pdf',    label: 'PDF',         Icon: Upload,  color: '#3B82F6', bg: 'rgba(59,130,246,0.1)',  border: 'rgba(59,130,246,0.3)' },
-  { value: 'ai',     label: 'AI Generated',Icon: Cpu,     color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)', border: 'rgba(139,92,246,0.3)' },
+  { value: 'manual', label: "Qo'lda", Icon: PenLine, color: '#6366F1', bg: 'rgba(99,102,241,0.1)', border: 'rgba(99,102,241,0.3)' },
+  { value: 'pdf', label: 'PDF', Icon: Upload, color: '#3B82F6', bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.3)' },
+  { value: 'ai', label: 'AI Generated', Icon: Cpu, color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)', border: 'rgba(139,92,246,0.3)' },
 ];
 
 interface EditQuizModalProps {
@@ -911,7 +911,7 @@ function EditQuizModal({ open, quiz, onClose, onSave }: EditQuizModalProps) {
 // Build initial options for edit modal
 function buildEditOptions(q: QuizQuestion, quiz: Quiz): EditOption[] {
   const seeds = OPTION_SEEDS[quiz.subject] ?? OPTION_SEEDS['Matematika'];
-  const row   = seeds[(q.order - 1) % seeds.length];
+  const row = seeds[(q.order - 1) % seeds.length];
   const correctIdx = (q.order * 3 + 2) % 4;
   return ['A', 'B', 'C', 'D'].map((key, i) => ({
     id: undefined,
@@ -1030,7 +1030,7 @@ function MiniTableBuilder({ onConvert }: { onConvert: (md: string) => void }) {
   const addCol = () => setRows((p) => p.map((row, i) => [...row, i === 0 ? `Ustun ${row.length + 1}` : '']));
   const remRow = (i: number) => { if (rows.length > 2) setRows((p) => p.filter((_, ri) => ri !== i)); };
   const remCol = (i: number) => { if (rows[0].length > 2) setRows((p) => p.map((row) => row.filter((_, ci) => ci !== i))); };
-  const reset  = () => setRows([['Ustun 1', 'Ustun 2', 'Ustun 3'], ['', '', ''], ['', '', '']]);
+  const reset = () => setRows([['Ustun 1', 'Ustun 2', 'Ustun 3'], ['', '', ''], ['', '', '']]);
 
   return (
     <div className="space-y-3">
@@ -1080,7 +1080,7 @@ function MiniTableBuilder({ onConvert }: { onConvert: (md: string) => void }) {
                       }}
                       placeholder={ri === 0 ? 'Sarlavha' : 'Ma\'lumot'}
                       onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#6366F1'; (e.target as HTMLElement).style.boxShadow = '0 0 0 2px rgba(99,102,241,0.12)'; }}
-                      onBlur={(e)  => { (e.target as HTMLElement).style.borderColor = ri === 0 ? (t.isDark ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.2)') : t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
+                      onBlur={(e) => { (e.target as HTMLElement).style.borderColor = ri === 0 ? (t.isDark ? 'rgba(99,102,241,0.3)' : 'rgba(99,102,241,0.2)') : t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
                     />
                   </td>
                 ))}
@@ -1248,16 +1248,16 @@ function StudentQuestionEditModal({
   const [visible, setVisible] = useState(false);
 
   // Form state
-  const [topic,         setTopic]         = useState(question.topic);
-  const [difficulty,    setDifficulty]    = useState<Difficulty>(question.difficulty);
-  const [questionText,  setQuestionText]  = useState(question.text);
+  const [topic, setTopic] = useState(question.topic);
+  const [difficulty, setDifficulty] = useState<Difficulty>(question.difficulty);
+  const [questionText, setQuestionText] = useState(question.text);
   const [tableMarkdown, setTableMarkdown] = useState('');
-  const [showTable,     setShowTable]     = useState(false);
+  const [showTable, setShowTable] = useState(false);
   const [showTableBuilder, setShowTableBuilder] = useState(false);
-  const [options,       setOptions]       = useState<EditOption[]>(() => buildEditOptions(question, quiz));
-  const [images,        setImages]        = useState<UploadedImage[]>([]);
-  const [saving,        setSaving]        = useState(false);
-  const [saved,         setSaved]         = useState(false);
+  const [options, setOptions] = useState<EditOption[]>(() => buildEditOptions(question, quiz));
+  const [images, setImages] = useState<UploadedImage[]>([]);
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
   const [uploadingImages, setUploadingImages] = useState(false);
   const [imageError, setImageError] = useState('');
   const [saveError, setSaveError] = useState('');
@@ -1377,9 +1377,9 @@ function StudentQuestionEditModal({
   }
 
   const DIFF_OPTIONS: { value: Difficulty; label: string; color: string; bg: string; border: string }[] = [
-    { value: 'Oson',  label: 'Oson',  color: '#22C55E', bg: 'rgba(34,197,94,0.1)',  border: 'rgba(34,197,94,0.3)'  },
+    { value: 'Oson', label: 'Oson', color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.3)' },
     { value: "O'rta", label: "O'rta", color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.3)' },
-    { value: 'Qiyin', label: 'Qiyin', color: '#EF4444', bg: 'rgba(239,68,68,0.1)',  border: 'rgba(239,68,68,0.3)'  },
+    { value: 'Qiyin', label: 'Qiyin', color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)' },
   ];
 
   const canSave = questionText.trim().length > 0 && options.some((o) => o.isCorrect);
@@ -1503,7 +1503,7 @@ function StudentQuestionEditModal({
               className="w-full px-4 rounded-xl text-sm focus:outline-none transition-all"
               style={{ background: t.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)', border: `1.5px solid ${t.border}`, color: t.textPrimary, height: '42px' }}
               onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#6366F1'; (e.target as HTMLElement).style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; }}
-              onBlur={(e)  => { (e.target as HTMLElement).style.borderColor = t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
+              onBlur={(e) => { (e.target as HTMLElement).style.borderColor = t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
             />
           </div>
 
@@ -1521,9 +1521,9 @@ function StudentQuestionEditModal({
                     className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all"
                     style={{
                       background: active ? d.bg : (t.isDark ? 'rgba(255,255,255,0.04)' : 'rgba(0,0,0,0.03)'),
-                      color:      active ? d.color : t.textMuted,
-                      border:     `1.5px solid ${active ? d.border : t.border}`,
-                      boxShadow:  active ? `0 0 0 3px ${d.bg}` : 'none',
+                      color: active ? d.color : t.textMuted,
+                      border: `1.5px solid ${active ? d.border : t.border}`,
+                      boxShadow: active ? `0 0 0 3px ${d.bg}` : 'none',
                     }}>
                     {d.label}
                   </button>
@@ -1603,7 +1603,7 @@ function StudentQuestionEditModal({
                   minHeight: '88px',
                 }}
                 onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#6366F1'; (e.target as HTMLElement).style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; }}
-                onBlur={(e)  => { (e.target as HTMLElement).style.borderColor = t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
+                onBlur={(e) => { (e.target as HTMLElement).style.borderColor = t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
               />
             )}
           </div>
@@ -1722,7 +1722,7 @@ function QuestionRow({
 }) {
   const { theme: t } = useTheme();
   const diff = diffStyle(question.difficulty);
-  const cc   = correctColor(question.correctPct);
+  const cc = correctColor(question.correctPct);
 
   return (
     <div
@@ -1738,8 +1738,8 @@ function QuestionRow({
             background: question.difficulty === 'Qiyin'
               ? 'linear-gradient(180deg,#EF4444,#DC2626)'
               : question.difficulty === "O'rta"
-              ? 'linear-gradient(180deg,#FBBF24,#F59E0B)'
-              : 'linear-gradient(180deg,#22C55E,#16A34A)',
+                ? 'linear-gradient(180deg,#FBBF24,#F59E0B)'
+                : 'linear-gradient(180deg,#22C55E,#16A34A)',
           }} />
 
         <div className="flex-1 px-4 py-4">
@@ -1820,8 +1820,8 @@ function QuestionRow({
 // ─────────────────────────────────────────────────────────────────────────────
 export function StudentQuizDetailPage() {
   const { theme: t } = useTheme();
-  const navigate     = useNavigate();
-  const { id }       = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const quizId = Number(id);
 
   const [quiz, setQuiz] = useState<Quiz | null>(null);
@@ -1832,7 +1832,7 @@ export function StudentQuizDetailPage() {
   const [editOpen, setEditOpen] = useState(false);
 
   const [viewDetail, setViewDetail] = useState<QuestionDetail | null>(null);
-  const [editQ,      setEditQ]      = useState<QuizQuestion | null>(null);
+  const [editQ, setEditQ] = useState<QuizQuestion | null>(null);
   const [startToast, setStartToast] = useState(false);
   const [questionDetailLoadingId, setQuestionDetailLoadingId] = useState<number | null>(null);
   const [questionDetailError, setQuestionDetailError] = useState<string | null>(null);
@@ -1945,7 +1945,7 @@ export function StudentQuizDetailPage() {
   }
 
   const easyCount = questions.filter((q) => q.difficulty === 'Oson').length;
-  const midCount  = questions.filter((q) => q.difficulty === "O'rta").length;
+  const midCount = questions.filter((q) => q.difficulty === "O'rta").length;
   const hardCount = questions.filter((q) => q.difficulty === 'Qiyin').length;
   const typeCfg = quizTypeStyle(quiz.type);
 
@@ -2070,9 +2070,9 @@ export function StudentQuizDetailPage() {
             {/* 3 stat cards */}
             <div className="grid grid-cols-3 gap-2 mt-3">
               {[
-                { label: 'Oson savollar',  value: `${easyCount} ta`,  color: '#22C55E', bg: 'rgba(34,197,94,0.1)',  border: 'rgba(34,197,94,0.22)'  },
-                { label: "O'rta savollar", value: `${midCount} ta`,   color: '#FBBF24', bg: 'rgba(251,191,36,0.1)', border: 'rgba(251,191,36,0.25)' },
-                { label: 'Qiyin savollar', value: `${hardCount} ta`,  color: '#EF4444', bg: 'rgba(239,68,68,0.1)',  border: 'rgba(239,68,68,0.22)'  },
+                { label: 'Oson savollar', value: `${easyCount} ta`, color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.22)' },
+                { label: "O'rta savollar", value: `${midCount} ta`, color: '#FBBF24', bg: 'rgba(251,191,36,0.1)', border: 'rgba(251,191,36,0.25)' },
+                { label: 'Qiyin savollar', value: `${hardCount} ta`, color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.22)' },
               ].map(({ label, value, color, bg, border }) => (
                 <div key={label} className="flex flex-col items-center justify-center py-2.5 px-2 rounded-xl text-center"
                   style={{ background: bg, border: `1px solid ${border}` }}>

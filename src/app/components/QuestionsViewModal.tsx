@@ -165,9 +165,9 @@ function mapQuestionDetail(detail: QuestionDetailApiResponse): Question {
         topic: detail.topic,
         images: Array.isArray(detail.images)
             ? detail.images.map((image) => ({
-                  ...image,
-                  image_url: toAbsoluteMediaUrl(image.image_url) ?? image.image_url,
-              }))
+                ...image,
+                image_url: toAbsoluteMediaUrl(image.image_url) ?? image.image_url,
+            }))
             : [],
         options: Array.isArray(detail.options) ? detail.options : [],
     };
@@ -187,10 +187,10 @@ function parseMathSegments(value: string) {
         const mathValue = match.startsWith('$$')
             ? match.slice(2, -2)
             : match.startsWith('\\[')
-              ? match.slice(2, -2)
-              : match.startsWith('\\(')
                 ? match.slice(2, -2)
-                : match.slice(1, -1);
+                : match.startsWith('\\(')
+                    ? match.slice(2, -2)
+                    : match.slice(1, -1);
 
         segments.push({ type: 'math', value: mathValue, displayMode });
         lastIndex = offset + match.length;

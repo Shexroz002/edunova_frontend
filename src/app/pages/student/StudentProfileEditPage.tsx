@@ -338,7 +338,7 @@ export function StudentProfileEditPage() {
   const profileCompletion = (() => {
     let completed = 0;
     const total = 7;
-    
+
     if (profile.avatar) completed++;
     if (profile.first_name) completed++;
     if (profile.last_name) completed++;
@@ -346,7 +346,7 @@ export function StudentProfileEditPage() {
     if (profile.phone) completed++;
     if (profile.school_name) completed++;
     if (profile.subjects.length > 0) completed++;
-    
+
     return Math.round((completed / total) * 100);
   })();
 
@@ -379,7 +379,7 @@ export function StudentProfileEditPage() {
   // Handle subject toggle
   function toggleSubject(subject: Subject) {
     const isSelected = formData.subjects.some(s => s.subject_id === subject.subject_id);
-    
+
     if (isSelected) {
       setFormData({
         ...formData,

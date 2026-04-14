@@ -410,7 +410,7 @@ function SubjectChart({ data }: { data: SubjectPerformanceItem[] }) {
             {pct}
           </span>
           <div
-              className="flex-1 border-t"
+            className="flex-1 border-t"
             style={{
               borderColor: t.chartGrid,
               borderTopStyle: t.chartGridStyle,

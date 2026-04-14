@@ -115,18 +115,18 @@ interface StudentResult {
 }
 
 const COLORS = [
-  '#6366F1','#8B5CF6','#3B82F6','#22C55E',
-  '#F59E0B','#14B8A6','#EC4899','#0EA5E9',
-  '#A855F7','#10B981','#F97316','#EF4444',
+  '#6366F1', '#8B5CF6', '#3B82F6', '#22C55E',
+  '#F59E0B', '#14B8A6', '#EC4899', '#0EA5E9',
+  '#A855F7', '#10B981', '#F97316', '#EF4444',
 ];
 
 // ─────────────────────────────────────────────
 //  Helpers
 // ─────────────────────────────────────────────
 function scoreColor(score: number): { color: string; bg: string; border: string } {
-  if (score >= 75) return { color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.25)'  };
+  if (score >= 75) return { color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.25)' };
   if (score >= 50) return { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)' };
-  return               { color: '#EF4444', bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.25)'  };
+  return { color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)' };
 }
 
 function accuracyColor(a: number): string {
@@ -137,8 +137,8 @@ function accuracyColor(a: number): string {
 
 function rankMedal(rank: number) {
   if (rank === 1) return { Icon: Trophy, color: '#F59E0B' };
-  if (rank === 2) return { Icon: Medal,  color: '#94A3B8' };
-  if (rank === 3) return { Icon: Award,  color: '#CD7C2F' };
+  if (rank === 2) return { Icon: Medal, color: '#94A3B8' };
+  if (rank === 3) return { Icon: Award, color: '#CD7C2F' };
   return null;
 }
 
@@ -533,9 +533,9 @@ export function StudentSessionResultPage() {
     };
 
   // Scrollbar colors
-  const scrollThumb  = t.isDark ? '#334155' : '#CBD5E1';
+  const scrollThumb = t.isDark ? '#334155' : '#CBD5E1';
   const scrollThumbH = t.isDark ? '#475569' : '#94A3B8';
-  const scrollTrack  = t.isDark ? '#0F172A' : '#F1F5F9';
+  const scrollTrack = t.isDark ? '#0F172A' : '#F1F5F9';
 
   const statusLabel = meta.status === 'finished' ? 'Yakunlangan' : meta.status;
   const statusColor = meta.status === 'finished' ? '#22C55E' : '#F59E0B';
@@ -571,7 +571,7 @@ export function StudentSessionResultPage() {
     const element = event.currentTarget;
     const threshold = 32;
     if (element.scrollTop + element.clientHeight >= element.scrollHeight - threshold) {
-      loadMoreLeaderboard().catch(() => {});
+      loadMoreLeaderboard().catch(() => { });
     }
   };
 
@@ -715,10 +715,10 @@ export function StudentSessionResultPage() {
               </p>
               <div className="flex flex-wrap gap-5">
                 {[
-                  { Icon: CalendarDays, label: meta.date,                              id: 'date'     },
-                  { Icon: Users,        label: `${meta.participants} ta o'quvchi`,     id: 'students' },
-                  { Icon: Clock,        label: `${meta.duration} davomiylik`,          id: 'duration' },
-                  { Icon: TrendingUp,   label: `${meta.avgScore}% o'rtacha ball`,      id: 'avg'      },
+                  { Icon: CalendarDays, label: meta.date, id: 'date' },
+                  { Icon: Users, label: `${meta.participants} ta o'quvchi`, id: 'students' },
+                  { Icon: Clock, label: `${meta.duration} davomiylik`, id: 'duration' },
+                  { Icon: TrendingUp, label: `${meta.avgScore}% o'rtacha ball`, id: 'avg' },
                 ].map(({ Icon, label, id: metaId }) => (
                   <div key={metaId} className="flex items-center gap-1.5">
                     <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: t.textMuted }} strokeWidth={1.75} />
@@ -730,7 +730,7 @@ export function StudentSessionResultPage() {
 
             {/* Export button */}
             <button
-              onClick={() => { handleDownloadPdf().catch(() => {}); }}
+              onClick={() => { handleDownloadPdf().catch(() => { }); }}
               disabled={exporting}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all shrink-0"
               style={{
@@ -778,10 +778,10 @@ export function StudentSessionResultPage() {
       ══════════════════════════════════════ */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
         {[
-          { label: "O'rtacha Ball",    val: `${meta.avgScore}%`,                          color: '#6366F1', bg: 'rgba(99,102,241,0.08)',  border: 'rgba(99,102,241,0.2)',  Icon: Target     },
-          { label: 'Eng Yuqori Ball',  val: `${meta.highestScore}%`,                      color: '#22C55E', bg: 'rgba(34,197,94,0.08)',   border: 'rgba(34,197,94,0.2)',   Icon: Star       },
-          { label: 'Eng Past Ball',    val: `${meta.lowestScore}%`,                       color: '#3B82F6', bg: 'rgba(59,130,246,0.08)',  border: 'rgba(59,130,246,0.2)',  Icon: TrendingUp },
-          { label: 'Qiyin Savol',      val: `Q${hardestQ.q} (${hardestQ.accuracy}%)`,    color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)', Icon: BarChart3  },
+          { label: "O'rtacha Ball", val: `${meta.avgScore}%`, color: '#6366F1', bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.2)', Icon: Target },
+          { label: 'Eng Yuqori Ball', val: `${meta.highestScore}%`, color: '#22C55E', bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.2)', Icon: Star },
+          { label: 'Eng Past Ball', val: `${meta.lowestScore}%`, color: '#3B82F6', bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.2)', Icon: TrendingUp },
+          { label: 'Qiyin Savol', val: `Q${hardestQ.q} (${hardestQ.accuracy}%)`, color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)', Icon: BarChart3 },
         ].map(({ label, val, color, bg, border, Icon }) => (
           <div
             key={label}
@@ -970,42 +970,42 @@ export function StudentSessionResultPage() {
             </div>
           ) : (
             <div className="lb-scroll space-y-3 max-h-[22.5rem] overflow-y-auto pr-1">
-            {questionAccuracy.map(({ id: questionId, q, label, accuracy }) => {
-              const barColor = accuracyColor(accuracy);
-              return (
-                <div key={questionId} className="flex items-center gap-3">
-                  <span className="text-xs font-semibold w-6 shrink-0 tabular-nums" style={{ color: t.textMuted }}>
-                    {label || `Q${q}`}
-                  </span>
-                  <div className="flex-1 h-5 rounded-lg overflow-hidden relative" style={{ background: t.bgInner }}>
-                    <div
-                      className="h-full rounded-lg"
-                      style={{ width: `${accuracy}%`, background: `${barColor}22`, border: `1px solid ${barColor}44` }}
-                    />
-                    <div
-                      className="absolute inset-y-0 left-0 rounded-lg"
-                      style={{
-                        width: `${accuracy}%`,
-                        background: `linear-gradient(90deg,${barColor}55,${barColor}22)`,
-                        transition: 'width 0.7s ease',
-                      }}
-                    />
+              {questionAccuracy.map(({ id: questionId, q, label, accuracy }) => {
+                const barColor = accuracyColor(accuracy);
+                return (
+                  <div key={questionId} className="flex items-center gap-3">
+                    <span className="text-xs font-semibold w-6 shrink-0 tabular-nums" style={{ color: t.textMuted }}>
+                      {label || `Q${q}`}
+                    </span>
+                    <div className="flex-1 h-5 rounded-lg overflow-hidden relative" style={{ background: t.bgInner }}>
+                      <div
+                        className="h-full rounded-lg"
+                        style={{ width: `${accuracy}%`, background: `${barColor}22`, border: `1px solid ${barColor}44` }}
+                      />
+                      <div
+                        className="absolute inset-y-0 left-0 rounded-lg"
+                        style={{
+                          width: `${accuracy}%`,
+                          background: `linear-gradient(90deg,${barColor}55,${barColor}22)`,
+                          transition: 'width 0.7s ease',
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs font-bold tabular-nums w-9 text-right shrink-0" style={{ color: barColor }}>
+                      {accuracy}%
+                    </span>
                   </div>
-                  <span className="text-xs font-bold tabular-nums w-9 text-right shrink-0" style={{ color: barColor }}>
-                    {accuracy}%
-                  </span>
-                </div>
-              );
-            })}
+                );
+              })}
             </div>
           )}
 
           {/* Legend */}
           <div className="flex flex-wrap gap-4 mt-5 pt-4" style={{ borderTop: `1px solid ${t.border}` }}>
             {[
-              { label: '≥75% Oson',     color: '#22C55E' },
+              { label: '≥75% Oson', color: '#22C55E' },
               { label: '50–74% O\'rta', color: '#F59E0B' },
-              { label: '<50% Qiyin',    color: '#EF4444' },
+              { label: '<50% Qiyin', color: '#EF4444' },
             ].map(({ label, color }) => (
               <div key={label} className="flex items-center gap-1.5">
                 <div className="w-2.5 h-2.5 rounded-sm" style={{ background: color }} />
@@ -1037,8 +1037,8 @@ export function StudentSessionResultPage() {
                 className="px-3 py-1.5 rounded-lg text-xs font-semibold capitalize transition-all"
                 style={{
                   background: sortBy === s ? t.accentMuted : t.bgInner,
-                  color:      sortBy === s ? t.accent      : t.textMuted,
-                  border:    `1px solid ${sortBy === s ? t.accentBorder : t.border}`,
+                  color: sortBy === s ? t.accent : t.textMuted,
+                  border: `1px solid ${sortBy === s ? t.accentBorder : t.border}`,
                 }}
               >
                 {s === 'correct' ? "To'g'ri" : s === 'time' ? 'Vaqt' : 'Ball'}

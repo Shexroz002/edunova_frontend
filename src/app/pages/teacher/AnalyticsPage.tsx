@@ -16,9 +16,9 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000
 //  Helpers
 // ─────────────────────────────────────────────
 function scoreColor(score: number) {
-  if (score >= 75) return { color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.25)'  };
+  if (score >= 75) return { color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.25)' };
   if (score >= 50) return { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)' };
-  return               { color: '#EF4444', bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.25)'  };
+  return { color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)' };
 }
 
 interface OverviewCardApiItem {
@@ -145,30 +145,30 @@ async function fetchWithAuthRetry(url: string, init: RequestInit = {}) {
 function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   const { theme: t } = useTheme();
   return (
-      <div
-          className={`rounded-2xl p-5 sm:p-6 ${className}`}
-          style={{ background: t.bgCard, border: `1px solid ${t.border}`, boxShadow: t.shadowCard }}
-      >
-        {children}
-      </div>
+    <div
+      className={`rounded-2xl p-5 sm:p-6 ${className}`}
+      style={{ background: t.bgCard, border: `1px solid ${t.border}`, boxShadow: t.shadowCard }}
+    >
+      {children}
+    </div>
   );
 }
 
 function CardHeader({ title, subtitle, icon: Icon }: { title: string; subtitle?: string; icon?: React.ElementType }) {
   const { theme: t } = useTheme();
   return (
-      <div className="flex items-start justify-between mb-5">
-        <div>
-          <h3 className="text-base font-semibold" style={{ color: t.textPrimary }}>{title}</h3>
-          {subtitle && <p className="text-xs mt-0.5" style={{ color: t.textMuted }}>{subtitle}</p>}
-        </div>
-        {Icon && (
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
-                 style={{ background: t.bgInner, border: `1px solid ${t.border}` }}>
-              <Icon className="w-4 h-4" style={{ color: t.textMuted }} strokeWidth={1.75} />
-            </div>
-        )}
+    <div className="flex items-start justify-between mb-5">
+      <div>
+        <h3 className="text-base font-semibold" style={{ color: t.textPrimary }}>{title}</h3>
+        {subtitle && <p className="text-xs mt-0.5" style={{ color: t.textMuted }}>{subtitle}</p>}
       </div>
+      {Icon && (
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+          style={{ background: t.bgInner, border: `1px solid ${t.border}` }}>
+          <Icon className="w-4 h-4" style={{ color: t.textMuted }} strokeWidth={1.75} />
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -280,35 +280,36 @@ function SummaryCards() {
   ];
 
   return (
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5">
-        {items.map(({ Icon, label, value, sub, color, bg, border, trend }) => {
-          const isUp = trend === 'up';
-          const isWarning = trend === 'warning';
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-5">
+      {items.map(({ Icon, label, value, sub, color, bg, border, trend }) => {
+        const isUp = trend === 'up';
+        const isWarning = trend === 'warning';
 
-          return (
-            <Card key={label}>
-              <div className="flex items-start justify-between gap-2 mb-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                     style={{ background: bg, border: `1px solid ${border}` }}>
-                  <Icon className="w-5 h-5" style={{ color }} strokeWidth={1.75} />
-                </div>
-                <span
-                    className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-lg"
-                    style={{
-                      background: isUp ? 'rgba(34,197,94,0.08)' : 'rgba(245,158,11,0.08)',
-                      color:      isUp ? '#22C55E' : '#F59E0B',
-                      border:    `1px solid ${isUp ? 'rgba(34,197,94,0.2)' : 'rgba(245,158,11,0.2)'}`,
-                    }}
-                >
-              {isUp ? <TrendingUp className="w-3 h-3" strokeWidth={2} /> : isWarning ? <AlertTriangle className="w-3 h-3" strokeWidth={2} /> : <TrendingDown className="w-3 h-3" strokeWidth={2} />}
-            </span>
+        return (
+          <Card key={label}>
+            <div className="flex items-start justify-between gap-2 mb-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: bg, border: `1px solid ${border}` }}>
+                <Icon className="w-5 h-5" style={{ color }} strokeWidth={1.75} />
               </div>
-              <p className="text-2xl font-bold" style={{ color: t.textPrimary }}>{value}</p>
-              <p className="text-xs mt-0.5 leading-snug" style={{ color: t.textMuted }}>{label}</p>
-              <p className="text-xs mt-1.5 font-semibold" style={{ color: isUp ? '#22C55E' : '#F59E0B' }}>{sub}</p>
-            </Card>
-        );})}
-      </div>
+              <span
+                className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-lg"
+                style={{
+                  background: isUp ? 'rgba(34,197,94,0.08)' : 'rgba(245,158,11,0.08)',
+                  color: isUp ? '#22C55E' : '#F59E0B',
+                  border: `1px solid ${isUp ? 'rgba(34,197,94,0.2)' : 'rgba(245,158,11,0.2)'}`,
+                }}
+              >
+                {isUp ? <TrendingUp className="w-3 h-3" strokeWidth={2} /> : isWarning ? <AlertTriangle className="w-3 h-3" strokeWidth={2} /> : <TrendingDown className="w-3 h-3" strokeWidth={2} />}
+              </span>
+            </div>
+            <p className="text-2xl font-bold" style={{ color: t.textPrimary }}>{value}</p>
+            <p className="text-xs mt-0.5 leading-snug" style={{ color: t.textMuted }}>{label}</p>
+            <p className="text-xs mt-1.5 font-semibold" style={{ color: isUp ? '#22C55E' : '#F59E0B' }}>{sub}</p>
+          </Card>
+        );
+      })}
+    </div>
   );
 }
 
@@ -870,98 +871,98 @@ function LowRatedStudentsCard() {
   }, [searchQuery, selectedGroup, page]);
 
   return (
-      <Card>
-        <CardHeader
-            title="Rating past o'quvchilar"
-            subtitle="Yaxshilash talab etiladi"
-            icon={AlertTriangle}
-        />
+    <Card>
+      <CardHeader
+        title="Rating past o'quvchilar"
+        subtitle="Yaxshilash talab etiladi"
+        icon={AlertTriangle}
+      />
 
-        {/* Search & Filter Controls */}
-        <div className="flex flex-col sm:flex-row gap-3 mb-4">
-          {/* Search */}
-          <div className="flex-1 relative">
-            <Search
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
-                style={{ color: t.textMuted }}
-                strokeWidth={1.75}
-            />
-            <input
-                type="text"
-                placeholder="Ism yoki familiya bo'yicha qidirish..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm transition-all outline-none"
-                style={{
-                  background: t.bgInner,
-                  border: `1px solid ${t.border}`,
-                  color: t.textPrimary,
-                }}
-                onFocus={(e) => {
-                  e.currentTarget.style.borderColor = t.accent;
-                  e.currentTarget.style.boxShadow = `0 0 0 3px ${t.accent}15`;
-                }}
-                onBlur={(e) => {
-                  e.currentTarget.style.borderColor = t.border;
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-            />
-          </div>
-
-          {/* Group Filter */}
-          <div className="relative">
-            <Filter
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
-                style={{ color: t.textMuted }}
-                strokeWidth={1.75}
-            />
-            <select
-                value={selectedGroup}
-                onChange={(e) => setSelectedGroup(e.target.value)}
-                className="pl-10 pr-8 py-2.5 rounded-xl text-sm transition-all outline-none appearance-none cursor-pointer"
-                style={{
-                  background: t.bgInner,
-                  border: `1px solid ${t.border}`,
-                  color: t.textPrimary,
-                  minWidth: 160,
-                }}
-            >
-              <option value="all">Barcha guruhlar</option>
-              {groups.map((group) => (
-                  <option key={group.id} value={String(group.id)}>
-                    {group.name}
-                  </option>
-              ))}
-            </select>
-          </div>
+      {/* Search & Filter Controls */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        {/* Search */}
+        <div className="flex-1 relative">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+            style={{ color: t.textMuted }}
+            strokeWidth={1.75}
+          />
+          <input
+            type="text"
+            placeholder="Ism yoki familiya bo'yicha qidirish..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm transition-all outline-none"
+            style={{
+              background: t.bgInner,
+              border: `1px solid ${t.border}`,
+              color: t.textPrimary,
+            }}
+            onFocus={(e) => {
+              e.currentTarget.style.borderColor = t.accent;
+              e.currentTarget.style.boxShadow = `0 0 0 3px ${t.accent}15`;
+            }}
+            onBlur={(e) => {
+              e.currentTarget.style.borderColor = t.border;
+              e.currentTarget.style.boxShadow = 'none';
+            }}
+          />
         </div>
 
-        {error && (
-          <div
-            className="mb-4 px-4 py-3 rounded-xl text-sm"
-            style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.18)', color: '#DC2626' }}
+        {/* Group Filter */}
+        <div className="relative">
+          <Filter
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
+            style={{ color: t.textMuted }}
+            strokeWidth={1.75}
+          />
+          <select
+            value={selectedGroup}
+            onChange={(e) => setSelectedGroup(e.target.value)}
+            className="pl-10 pr-8 py-2.5 rounded-xl text-sm transition-all outline-none appearance-none cursor-pointer"
+            style={{
+              background: t.bgInner,
+              border: `1px solid ${t.border}`,
+              color: t.textPrimary,
+              minWidth: 160,
+            }}
           >
-            {error}
-          </div>
-        )}
+            <option value="all">Barcha guruhlar</option>
+            {groups.map((group) => (
+              <option key={group.id} value={String(group.id)}>
+                {group.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
 
-        {/* Desktop Table */}
-        <div className="hidden md:block rounded-xl overflow-hidden" style={{ border: `1px solid ${t.border}` }}>
-          <table className="w-full">
-            <thead>
+      {error && (
+        <div
+          className="mb-4 px-4 py-3 rounded-xl text-sm"
+          style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.18)', color: '#DC2626' }}
+        >
+          {error}
+        </div>
+      )}
+
+      {/* Desktop Table */}
+      <div className="hidden md:block rounded-xl overflow-hidden" style={{ border: `1px solid ${t.border}` }}>
+        <table className="w-full">
+          <thead>
             <tr style={{ background: t.bgInner, borderBottom: `1px solid ${t.border}` }}>
               {['O\'quvchi', 'Username', 'Guruh', 'O\'rtacha ball', 'Testlar', 'Faollik'].map((h) => (
-                  <th
-                      key={h}
-                      className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider"
-                      style={{ color: t.textMuted }}
-                  >
-                    {h}
-                  </th>
+                <th
+                  key={h}
+                  className="text-left px-4 py-3 text-xs font-semibold uppercase tracking-wider"
+                  style={{ color: t.textMuted }}
+                >
+                  {h}
+                </th>
               ))}
             </tr>
-            </thead>
-            <tbody>
+          </thead>
+          <tbody>
             {loading ? (
               <tr>
                 <td colSpan={6} className="px-4 py-10 text-sm text-center" style={{ color: t.textMuted }}>
@@ -972,108 +973,15 @@ function LowRatedStudentsCard() {
               const sc = scoreColor(student.average_score);
               const listIndex = (page - 1) * 8 + idx + 1;
               return (
-                  <tr
-                      key={student.student_id}
-                      className="transition-colors cursor-pointer"
-                      style={{ borderBottom: idx < students.length - 1 ? `1px solid ${t.border}` : 'none' }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = t.bgCardHover; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2.5">
-                        <span
-                          className="w-6 text-xs font-semibold text-center shrink-0"
-                          style={{ color: t.textMuted }}
-                        >
-                          {listIndex}
-                        </span>
-                        <div
-                            className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
-                            style={{
-                              background: 'rgba(99,102,241,0.1)',
-                              border: `1px solid rgba(99,102,241,0.2)`,
-                              overflow: 'hidden',
-                            }}
-                        >
-                          {student.profile_image ? (
-                            <img src={student.profile_image} alt={student.full_name} className="w-full h-full object-cover" />
-                          ) : (
-                            <User className="w-4 h-4" style={{ color: '#6366F1' }} strokeWidth={1.75} />
-                          )}
-                        </div>
-                        <span className="text-sm font-medium" style={{ color: t.textPrimary }}>
-                        {student.full_name}
-                      </span>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                    <span className="text-xs font-medium" style={{ color: t.textSecondary }}>
-                      @{student.username}
-                    </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap gap-1.5">
-                        {student.group_names.map((group) => (
-                            <span
-                                key={group}
-                                className="inline-block text-xs font-medium px-2 py-0.5 rounded-md"
-                                style={{
-                                  background: 'rgba(99,102,241,0.1)',
-                                  color: '#6366F1',
-                                  border: `1px solid rgba(99,102,241,0.2)`,
-                                }}
-                            >
-                          {group}
-                        </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                    <span
-                        className="inline-block text-xs font-bold px-2.5 py-1 rounded-lg"
-                        style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}
-                    >
-                      {student.average_score}%
-                    </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="text-sm" style={{ color: t.textSecondary }}>{student.tests_count} ta</span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-1.5">
-                        <Clock className="w-3.5 h-3.5" style={{ color: t.textMuted }} strokeWidth={1.75} />
-                        <span className="text-xs" style={{ color: t.textSecondary }}>
-                        {formatLastActivity(student.last_activity)}
-                      </span>
-                      </div>
-                    </td>
-                  </tr>
-              );
-            })}
-            </tbody>
-          </table>
-        </div>
-
-        {/* Mobile Cards */}
-        <div className="block md:hidden space-y-3">
-          {loading ? (
-            <div
-              className="rounded-2xl px-4 py-10 text-sm text-center"
-              style={{ background: t.bgInner, border: `1px solid ${t.border}`, color: t.textMuted }}
-            >
-              O'quvchilar statistikasi yuklanmoqda...
-            </div>
-          ) : students.map((student, idx) => {
-            const sc = scoreColor(student.average_score);
-            const listIndex = (page - 1) * 8 + idx + 1;
-            return (
-                <div
-                    key={student.student_id}
-                    className="p-3.5 rounded-xl transition-all"
-                    style={{ background: t.bgInner, border: `1px solid ${t.border}` }}
+                <tr
+                  key={student.student_id}
+                  className="transition-colors cursor-pointer"
+                  style={{ borderBottom: idx < students.length - 1 ? `1px solid ${t.border}` : 'none' }}
+                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = t.bgCardHover; }}
+                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
                 >
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2.5">
                       <span
                         className="w-6 text-xs font-semibold text-center shrink-0"
                         style={{ color: t.textMuted }}
@@ -1081,12 +989,12 @@ function LowRatedStudentsCard() {
                         {listIndex}
                       </span>
                       <div
-                          className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                          style={{
-                            background: 'rgba(99,102,241,0.1)',
-                            border: `1px solid rgba(99,102,241,0.2)`,
-                            overflow: 'hidden',
-                          }}
+                        className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+                        style={{
+                          background: 'rgba(99,102,241,0.1)',
+                          border: `1px solid rgba(99,102,241,0.2)`,
+                          overflow: 'hidden',
+                        }}
                       >
                         {student.profile_image ? (
                           <img src={student.profile_image} alt={student.full_name} className="w-full h-full object-cover" />
@@ -1094,94 +1002,187 @@ function LowRatedStudentsCard() {
                           <User className="w-4 h-4" style={{ color: '#6366F1' }} strokeWidth={1.75} />
                         )}
                       </div>
-                      <div className="min-w-0">
-                        <h4 className="text-sm font-semibold truncate" style={{ color: t.textPrimary }}>
-                          {student.full_name}
-                        </h4>
-                        <p className="text-xs" style={{ color: t.textSecondary }}>@{student.username}</p>
-                      </div>
+                      <span className="text-sm font-medium" style={{ color: t.textPrimary }}>
+                        {student.full_name}
+                      </span>
                     </div>
-                    <span
-                        className="text-xs font-bold px-2.5 py-1 rounded-lg shrink-0"
-                        style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}
-                    >
-                  {student.average_score}%
-                </span>
-                  </div>
-
-                  <div className="flex flex-wrap gap-1.5 mb-2">
-                    {student.group_names.map((group) => (
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-xs font-medium" style={{ color: t.textSecondary }}>
+                      @{student.username}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex flex-wrap gap-1.5">
+                      {student.group_names.map((group) => (
                         <span
-                            key={group}
-                            className="text-xs font-medium px-2 py-0.5 rounded-md"
-                            style={{
-                              background: 'rgba(99,102,241,0.1)',
-                              color: '#6366F1',
-                              border: `1px solid rgba(99,102,241,0.2)`,
-                            }}
+                          key={group}
+                          className="inline-block text-xs font-medium px-2 py-0.5 rounded-md"
+                          style={{
+                            background: 'rgba(99,102,241,0.1)',
+                            color: '#6366F1',
+                            border: `1px solid rgba(99,102,241,0.2)`,
+                          }}
                         >
-                    {group}
-                  </span>
-                    ))}
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs">
-                    <span style={{ color: t.textMuted }}>{student.tests_count} ta test</span>
+                          {group}
+                        </span>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className="inline-block text-xs font-bold px-2.5 py-1 rounded-lg"
+                      style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}
+                    >
+                      {student.average_score}%
+                    </span>
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="text-sm" style={{ color: t.textSecondary }}>{student.tests_count} ta</span>
+                  </td>
+                  <td className="px-4 py-3">
                     <div className="flex items-center gap-1.5">
                       <Clock className="w-3.5 h-3.5" style={{ color: t.textMuted }} strokeWidth={1.75} />
-                      <span style={{ color: t.textSecondary }}>{formatLastActivity(student.last_activity)}</span>
+                      <span className="text-xs" style={{ color: t.textSecondary }}>
+                        {formatLastActivity(student.last_activity)}
+                      </span>
                     </div>
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile Cards */}
+      <div className="block md:hidden space-y-3">
+        {loading ? (
+          <div
+            className="rounded-2xl px-4 py-10 text-sm text-center"
+            style={{ background: t.bgInner, border: `1px solid ${t.border}`, color: t.textMuted }}
+          >
+            O'quvchilar statistikasi yuklanmoqda...
+          </div>
+        ) : students.map((student, idx) => {
+          const sc = scoreColor(student.average_score);
+          const listIndex = (page - 1) * 8 + idx + 1;
+          return (
+            <div
+              key={student.student_id}
+              className="p-3.5 rounded-xl transition-all"
+              style={{ background: t.bgInner, border: `1px solid ${t.border}` }}
+            >
+              <div className="flex items-start justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                  <span
+                    className="w-6 text-xs font-semibold text-center shrink-0"
+                    style={{ color: t.textMuted }}
+                  >
+                    {listIndex}
+                  </span>
+                  <div
+                    className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                    style={{
+                      background: 'rgba(99,102,241,0.1)',
+                      border: `1px solid rgba(99,102,241,0.2)`,
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {student.profile_image ? (
+                      <img src={student.profile_image} alt={student.full_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <User className="w-4 h-4" style={{ color: '#6366F1' }} strokeWidth={1.75} />
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <h4 className="text-sm font-semibold truncate" style={{ color: t.textPrimary }}>
+                      {student.full_name}
+                    </h4>
+                    <p className="text-xs" style={{ color: t.textSecondary }}>@{student.username}</p>
                   </div>
                 </div>
-            );
-          })}
-        </div>
+                <span
+                  className="text-xs font-bold px-2.5 py-1 rounded-lg shrink-0"
+                  style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}
+                >
+                  {student.average_score}%
+                </span>
+              </div>
 
-        {/* Empty State */}
-        {!loading && students.length === 0 && (
-            <div className="py-12 text-center">
-              <AlertTriangle className="w-12 h-12 mx-auto mb-3" style={{ color: t.textMuted }} strokeWidth={1.5} />
-              <p className="text-sm font-medium" style={{ color: t.textPrimary }}>
-                Natija topilmadi
-              </p>
-              <p className="text-xs mt-1" style={{ color: t.textMuted }}>
-                Qidiruv yoki filtr shartiga mos o'quvchi yo'q
-              </p>
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {student.group_names.map((group) => (
+                  <span
+                    key={group}
+                    className="text-xs font-medium px-2 py-0.5 rounded-md"
+                    style={{
+                      background: 'rgba(99,102,241,0.1)',
+                      color: '#6366F1',
+                      border: `1px solid rgba(99,102,241,0.2)`,
+                    }}
+                  >
+                    {group}
+                  </span>
+                ))}
+              </div>
+
+              <div className="flex items-center justify-between text-xs">
+                <span style={{ color: t.textMuted }}>{student.tests_count} ta test</span>
+                <div className="flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5" style={{ color: t.textMuted }} strokeWidth={1.75} />
+                  <span style={{ color: t.textSecondary }}>{formatLastActivity(student.last_activity)}</span>
+                </div>
+              </div>
             </div>
-        )}
+          );
+        })}
+      </div>
 
-        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs sm:text-sm" style={{ color: t.textMuted }}>
-            {total > 0 ? `${total} ta o'quvchidan ${page}-sahifa` : "O'quvchilar topilmadi"}
+      {/* Empty State */}
+      {!loading && students.length === 0 && (
+        <div className="py-12 text-center">
+          <AlertTriangle className="w-12 h-12 mx-auto mb-3" style={{ color: t.textMuted }} strokeWidth={1.5} />
+          <p className="text-sm font-medium" style={{ color: t.textPrimary }}>
+            Natija topilmadi
           </p>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => setPage((current) => Math.max(1, current - 1))}
-              disabled={page <= 1 || loading}
-              className="px-3 py-2 rounded-xl text-sm transition-all disabled:opacity-50"
-              style={{ background: t.bgCard, border: `1px solid ${t.border}`, color: t.textPrimary }}
-            >
-              Oldingi
-            </button>
-            <div
-              className="px-3 py-2 rounded-xl text-sm min-w-[92px] text-center"
-              style={{ background: t.bgCard, border: `1px solid ${t.border}`, color: t.textSecondary }}
-            >
-              {page} / {pages}
-            </div>
-            <button
-              type="button"
-              onClick={() => setPage((current) => Math.min(pages, current + 1))}
-              disabled={page >= pages || loading}
-              className="px-3 py-2 rounded-xl text-sm transition-all disabled:opacity-50"
-              style={{ background: t.bgCard, border: `1px solid ${t.border}`, color: t.textPrimary }}
-            >
-              Keyingi
-            </button>
-          </div>
+          <p className="text-xs mt-1" style={{ color: t.textMuted }}>
+            Qidiruv yoki filtr shartiga mos o'quvchi yo'q
+          </p>
         </div>
-      </Card>
+      )}
+
+      <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <p className="text-xs sm:text-sm" style={{ color: t.textMuted }}>
+          {total > 0 ? `${total} ta o'quvchidan ${page}-sahifa` : "O'quvchilar topilmadi"}
+        </p>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setPage((current) => Math.max(1, current - 1))}
+            disabled={page <= 1 || loading}
+            className="px-3 py-2 rounded-xl text-sm transition-all disabled:opacity-50"
+            style={{ background: t.bgCard, border: `1px solid ${t.border}`, color: t.textPrimary }}
+          >
+            Oldingi
+          </button>
+          <div
+            className="px-3 py-2 rounded-xl text-sm min-w-[92px] text-center"
+            style={{ background: t.bgCard, border: `1px solid ${t.border}`, color: t.textSecondary }}
+          >
+            {page} / {pages}
+          </div>
+          <button
+            type="button"
+            onClick={() => setPage((current) => Math.min(pages, current + 1))}
+            disabled={page >= pages || loading}
+            className="px-3 py-2 rounded-xl text-sm transition-all disabled:opacity-50"
+            style={{ background: t.bgCard, border: `1px solid ${t.border}`, color: t.textPrimary }}
+          >
+            Keyingi
+          </button>
+        </div>
+      </div>
+    </Card>
   );
 }
 
@@ -1192,36 +1193,36 @@ export function AnalyticsPage() {
   const { theme: t } = useTheme();
 
   return (
-      <>
-        {/* ── Header ── */}
-        <div className="mb-5 sm:mb-6">
-          <div className="flex items-center gap-3 mb-1">
-            <div
-                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: 'rgba(99,102,241,0.1)', border: '1.5px solid rgba(99,102,241,0.25)' }}
-            >
-              <BarChart2 className="w-4 h-4" style={{ color: '#6366F1' }} strokeWidth={1.75} />
-            </div>
-            <h1 className="text-xl sm:text-2xl font-bold" style={{ color: t.textPrimary }}>
-              Tahlil
-            </h1>
+    <>
+      {/* ── Header ── */}
+      <div className="mb-5 sm:mb-6">
+        <div className="flex items-center gap-3 mb-1">
+          <div
+            className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: 'rgba(99,102,241,0.1)', border: '1.5px solid rgba(99,102,241,0.25)' }}
+          >
+            <BarChart2 className="w-4 h-4" style={{ color: '#6366F1' }} strokeWidth={1.75} />
           </div>
-          <p className="text-xs sm:text-sm mt-1 ml-12" style={{ color: t.textMuted }}>
-            Sinf natijalarini kuzating va o'quv zaifliklarini aniqlang.
-          </p>
+          <h1 className="text-xl sm:text-2xl font-bold" style={{ color: t.textPrimary }}>
+            Tahlil
+          </h1>
         </div>
+        <p className="text-xs sm:text-sm mt-1 ml-12" style={{ color: t.textMuted }}>
+          Sinf natijalarini kuzating va o'quv zaifliklarini aniqlang.
+        </p>
+      </div>
 
-        {/* ── Summary KPI cards ── */}
-        <SummaryCards />
+      {/* ── Summary KPI cards ── */}
+      <SummaryCards />
 
-        {/* ── Charts row: Group Performance + Topic Weakness ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 mb-4 sm:mb-5">
-          <GroupPerformanceCard />
-          <TopicWeaknessCard />
-        </div>
+      {/* ── Charts row: Group Performance + Topic Weakness ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-5 mb-4 sm:mb-5">
+        <GroupPerformanceCard />
+        <TopicWeaknessCard />
+      </div>
 
-        {/* ── Low Rated Students Table (full width) ── */}
-        <LowRatedStudentsCard />
-      </>
+      {/* ── Low Rated Students Table (full width) ── */}
+      <LowRatedStudentsCard />
+    </>
   );
 }

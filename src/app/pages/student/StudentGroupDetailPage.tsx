@@ -102,18 +102,18 @@ function unwrapApiData<T>(payload: T | ApiEnvelope<T>): T {
 function getGroupDetails(grp: GroupItem) {
     const seed = grp.id * 13;
     const students: GroupPerformanceStudent[] = [
-        { initials: 'NR', name: 'Nilufar Rahimova',   profileImage: null, correct: 145, incorrect: 28, tests: 12, avgScore: 85 },
-        { initials: 'BS', name: 'Bobur Saidov',       profileImage: null, correct: 138, incorrect: 35, tests: 11, avgScore: 82 },
-        { initials: 'AK', name: 'Ali Karimov',        profileImage: null, correct: 132, incorrect: 41, tests: 11, avgScore: 78 },
-        { initials: 'MY', name: 'Malika Yusupova',    profileImage: null, correct: 125, incorrect: 48, tests: 10, avgScore: 74 },
-        { initials: 'DS', name: 'Dilshod Sharipov',   profileImage: null, correct: 118, incorrect: 55, tests: 10, avgScore: 70 },
+        { initials: 'NR', name: 'Nilufar Rahimova', profileImage: null, correct: 145, incorrect: 28, tests: 12, avgScore: 85 },
+        { initials: 'BS', name: 'Bobur Saidov', profileImage: null, correct: 138, incorrect: 35, tests: 11, avgScore: 82 },
+        { initials: 'AK', name: 'Ali Karimov', profileImage: null, correct: 132, incorrect: 41, tests: 11, avgScore: 78 },
+        { initials: 'MY', name: 'Malika Yusupova', profileImage: null, correct: 125, incorrect: 48, tests: 10, avgScore: 74 },
+        { initials: 'DS', name: 'Dilshod Sharipov', profileImage: null, correct: 118, incorrect: 55, tests: 10, avgScore: 70 },
     ].sort((a, b) => b.avgScore - a.avgScore).slice(0, 5);
 
     const quizzes: GroupQuizCard[] = [
-        { sessionId: seed + 1, name: `${grp.subject} — 1-bo'lim testi`,    date: '14 mart', avgScore: Math.min(98, 72 + seed % 20), submissions: Math.min(grp.students, 22 + seed % 8) },
-        { sessionId: seed + 2, name: `${grp.subject} — Amaliyot testi`,    date: '10 mart', avgScore: Math.min(98, 65 + seed % 25), submissions: Math.min(grp.students, 18 + seed % 6) },
-        { sessionId: seed + 3, name: `${grp.subject} — Oraliq nazorat`,    date: '5 mart',  avgScore: Math.min(98, 78 + seed % 18), submissions: Math.min(grp.students, 25 + seed % 5) },
-        { sessionId: seed + 4, name: `${grp.subject} — Mustaqil topshiriq`,date: '1 mart',  avgScore: Math.min(98, 60 + seed % 30), submissions: Math.min(grp.students, 15 + seed % 7) },
+        { sessionId: seed + 1, name: `${grp.subject} — 1-bo'lim testi`, date: '14 mart', avgScore: Math.min(98, 72 + seed % 20), submissions: Math.min(grp.students, 22 + seed % 8) },
+        { sessionId: seed + 2, name: `${grp.subject} — Amaliyot testi`, date: '10 mart', avgScore: Math.min(98, 65 + seed % 25), submissions: Math.min(grp.students, 18 + seed % 6) },
+        { sessionId: seed + 3, name: `${grp.subject} — Oraliq nazorat`, date: '5 mart', avgScore: Math.min(98, 78 + seed % 18), submissions: Math.min(grp.students, 25 + seed % 5) },
+        { sessionId: seed + 4, name: `${grp.subject} — Mustaqil topshiriq`, date: '1 mart', avgScore: Math.min(98, 60 + seed % 30), submissions: Math.min(grp.students, 15 + seed % 7) },
     ].slice(0, grp.quizzes > 4 ? 4 : Math.max(2, grp.quizzes));
 
     return { students, quizzes };
@@ -242,37 +242,37 @@ async function fetchWithAuthRetry(url: string, init: RequestInit = {}) {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const AVATAR_COLORS = ['#6366F1','#3B82F6','#22C55E','#F59E0B','#EF4444'];
+const AVATAR_COLORS = ['#6366F1', '#3B82F6', '#22C55E', '#F59E0B', '#EF4444'];
 
 function scoreColor(score: number) {
-    if (score >= 75) return { color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.25)'   };
+    if (score >= 75) return { color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.25)' };
     if (score >= 50) return { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)' };
-    return              { color: '#EF4444', bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.25)'   };
+    return { color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)' };
 }
 
 function SubjectIcon({ type, color, size = 20 }: { type: string; color: string; size?: number }) {
     const props = { style: { color }, strokeWidth: 1.75, width: size, height: size };
     switch (type) {
-        case 'zap':    return <Zap {...props} />;
-        case 'flask':  return <FlaskConical {...props} />;
-        case 'leaf':   return <Leaf {...props} />;
-        default:       return <Calculator {...props} />;
+        case 'zap': return <Zap {...props} />;
+        case 'flask': return <FlaskConical {...props} />;
+        case 'leaf': return <Leaf {...props} />;
+        default: return <Calculator {...props} />;
     }
 }
 
 function ActivityIcon({ type, t }: { type: string; t: ReturnType<typeof useTheme>['theme'] }) {
     const map: Record<string, { Icon: React.ElementType; color: string }> = {
         check: { Icon: CheckCircle, color: '#22C55E' },
-        zap:   { Icon: Zap,         color: '#6366F1' },
-        book:  { Icon: BookOpen,    color: '#3B82F6' },
-        award: { Icon: Award,       color: '#F59E0B' },
-        warn:  { Icon: AlertTriangle, color: '#EF4444' },
+        zap: { Icon: Zap, color: '#6366F1' },
+        book: { Icon: BookOpen, color: '#3B82F6' },
+        award: { Icon: Award, color: '#F59E0B' },
+        warn: { Icon: AlertTriangle, color: '#EF4444' },
     };
     const cfg = map[type] || map['check'];
     const Icon = cfg.Icon;
     return (
         <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-             style={{ background: `${cfg.color}18`, border: `1.5px solid ${cfg.color}30` }}>
+            style={{ background: `${cfg.color}18`, border: `1.5px solid ${cfg.color}30` }}>
             <Icon className="w-4 h-4" style={{ color: cfg.color }} strokeWidth={1.75} />
         </div>
     );
@@ -365,7 +365,7 @@ export function StudentGroupDetailPage() {
     const [grp, setGrp] = useState<GroupItem>(fallbackGroup);
     const [leaderboardStudents, setLeaderboardStudents] = useState<GroupPerformanceStudent[]>(fallbackDetails.students);
     const [students, setStudents] = useState<GroupPerformanceStudent[]>(fallbackDetails.students);
-    const [quizzes, setQuizzes] = useState<GroupQuizCard[]>(fallbackDetails.quizzes);
+    const [quizzes, setQuizzes] = useState<GroupQuizCard[]>([]);
 
     const [searchQuery, setSearchQuery] = useState('');
     const [showAllStudents, setShowAllStudents] = useState(false);
@@ -374,7 +374,7 @@ export function StudentGroupDetailPage() {
         setGrp(fallbackGroup);
         setLeaderboardStudents(fallbackDetails.students);
         setStudents(fallbackDetails.students);
-        setQuizzes(fallbackDetails.quizzes);
+        setQuizzes([]);
     }, [fallbackGroup, fallbackDetails]);
 
     useEffect(() => {
@@ -399,9 +399,9 @@ export function StudentGroupDetailPage() {
                 setStudents(mappedStudents.length > 0 ? mappedStudents : fallbackDetails.students);
 
                 const mappedQuizzes = (sessionsData.items ?? []).map(mapApiSession);
-                setQuizzes(mappedQuizzes.length > 0 ? mappedQuizzes : fallbackDetails.quizzes);
+                setQuizzes(mappedQuizzes);
             } catch {
-                // Keep fallback values on API errors.
+                // Keep current quiz list on API errors.
             }
         })();
 
@@ -492,29 +492,29 @@ export function StudentGroupDetailPage() {
                             <div>
                                 <h2 className="text-xl sm:text-2xl font-bold" style={{ color: t.textPrimary }}>{grp.name}</h2>
                                 <div className="flex flex-wrap items-center gap-2.5 mt-1.5">
-                  <span
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg"
-                      style={{ background: `${grp.color}18`, color: grp.color, border: `1px solid ${grp.color}44` }}
-                  >
-                    <BookOpen className="w-3 h-3" />
-                      {grp.subject}
-                  </span>
+                                    <span
+                                        className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg"
+                                        style={{ background: `${grp.color}18`, color: grp.color, border: `1px solid ${grp.color}44` }}
+                                    >
+                                        <BookOpen className="w-3 h-3" />
+                                        {grp.subject}
+                                    </span>
                                     <p className="text-xs" style={{ color: t.textMuted }}>{grp.description}</p>
                                 </div>
                             </div>
 
                             {/* Active badge */}
                             {{
-                                active:   <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: 'rgba(34,197,94,0.1)', color: '#22C55E', border: '1px solid rgba(34,197,94,0.25)' }}><span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />Faol</span>,
+                                active: <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: 'rgba(34,197,94,0.1)', color: '#22C55E', border: '1px solid rgba(34,197,94,0.25)' }}><span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />Faol</span>,
                                 moderate: <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: 'rgba(245,158,11,0.1)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.25)' }}><span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: '#F59E0B' }} />O'rtacha</span>,
-                                low:      <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: t.bgInner, color: t.textMuted, border: `1px solid ${t.border}` }}><span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: t.textMuted }} />Kam faol</span>,
+                                low: <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: t.bgInner, color: t.textMuted, border: `1px solid ${t.border}` }}><span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: t.textMuted }} />Kam faol</span>,
                             }[grp.activityLevel]}
                         </div>
 
                         {/* Stat badges */}
                         <div className="flex flex-wrap gap-3 mt-4">
                             <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl"
-                                 style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)' }}>
+                                style={{ background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.2)' }}>
                                 <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'rgba(99,102,241,0.15)' }}>
                                     <Users className="w-4 h-4" style={{ color: '#6366F1' }} strokeWidth={1.75} />
                                 </div>
@@ -524,7 +524,7 @@ export function StudentGroupDetailPage() {
                                 </div>
                             </div>
                             <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl"
-                                 style={{ background: t.bgInner, border: `1px solid ${t.border}` }}>
+                                style={{ background: t.bgInner, border: `1px solid ${t.border}` }}>
                                 <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: t.bgButton }}>
                                     <ClipboardCheck className="w-4 h-4" style={{ color: t.textSecondary }} strokeWidth={1.75} />
                                 </div>
@@ -534,7 +534,7 @@ export function StudentGroupDetailPage() {
                                 </div>
                             </div>
                             <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl"
-                                 style={{ background: overallSc.bg, border: `1px solid ${overallSc.border}` }}>
+                                style={{ background: overallSc.bg, border: `1px solid ${overallSc.border}` }}>
                                 <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: `${overallSc.color}22` }}>
                                     <Target className="w-4 h-4" style={{ color: overallSc.color }} strokeWidth={1.75} />
                                 </div>
@@ -544,7 +544,7 @@ export function StudentGroupDetailPage() {
                                 </div>
                             </div>
                             <div className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl"
-                                 style={{ background: t.bgInner, border: `1px solid ${t.border}` }}>
+                                style={{ background: t.bgInner, border: `1px solid ${t.border}` }}>
                                 <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: t.bgButton }}>
                                     <Clock className="w-4 h-4" style={{ color: t.textMuted }} strokeWidth={1.75} />
                                 </div>
@@ -809,7 +809,20 @@ export function StudentGroupDetailPage() {
                     <Card className="h-full">
                         <SectionTitle title="Testlar" subtitle={`${grp.quizzes} ta test tayinlangan`} />
                         <div className="space-y-3">
-                            {quizzes.map((q, idx) => {
+                            {quizzes.length === 0 ? (
+                                <div
+                                    className="p-6 rounded-xl text-center"
+                                    style={{ background: t.bgInner, border: `1px solid ${t.border}` }}
+                                >
+                                    <div
+                                        className="w-12 h-12 mx-auto mb-3 rounded-2xl flex items-center justify-center"
+                                        style={{ background: t.accentMuted, border: `1px solid ${t.accentBorder}` }}
+                                    >
+                                        <ClipboardCheck className="w-5 h-5" style={{ color: t.accent }} strokeWidth={1.75} />
+                                    </div>
+                                    <p className="text-sm font-semibold" style={{ color: t.textPrimary }}>Testlar hali mavjud emas</p>
+                                </div>
+                            ) : quizzes.map((q, idx) => {
                                 const sc = scoreColor(q.avgScore);
                                 return (
                                     <div
@@ -822,7 +835,7 @@ export function StudentGroupDetailPage() {
                                         <div className="flex items-start justify-between gap-2 mb-2">
                                             <div className="flex items-center gap-2">
                                                 <div className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0"
-                                                     style={{ background: t.accentMuted, border: `1px solid ${t.accentBorder}` }}>
+                                                    style={{ background: t.accentMuted, border: `1px solid ${t.accentBorder}` }}>
                                                     <BarChart3 className="w-3.5 h-3.5" style={{ color: t.accent }} strokeWidth={1.75} />
                                                 </div>
                                                 <p className="text-sm font-medium leading-tight" style={{ color: t.textPrimary }}>{q.name}</p>
@@ -830,10 +843,10 @@ export function StudentGroupDetailPage() {
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold px-2 py-0.5 rounded-lg"
-                              style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
-                          {q.avgScore}%
-                        </span>
+                                                <span className="text-xs font-bold px-2 py-0.5 rounded-lg"
+                                                    style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
+                                                    {q.avgScore}%
+                                                </span>
                                                 <span className="text-xs" style={{ color: t.textMuted }}>{q.submissions}/{grp.students} ta</span>
                                             </div>
                                             <div className="flex items-center gap-2">
@@ -853,10 +866,9 @@ export function StudentGroupDetailPage() {
                                                 </button>
                                             </div>
                                         </div>
-                                        {/* Submissions bar */}
                                         <div className="mt-2 w-full h-1 rounded-full overflow-hidden" style={{ background: t.border }}>
                                             <div className="h-1 rounded-full transition-all duration-500"
-                                                 style={{ width: `${grp.students > 0 ? (q.submissions / grp.students) * 100 : 0}%`, background: t.accent, opacity: 0.7 }} />
+                                                style={{ width: `${grp.students > 0 ? (q.submissions / grp.students) * 100 : 0}%`, background: t.accent, opacity: 0.7 }} />
                                         </div>
                                     </div>
                                 );
@@ -952,11 +964,11 @@ export function StudentGroupDetailPage() {
 
                                             {/* Tests */}
                                             <div className="col-span-2 text-center">
-                        <span className="inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-lg"
-                              style={{ background: t.isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)', color: t.accent, border: `1px solid ${t.accentBorder}` }}>
-                          <ClipboardCheck className="w-3.5 h-3.5" />
-                            {s.tests}
-                        </span>
+                                                <span className="inline-flex items-center gap-1.5 text-sm font-semibold px-3 py-1.5 rounded-lg"
+                                                    style={{ background: t.isDark ? 'rgba(99,102,241,0.15)' : 'rgba(99,102,241,0.1)', color: t.accent, border: `1px solid ${t.accentBorder}` }}>
+                                                    <ClipboardCheck className="w-3.5 h-3.5" />
+                                                    {s.tests}
+                                                </span>
                                             </div>
 
                                             {/* Average score with progress bar */}
@@ -968,9 +980,9 @@ export function StudentGroupDetailPage() {
                                                     />
                                                 </div>
                                                 <span className="text-xs font-bold w-12 text-right tabular-nums shrink-0"
-                                                      style={{ color: sc.color }}>
-                          {s.avgScore}%
-                        </span>
+                                                    style={{ color: sc.color }}>
+                                                    {s.avgScore}%
+                                                </span>
                                             </div>
                                         </div>
                                     );
@@ -1007,10 +1019,10 @@ export function StudentGroupDetailPage() {
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-sm font-semibold truncate" style={{ color: t.textPrimary }}>{s.name}</p>
                                                 <div className="flex items-center gap-2 mt-1">
-                          <span className="text-xs font-bold px-2.5 py-1 rounded-lg"
-                                style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
-                            {s.avgScore}%
-                          </span>
+                                                    <span className="text-xs font-bold px-2.5 py-1 rounded-lg"
+                                                        style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
+                                                        {s.avgScore}%
+                                                    </span>
                                                     <span className="text-xs" style={{ color: t.textMuted }}>{s.tests} ta test</span>
                                                 </div>
                                             </div>

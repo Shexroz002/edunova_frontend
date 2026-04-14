@@ -730,10 +730,10 @@ export function StudentWaitingRoomPage() {
             setParticipants((current) => current.map((participant) => (
               participant.user_id === userId
                 ? {
-                    ...participant,
-                    status: mapRealtimeStatus(rawStatus),
-                    online: mapRealtimeOnline(rawStatus),
-                  }
+                  ...participant,
+                  status: mapRealtimeStatus(rawStatus),
+                  online: mapRealtimeOnline(rawStatus),
+                }
                 : participant
             )));
           }
@@ -775,7 +775,7 @@ export function StudentWaitingRoomPage() {
     document.body.appendChild(textArea);
     textArea.focus();
     textArea.select();
-    
+
     try {
       document.execCommand('copy');
       setShowCopyToast(true);
@@ -894,10 +894,10 @@ export function StudentWaitingRoomPage() {
         />
       )}
       {showInviteModal && (
-        <InviteFriendsModal 
+        <InviteFriendsModal
           sessionId={sessionId}
-          onClose={() => setShowInviteModal(false)} 
-          sessionCode={normalizeText(sessionInfo?.join_code)} 
+          onClose={() => setShowInviteModal(false)}
+          sessionCode={normalizeText(sessionInfo?.join_code)}
           quizTitle={normalizeText(sessionInfo?.quiz_name, 'Test')}
           excludedUserIds={participants.map(p => p.user_id)}
         />
@@ -970,10 +970,10 @@ export function StudentWaitingRoomPage() {
               {leaveError}
             </div>
           )}
-          
+
           {/* LEFT SIDEBAR (CODE + INVITE) */}
           <div className="lg:col-span-1 space-y-4">
-            
+
             {/* SESSION CODE BLOCK */}
             <div
               className="rounded-2xl overflow-hidden"
@@ -990,13 +990,13 @@ export function StudentWaitingRoomPage() {
                 }}
               >
                 <div className="absolute inset-0 opacity-10" style={{ background: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' }} />
-                
+
                 <div className="relative">
                   <div className="flex items-center gap-2 mb-3">
                     <Shield className="w-4 h-4 text-white" strokeWidth={2} />
                     <p className="text-sm font-semibold text-white">Musobaqa kodi</p>
                   </div>
-                  
+
                   {/* Join Code Display */}
                   <div className="flex items-center justify-center gap-3 py-4 px-5 rounded-xl" style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)' }}>
                     <span className="text-3xl sm:text-4xl font-black tracking-widest text-white">
@@ -1011,7 +1011,7 @@ export function StudentWaitingRoomPage() {
                 <p className="text-sm mb-4" style={{ color: t.textSecondary }}>
                   Do'stlaringizni bu kod bilan taklif qiling
                 </p>
-                
+
                 <button
                   onClick={handleCopyCode}
                   className="w-full rounded-xl py-2.5 font-semibold text-sm flex items-center justify-center gap-2 transition-all"
@@ -1104,20 +1104,20 @@ export function StudentWaitingRoomPage() {
                   Sessiya ma'lumotlari
                 </p>
               </div>
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs">
-                    <span style={{ color: t.textMuted }}>Davomiyligi:</span>
-                    <span className="font-semibold" style={{ color: t.textSecondary }}>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs">
+                  <span style={{ color: t.textMuted }}>Davomiyligi:</span>
+                  <span className="font-semibold" style={{ color: t.textSecondary }}>
                     {sessionInfo?.duration_minutes ?? 0} daqiqa
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between text-xs">
-                    <span style={{ color: t.textMuted }}>Savollar:</span>
-                    <span className="font-semibold" style={{ color: t.textSecondary }}>
-                    {sessionInfo?.questions_count ?? 0} ta
-                    </span>
-                  </div>
+                  </span>
                 </div>
+                <div className="flex items-center justify-between text-xs">
+                  <span style={{ color: t.textMuted }}>Savollar:</span>
+                  <span className="font-semibold" style={{ color: t.textSecondary }}>
+                    {sessionInfo?.questions_count ?? 0} ta
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -1224,7 +1224,7 @@ export function StudentWaitingRoomPage() {
                                 </span>
                               )}
                             </p>
-                            
+
                             {/* Role Badge */}
                             {participant.role === 'host' && (
                               <span
@@ -1361,8 +1361,8 @@ export function StudentWaitingRoomPage() {
                     {participants.length < 2
                       ? 'Kamida 2 kishi kerak'
                       : readyCount < 2
-                      ? 'Kamida 2 kishi tayyor bo\'lishi kerak'
-                      : 'Barcha shartlar bajarilmagan'}
+                        ? 'Kamida 2 kishi tayyor bo\'lishi kerak'
+                        : 'Barcha shartlar bajarilmagan'}
                   </p>
                 )}
               </div>

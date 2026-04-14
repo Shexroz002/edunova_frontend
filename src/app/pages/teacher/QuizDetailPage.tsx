@@ -114,9 +114,9 @@ const STATISTIC_DESCRIPTIONS: Record<StatisticKey, string> = {
 
 export const TOPIC_BANKS: Record<string, string[]> = {
   Matematika: ['Algebra', 'Geometriya', 'Trigonometriya', 'Statistika', 'Sonlar nazariyasi'],
-  Fizika:     ['Mexanika', 'Optika', 'Elektr', 'Termodinamika', 'Yadro fizikasi'],
-  Kimyo:      ['Anorganik kimyo', 'Organik kimyo', 'Elektrokimyo', 'Termokimyo', 'Moddalar'],
-  Biologiya:  ['Hujayra', 'Genetika', 'Evolyutsiya', 'Ekologiya', 'Anatomiya'],
+  Fizika: ['Mexanika', 'Optika', 'Elektr', 'Termodinamika', 'Yadro fizikasi'],
+  Kimyo: ['Anorganik kimyo', 'Organik kimyo', 'Elektrokimyo', 'Termokimyo', 'Moddalar'],
+  Biologiya: ['Hujayra', 'Genetika', 'Evolyutsiya', 'Ekologiya', 'Anatomiya'],
 };
 
 export const QUESTION_TEXTS: Record<string, string[]> = {
@@ -327,13 +327,13 @@ function mapQuestionDetail(detail: QuestionDetailApiResponse): QuestionDetail {
 
 export function genQuestions(subject: string, count: number): Question[] {
   const topics = TOPIC_BANKS[subject] ?? TOPIC_BANKS['Matematika'];
-  const texts  = QUESTION_TEXTS[subject] ?? QUESTION_TEXTS['Matematika'];
+  const texts = QUESTION_TEXTS[subject] ?? QUESTION_TEXTS['Matematika'];
   return Array.from({ length: Math.min(count, 10) }, (_, i) => ({
     id: i + 1,
-    num:         i + 1,
-    text:        texts[i % texts.length],
-    topic:       topics[i % topics.length],
-    difficulty:  DIFFICULTIES[(i * 7 + 3) % 3],
+    num: i + 1,
+    text: texts[i % texts.length],
+    topic: topics[i % topics.length],
+    difficulty: DIFFICULTIES[(i * 7 + 3) % 3],
     correctRate: Math.max(28, Math.min(95, 85 - (i * 11 + 7) % 50)),
   }));
 }
@@ -341,9 +341,9 @@ export function genQuestions(subject: string, count: number): Question[] {
 // Mock question detail generator
 export function genQuestionDetail(quizId: number, questionNum: number, subject: string): QuestionDetail {
   const topics = TOPIC_BANKS[subject] ?? TOPIC_BANKS['Matematika'];
-  const texts  = QUESTION_TEXTS[subject] ?? QUESTION_TEXTS['Matematika'];
+  const texts = QUESTION_TEXTS[subject] ?? QUESTION_TEXTS['Matematika'];
   const idx = questionNum - 1;
-  
+
   // Sample table markdown
   const sampleTables = [
     "| X | Y | Z |\n| --- | --- | --- |\n| 10 | 20 | 30 |\n| 15 | 25 | 35 |",
@@ -363,7 +363,7 @@ export function genQuestionDetail(quizId: number, questionNum: number, subject: 
   // Options
   const optionLabels = ['A', 'B', 'C', 'D'];
   const correctIdx = idx % 4;
-  
+
   const optionTexts: Record<string, string[][]> = {
     Matematika: [
       ['10', '20', '30', '40'],
@@ -414,24 +414,24 @@ export const CLASSES_LIST = ["9-A", "10-B", "Fizika guruhi", "Kimyo guruhi", "Bi
 
 const SUBJECTS = ['Matematika', 'Fizika', 'Kimyo', 'Biologiya'];
 const TYPE_OPTIONS: { value: QuizType; label: string; Icon: React.FC<any>; color: string; bg: string; border: string }[] = [
-  { value: 'manual', label: "Qo'lda",       Icon: PenLine, color: '#6366F1', bg: 'rgba(99,102,241,0.1)',  border: 'rgba(99,102,241,0.3)'  },
-  { value: 'pdf',    label: 'PDF',           Icon: Upload,  color: '#3B82F6', bg: 'rgba(59,130,246,0.1)',  border: 'rgba(59,130,246,0.3)'  },
-  { value: 'ai',     label: 'AI Generated',  Icon: Cpu,     color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)', border: 'rgba(139,92,246,0.3)'  },
+  { value: 'manual', label: "Qo'lda", Icon: PenLine, color: '#6366F1', bg: 'rgba(99,102,241,0.1)', border: 'rgba(99,102,241,0.3)' },
+  { value: 'pdf', label: 'PDF', Icon: Upload, color: '#3B82F6', bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.3)' },
+  { value: 'ai', label: 'AI Generated', Icon: Cpu, color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)', border: 'rgba(139,92,246,0.3)' },
 ];
 
 // ─────────────────────────────────────────────
 //  Shared helpers / tiny components
 // ─────────────────────────────────────────────
 function scoreColor(score: number) {
-  if (score >= 75) return { color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.25)'   };
-  if (score >= 50) return { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)'  };
-  return              { color: '#EF4444', bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.25)'   };
+  if (score >= 75) return { color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.25)' };
+  if (score >= 50) return { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)' };
+  return { color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)' };
 }
 
 function wrongColor(pct: number) {
-  if (pct >= 60) return { color: '#EF4444', bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.25)'  };
+  if (pct >= 60) return { color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)' };
   if (pct >= 40) return { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)' };
-  return               { color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.25)'  };
+  return { color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.25)' };
 }
 
 type MathSegment =
@@ -452,10 +452,10 @@ function parseMathSegments(value: string): MathSegment[] {
     const mathValue = match.startsWith('$$')
       ? match.slice(2, -2)
       : match.startsWith('\\[')
-      ? match.slice(2, -2)
-      : match.startsWith('\\(')
-      ? match.slice(2, -2)
-      : match.slice(1, -1);
+        ? match.slice(2, -2)
+        : match.startsWith('\\(')
+          ? match.slice(2, -2)
+          : match.slice(1, -1);
 
     segments.push({ type: 'math', value: mathValue, displayMode });
     lastIndex = offset + match.length;
@@ -514,9 +514,9 @@ function MathText({
 function DifficultyBadge({ level }: { level: Difficulty }) {
   const { theme: t } = useTheme();
   const cfg = {
-    "oson":  { color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.25)',   label: 'Oson'   },
-    "o'rta": { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)',  label: "O'rta"  },
-    "qiyin": { color: '#EF4444', bg: 'rgba(239,68,68,0.1)',  border: 'rgba(239,68,68,0.25)',   label: 'Qiyin'  },
+    "oson": { color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.25)', label: 'Oson' },
+    "o'rta": { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)', label: "O'rta" },
+    "qiyin": { color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)', label: 'Qiyin' },
   }[level] ?? { color: t.textMuted, bg: t.bgInner, border: t.border, label: level };
   return (
     <span className="text-xs font-semibold px-2 py-0.5 rounded-md whitespace-nowrap"
@@ -527,15 +527,15 @@ function DifficultyBadge({ level }: { level: Difficulty }) {
 }
 
 function QuizTypeIcon({ type }: { type: QuizType }) {
-  if (type === 'ai')  return <Cpu     className="w-5 h-5" style={{ color: '#8B5CF6' }} strokeWidth={1.75} />;
-  if (type === 'pdf') return <Upload  className="w-5 h-5" style={{ color: '#3B82F6' }} strokeWidth={1.75} />;
-  return                     <PenLine className="w-5 h-5" style={{ color: '#6366F1' }} strokeWidth={1.75} />;
+  if (type === 'ai') return <Cpu className="w-5 h-5" style={{ color: '#8B5CF6' }} strokeWidth={1.75} />;
+  if (type === 'pdf') return <Upload className="w-5 h-5" style={{ color: '#3B82F6' }} strokeWidth={1.75} />;
+  return <PenLine className="w-5 h-5" style={{ color: '#6366F1' }} strokeWidth={1.75} />;
 }
 
 function typeStyle(type: QuizType) {
-  if (type === 'ai')  return { color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)', border: 'rgba(139,92,246,0.25)', label: 'AI Generated' };
+  if (type === 'ai') return { color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)', border: 'rgba(139,92,246,0.25)', label: 'AI Generated' };
   if (type === 'pdf') return { color: '#3B82F6', bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.25)', label: 'PDF' };
-  return                     { color: '#6366F1', bg: 'rgba(99,102,241,0.1)', border: 'rgba(99,102,241,0.25)', label: "Qo'lda" };
+  return { color: '#6366F1', bg: 'rgba(99,102,241,0.1)', border: 'rgba(99,102,241,0.25)', label: "Qo'lda" };
 }
 
 function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
@@ -562,7 +562,7 @@ function DonutRing({ value, color, size = 96, strokeWidth = 10 }: {
   value: number; color: string; size?: number; strokeWidth?: number;
 }) {
   const { theme: t } = useTheme();
-  const r    = (size - strokeWidth) / 2;
+  const r = (size - strokeWidth) / 2;
   const circ = 2 * Math.PI * r;
   const dash = (value / 100) * circ;
   return (
@@ -679,11 +679,11 @@ function EditQuizModal({ open, quiz, onClose, onSave }: EditQuizModalProps) {
   const { theme: t } = useTheme();
   const titleRef = useRef<HTMLInputElement>(null);
 
-  const [title,     setTitle]     = useState(quiz.title);
-  const [subject,   setSubject]   = useState(quiz.subject);
+  const [title, setTitle] = useState(quiz.title);
+  const [subject, setSubject] = useState(quiz.subject);
   const [description, setDescription] = useState(quiz.description);
-  const [quizType,  setQuizType]  = useState<QuizType>(quiz.type);
-  const [saving,    setSaving]    = useState(false);
+  const [quizType, setQuizType] = useState<QuizType>(quiz.type);
+  const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState('');
 
   // Sync when quiz changes
@@ -799,7 +799,7 @@ function EditQuizModal({ open, quiz, onClose, onSave }: EditQuizModalProps) {
                 height: '42px',
               }}
               onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#6366F1'; (e.target as HTMLElement).style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; }}
-              onBlur={(e)  => { (e.target as HTMLElement).style.borderColor = title.trim() ? 'rgba(99,102,241,0.5)' : t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
+              onBlur={(e) => { (e.target as HTMLElement).style.borderColor = title.trim() ? 'rgba(99,102,241,0.5)' : t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
             />
           </div>
 
@@ -818,7 +818,7 @@ function EditQuizModal({ open, quiz, onClose, onSave }: EditQuizModalProps) {
                   height: '42px',
                 }}
                 onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#6366F1'; (e.target as HTMLElement).style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; }}
-                onBlur={(e)  => { (e.target as HTMLElement).style.borderColor = t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
+                onBlur={(e) => { (e.target as HTMLElement).style.borderColor = t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
               >
                 {SUBJECTS.map((s) => (
                   <option key={s} value={s} style={{ background: t.bgCard, color: t.textPrimary }}>{s}</option>
@@ -845,7 +845,7 @@ function EditQuizModal({ open, quiz, onClose, onSave }: EditQuizModalProps) {
                 color: t.textPrimary,
               }}
               onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#6366F1'; (e.target as HTMLElement).style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; }}
-              onBlur={(e)  => { (e.target as HTMLElement).style.borderColor = t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
+              onBlur={(e) => { (e.target as HTMLElement).style.borderColor = t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
             />
           </div>
 
@@ -960,14 +960,14 @@ function EditQuizModal({ open, quiz, onClose, onSave }: EditQuizModalProps) {
 // ─────────────────────────────────────────────
 export function QuizDetailPage() {
   const { theme: t } = useTheme();
-  const { id }       = useParams<{ id: string }>();
-  const navigate     = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
 
   const base = QUIZZES.find((q) => q.id === Number(id));
 
-  const [quiz,      setQuiz]      = useState<QuizDetailView | null>(base ? { ...base, description: '' } : null);
+  const [quiz, setQuiz] = useState<QuizDetailView | null>(base ? { ...base, description: '' } : null);
   const [questions, setQuestions] = useState<Question[]>(base ? genQuestions(base.subject, base.questions) : []);
-  const [editOpen,  setEditOpen]  = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [questionDetail, setQuestionDetail] = useState<QuestionDetail | null>(null);
   const [questionDetailLoadingId, setQuestionDetailLoadingId] = useState<number | null>(null);
   const [questionDetailError, setQuestionDetailError] = useState<string | null>(null);
@@ -1098,7 +1098,7 @@ export function QuizDetailPage() {
   const successRate = statistics?.success_rate ?? 0;
   const highestScore = statistics?.highest_score ?? averageScore;
   const championsCount = statistics?.champions_count ?? 0;
-  const tStyle         = typeStyle(quiz.type);
+  const tStyle = typeStyle(quiz.type);
   const statisticDetails = [
     { key: 'average_score' as const, label: "O'rtacha ball", value: `${averageScore}%`, ringValue: averageScore, color: scoreColor(averageScore).color, bg: scoreColor(averageScore).bg, border: scoreColor(averageScore).border, Icon: Target },
     { key: 'completion_rate' as const, label: 'Bajarilish', value: `${completionRate}%`, ringValue: completionRate, color: scoreColor(completionRate).color, bg: scoreColor(completionRate).bg, border: scoreColor(completionRate).border, Icon: CheckCircle },
@@ -1203,8 +1203,8 @@ export function QuizDetailPage() {
                 </h1>
                 <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg"
                   style={{ background: tStyle.bg, color: tStyle.color, border: `1px solid ${tStyle.border}` }}>
-                  {quiz.type === 'ai'     && <Cpu     className="w-3 h-3" strokeWidth={2} />}
-                  {quiz.type === 'pdf'    && <Upload  className="w-3 h-3" strokeWidth={2} />}
+                  {quiz.type === 'ai' && <Cpu className="w-3 h-3" strokeWidth={2} />}
+                  {quiz.type === 'pdf' && <Upload className="w-3 h-3" strokeWidth={2} />}
                   {quiz.type === 'manual' && <PenLine className="w-3 h-3" strokeWidth={2} />}
                   {tStyle.label}
                 </span>
@@ -1219,9 +1219,9 @@ export function QuizDetailPage() {
               <div className="flex flex-wrap gap-3 mt-2">
                 {[
                   { Icon: BookOpen, label: quiz.subject },
-                  { Icon: Hash,     label: `${quiz.questions} ta savol` },
-                  { Icon: Clock,    label: quiz.createdDate },
-                  { Icon: Users,    label: `${quiz.attempts} urinish` },
+                  { Icon: Hash, label: `${quiz.questions} ta savol` },
+                  { Icon: Clock, label: quiz.createdDate },
+                  { Icon: Users, label: `${quiz.attempts} urinish` },
                 ].map(({ Icon, label }) => (
                   <div key={label} className="flex items-center gap-1.5">
                     <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: t.textMuted }} strokeWidth={1.75} />

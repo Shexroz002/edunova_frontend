@@ -118,17 +118,17 @@ interface ChatSocketData {
 
 type QuizSessionSocketEvent =
   | {
-      event: 'participant_joined';
-      data: ParticipantJoinedSocketData;
-    }
+    event: 'participant_joined';
+    data: ParticipantJoinedSocketData;
+  }
   | {
-      event: 'participant_reconnected' | 'participant_read' | 'participant_ready' | 'participant_disconnected';
-      data: ParticipantStatusSocketData;
-    }
+    event: 'participant_reconnected' | 'participant_read' | 'participant_ready' | 'participant_disconnected';
+    data: ParticipantStatusSocketData;
+  }
   | {
-      event: 'chat_message';
-      data: ChatSocketData;
-    };
+    event: 'chat_message';
+    data: ChatSocketData;
+  };
 
 interface JoinNotification {
   id: number;
@@ -162,9 +162,9 @@ interface PaginatedResponse<T> {
 }
 
 const COLORS = [
-  '#6366F1','#8B5CF6','#3B82F6','#22C55E',
-  '#F59E0B','#14B8A6','#EC4899','#0EA5E9',
-  '#A855F7','#10B981','#F97316','#EF4444',
+  '#6366F1', '#8B5CF6', '#3B82F6', '#22C55E',
+  '#F59E0B', '#14B8A6', '#EC4899', '#0EA5E9',
+  '#A855F7', '#10B981', '#F97316', '#EF4444',
 ];
 
 // ─────────────────────────────────────────────
@@ -173,9 +173,9 @@ const COLORS = [
 const STATUS_CONFIG: Record<StudentStatus, {
   label: string; color: string; bg: string; border: string; Icon: React.ElementType;
 }> = {
-  ready:        { label: 'Tayyor',       color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.25)',   Icon: CheckCircle2 },
-  preparing:    { label: 'Tayyorlanmoqda', color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)', Icon: AlertCircle  },
-  disconnected: { label: "Ulanmagan",    color: '#EF4444', bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.25)',   Icon: WifiOff      },
+  ready: { label: 'Tayyor', color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.25)', Icon: CheckCircle2 },
+  preparing: { label: 'Tayyorlanmoqda', color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)', Icon: AlertCircle },
+  disconnected: { label: "Ulanmagan", color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)', Icon: WifiOff },
 };
 
 async function fetchWithAuthRetry(url: string, init: RequestInit = {}) {
@@ -825,7 +825,7 @@ export function WaitingRoomPage() {
           setSocketConnected(false);
           setSendingChat(false);
           reconnectTimer = window.setTimeout(() => {
-            connect().catch(() => {});
+            connect().catch(() => { });
           }, 3000);
         };
       } catch {
@@ -835,7 +835,7 @@ export function WaitingRoomPage() {
       }
     };
 
-    connect().catch(() => {});
+    connect().catch(() => { });
 
     return () => {
       active = false;
@@ -855,7 +855,7 @@ export function WaitingRoomPage() {
 
   const handleCopy = () => {
     if (!sessionInfo?.join_code) return;
-    navigator.clipboard.writeText(sessionInfo.join_code).catch(() => {});
+    navigator.clipboard.writeText(sessionInfo.join_code).catch(() => { });
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -908,8 +908,8 @@ export function WaitingRoomPage() {
     }));
   };
 
-  const readyCount        = students.filter((s) => s.status === 'ready').length;
-  const preparingCount    = students.filter((s) => s.status === 'preparing').length;
+  const readyCount = students.filter((s) => s.status === 'ready').length;
+  const preparingCount = students.filter((s) => s.status === 'preparing').length;
   const disconnectedCount = students.filter((s) => s.status === 'disconnected').length;
 
   const formatElapsed = (sec: number) => {
@@ -1015,10 +1015,10 @@ export function WaitingRoomPage() {
 
             <div className="flex flex-wrap gap-5">
               {[
-                { Icon: BookOpen, label: derivedSessionInfo.subject,           id: 'subj' },
-                { Icon: Hash,     label: `Kod: ${derivedSessionInfo.joinCode}`, id: 'code' },
-                { Icon: Users,    label: `${participantsTotal} o'quvchi`,       id: 'cnt'  },
-                { Icon: Clock,    label: derivedSessionInfo.duration,           id: 'dur'  },
+                { Icon: BookOpen, label: derivedSessionInfo.subject, id: 'subj' },
+                { Icon: Hash, label: `Kod: ${derivedSessionInfo.joinCode}`, id: 'code' },
+                { Icon: Users, label: `${participantsTotal} o'quvchi`, id: 'cnt' },
+                { Icon: Clock, label: derivedSessionInfo.duration, id: 'dur' },
                 ...(derivedSessionInfo.questionsCount
                   ? [{ Icon: AlertCircle, label: `${derivedSessionInfo.questionsCount} ta savol`, id: 'questions' }]
                   : []),
@@ -1062,10 +1062,10 @@ export function WaitingRoomPage() {
       {/* ── Stats row ── */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
         {[
-          { label: "Jami qo'shilgan", val: participantsTotal,  color: '#6366F1', bg: 'rgba(99,102,241,0.08)',  border: 'rgba(99,102,241,0.2)',  Icon: Users        },
-          { label: 'Tayyor',          val: readyCount,         color: '#22C55E', bg: 'rgba(34,197,94,0.08)',   border: 'rgba(34,197,94,0.2)',   Icon: CheckCircle2 },
-          { label: 'Tayyorlanmoqda',  val: preparingCount,     color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)', Icon: AlertCircle  },
-          { label: "Ulanmagan",       val: disconnectedCount,  color: '#EF4444', bg: 'rgba(239,68,68,0.08)',   border: 'rgba(239,68,68,0.2)',   Icon: WifiOff      },
+          { label: "Jami qo'shilgan", val: participantsTotal, color: '#6366F1', bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.2)', Icon: Users },
+          { label: 'Tayyor', val: readyCount, color: '#22C55E', bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.2)', Icon: CheckCircle2 },
+          { label: 'Tayyorlanmoqda', val: preparingCount, color: '#F59E0B', bg: 'rgba(245,158,11,0.08)', border: 'rgba(245,158,11,0.2)', Icon: AlertCircle },
+          { label: "Ulanmagan", val: disconnectedCount, color: '#EF4444', bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.2)', Icon: WifiOff },
         ].map(({ label, val, color, bg, border, Icon }) => (
           <div
             key={label}
@@ -1252,8 +1252,8 @@ export function WaitingRoomPage() {
               className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all"
               style={{
                 background: copied ? 'rgba(34,197,94,0.1)' : t.accentMuted,
-                color:      copied ? '#22C55E' : t.accent,
-                border:    `1px solid ${copied ? 'rgba(34,197,94,0.25)' : t.accentBorder}`,
+                color: copied ? '#22C55E' : t.accent,
+                border: `1px solid ${copied ? 'rgba(34,197,94,0.25)' : t.accentBorder}`,
               }}
             >
               {copied
@@ -1316,8 +1316,8 @@ export function WaitingRoomPage() {
                     ? (t.isDark ? '#1E293B' : '#E2E8F0')
                     : 'linear-gradient(135deg,#22C55E,#16A34A)',
                   boxShadow: starting ? 'none' : '0 4px 16px rgba(34,197,94,0.3)',
-                  color:     starting ? t.textMuted : '#fff',
-                  cursor:    starting ? 'not-allowed' : 'pointer',
+                  color: starting ? t.textMuted : '#fff',
+                  cursor: starting ? 'not-allowed' : 'pointer',
                 }}
                 onMouseEnter={(e) => { if (!starting) { (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 6px 20px rgba(34,197,94,0.4)'; } }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = starting ? 'none' : '0 4px 16px rgba(34,197,94,0.3)'; }}
@@ -1333,8 +1333,8 @@ export function WaitingRoomPage() {
                 className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all"
                 style={{
                   background: 'rgba(239,68,68,0.07)',
-                  color:      '#EF4444',
-                  border:    '1px solid rgba(239,68,68,0.2)',
+                  color: '#EF4444',
+                  border: '1px solid rgba(239,68,68,0.2)',
                 }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.13)'; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.07)'; }}

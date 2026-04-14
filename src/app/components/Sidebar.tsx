@@ -8,10 +8,15 @@ import {
   PieChart,
   Trophy,
   Settings,
+  LogOut,
   X,
 } from 'lucide-react';
-import { NavLink } from 'react-router';
+import { useEffect, useMemo, useState } from 'react';
+import { NavLink, useNavigate } from 'react-router';
 import { useTheme } from './ThemeContext';
+import { clearStoredAuthSession, getValidAccessToken, refreshStoredAuthToken } from '../lib/auth.ts';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
 
 const navigationItems = [
   { name: 'Bosh sahifa',      icon: LayoutDashboard, path: '/'                   },
@@ -30,8 +35,109 @@ interface SidebarProps {
   onClose: () => void;
 }
 
+interface MeResponse {
+  id: number;
+  username: string;
+  first_name: string;
+  last_name: string;
+  role: string | null;
+  profile_image: string | null;
+}
+
+interface SidebarProfile {
+  fullName: string;
+  roleLabel: string;
+  profileImage: string | null;
+}
+
+async function fetchWithAuthRetry(url: string, init: RequestInit = {}) {
+  let token = await getValidAccessToken();
+  if (!token) {
+    throw new Error("Tizimga qayta kiring");
+  }
+
+  const makeRequest = (accessToken: string) => fetch(url, {
+    ...init,
+    headers: {
+      accept: 'application/json',
+      ...(init.headers ?? {}),
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  let response = await makeRequest(token);
+
+  if (response.status === 401) {
+    const refreshed = await refreshStoredAuthToken();
+    token = refreshed?.access_token ?? null;
+    if (!token) {
+      throw new Error("Sessiya tugagan. Qayta kiring");
+    }
+    response = await makeRequest(token);
+  }
+
+  return response;
+}
+
 function SidebarContent({ onClose, isMobile }: { onClose: () => void; isMobile?: boolean }) {
   const { theme: t } = useTheme();
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState<SidebarProfile>({
+    fullName: 'Ustoz',
+    roleLabel: "O'qituvchi",
+    profileImage: null,
+  });
+
+  const handleLogout = () => {
+    clearStoredAuthSession();
+    onClose();
+    navigate('/login', { replace: true });
+  };
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadProfile() {
+      try {
+        const response = await fetchWithAuthRetry(`${API_BASE_URL}/api/v1/auth/me/`, {
+          method: 'GET',
+        });
+
+        if (!response.ok) {
+          throw new Error(`Profilni olishda xatolik: ${response.status}`);
+        }
+
+        const data: MeResponse = await response.json();
+        if (!isMounted) return;
+
+        const firstName = data.first_name?.trim() ?? '';
+        const lastName = data.last_name?.trim() ?? '';
+        const fullName = `${firstName} ${lastName}`.trim() || data.username || 'Ustoz';
+
+        setProfile({
+          fullName,
+          roleLabel: data.role === 'teacher' ? "O'qituvchi" : 'Foydalanuvchi',
+          profileImage: data.profile_image ?? null,
+        });
+      } catch {
+        if (!isMounted) return;
+      }
+    }
+
+    loadProfile();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const profileInitials = useMemo(() => {
+    const parts = profile.fullName.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return 'U';
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase();
+  }, [profile.fullName]);
+
   return (
     <aside className="w-64 h-full flex flex-col" style={{ background: t.bgCard }}>
       {/* Logo */}
@@ -134,17 +240,51 @@ function SidebarContent({ onClose, isMobile }: { onClose: () => void; isMobile?:
         style={{ background: t.bgInner, border: `1px solid ${t.border}` }}
       >
         <div className="flex items-center gap-3">
-          <img
-            src="https://images.unsplash.com/photo-1551989745-347c28b620e5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxwcm9mZXNzaW9uYWwlMjB0ZWFjaGVyJTIwd29tYW58ZW58MXx8fHwxNzczNTc3NjAxfDA&ixlib=rb-4.1.0&q=80&w=400"
-            alt="Teacher"
-            className="w-9 h-9 rounded-full object-cover shrink-0"
-            style={{ border: '2px solid #6366F1' }}
-          />
+          {profile.profileImage ? (
+            <img
+              src={profile.profileImage}
+              alt={profile.fullName}
+              className="w-9 h-9 rounded-full object-cover shrink-0"
+              style={{ border: '2px solid #6366F1' }}
+            />
+          ) : (
+            <div
+              className="w-9 h-9 rounded-full flex items-center justify-center shrink-0 text-xs font-bold"
+              style={{
+                background: t.accentMuted,
+                color: t.accent,
+                border: '2px solid #6366F1',
+              }}
+            >
+              {profileInitials}
+            </div>
+          )}
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold truncate" style={{ color: t.textPrimary }}>Anna Smirnova</p>
-            <p className="text-xs truncate" style={{ color: t.textSecondary }}>Matematika o'qituvchisi</p>
+            <p className="text-sm font-semibold truncate" style={{ color: t.textPrimary }}>{profile.fullName}</p>
+            <p className="text-xs truncate" style={{ color: t.textSecondary }}>{profile.roleLabel}</p>
           </div>
         </div>
+        <button
+          type="button"
+          onClick={handleLogout}
+          className="w-full mt-4 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all"
+          style={{
+            background: t.isDark ? 'rgba(239,68,68,0.14)' : 'rgba(239,68,68,0.08)',
+            color: '#EF4444',
+            border: '1px solid rgba(239,68,68,0.24)',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateY(-1px)';
+            e.currentTarget.style.borderColor = 'rgba(239,68,68,0.4)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateY(0)';
+            e.currentTarget.style.borderColor = 'rgba(239,68,68,0.24)';
+          }}
+        >
+          <LogOut className="w-4 h-4" strokeWidth={2} />
+          Chiqish
+        </button>
       </div>
     </aside>
   );

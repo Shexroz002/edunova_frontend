@@ -122,7 +122,7 @@ function StepIndicator({ current }: { current: number }) {
     <div className="flex items-center justify-center gap-0 mb-8">
       {STEP_LABELS.map((label, i) => {
         const step = i + 1;
-        const done   = step < current;
+        const done = step < current;
         const active = step === current;
         return (
           <div key={step} className="flex items-center">
@@ -134,19 +134,19 @@ function StepIndicator({ current }: { current: number }) {
                   background: done
                     ? 'linear-gradient(135deg, #22C55E, #16A34A)'
                     : active
-                    ? 'linear-gradient(135deg, #6366F1, #4F46E5)'
-                    : t.bgInner,
+                      ? 'linear-gradient(135deg, #6366F1, #4F46E5)'
+                      : t.bgInner,
                   border: done
                     ? '1.5px solid rgba(34,197,94,0.4)'
                     : active
-                    ? '1.5px solid rgba(99,102,241,0.5)'
-                    : `1.5px solid ${t.border}`,
+                      ? '1.5px solid rgba(99,102,241,0.5)'
+                      : `1.5px solid ${t.border}`,
                   color: done || active ? '#fff' : t.textMuted,
                   boxShadow: active
                     ? '0 4px 14px rgba(99,102,241,0.35)'
                     : done
-                    ? '0 4px 14px rgba(34,197,94,0.25)'
-                    : 'none',
+                      ? '0 4px 14px rgba(34,197,94,0.25)'
+                      : 'none',
                 }}
               >
                 {done
@@ -273,8 +273,8 @@ function Step1({
   errors: Partial<Record<keyof Step1Data, string>>;
 }) {
   const { theme: t } = useTheme();
-  const [showPass, setShowPass]    = useState(false);
-  const [showConf, setShowConf]    = useState(false);
+  const [showPass, setShowPass] = useState(false);
+  const [showConf, setShowConf] = useState(false);
 
   const showBtn = (show: boolean, toggle: () => void) => (
     <button
@@ -287,7 +287,7 @@ function Step1({
     >
       {show
         ? <EyeOff style={{ width: 14, height: 14 }} strokeWidth={1.75} />
-        : <Eye    style={{ width: 14, height: 14 }} strokeWidth={1.75} />
+        : <Eye style={{ width: 14, height: 14 }} strokeWidth={1.75} />
       }
     </button>
   );
@@ -297,10 +297,10 @@ function Step1({
     const p = data.password;
     if (!p) return 0;
     let s = 0;
-    if (p.length >= 8)           s++;
-    if (/[A-Z]/.test(p))         s++;
-    if (/[0-9]/.test(p))         s++;
-    if (/[^A-Za-z0-9]/.test(p))  s++;
+    if (p.length >= 8) s++;
+    if (/[A-Z]/.test(p)) s++;
+    if (/[0-9]/.test(p)) s++;
+    if (/[^A-Za-z0-9]/.test(p)) s++;
     return s;
   })();
 
@@ -534,8 +534,8 @@ function Step3({
   const required = role === 'teacher' ? 1 : 2;
   const roleLabel = role === 'teacher' ? "O'qituvchi" : "O'quvchi";
   const accentColor = role === 'teacher' ? '#6366F1' : '#22C55E';
-  const accentBg    = role === 'teacher' ? 'rgba(99,102,241,0.1)'  : 'rgba(34,197,94,0.1)';
-  const accentBorder= role === 'teacher' ? 'rgba(99,102,241,0.3)'  : 'rgba(34,197,94,0.3)';
+  const accentBg = role === 'teacher' ? 'rgba(99,102,241,0.1)' : 'rgba(34,197,94,0.1)';
+  const accentBorder = role === 'teacher' ? 'rgba(99,102,241,0.3)' : 'rgba(34,197,94,0.3)';
 
   function toggle(id: number) {
     if (selected.includes(id)) {
@@ -734,14 +734,14 @@ export function RegisterPage() {
   // Validate step 1
   function validateStep1(): boolean {
     const errs: Partial<Record<keyof Step1Data, string>> = {};
-    if (!s1.firstName.trim())  errs.firstName        = 'Ism kiritilmadi';
-    if (!s1.lastName.trim())   errs.lastName         = 'Familiya kiritilmadi';
-    if (!s1.username.trim())   errs.username         = 'Foydalanuvchi nomi kiritilmadi';
+    if (!s1.firstName.trim()) errs.firstName = 'Ism kiritilmadi';
+    if (!s1.lastName.trim()) errs.lastName = 'Familiya kiritilmadi';
+    if (!s1.username.trim()) errs.username = 'Foydalanuvchi nomi kiritilmadi';
     else if (s1.username.includes(' '))
       errs.username = "Bo'sh joy bo'lmasin";
-    if (!s1.password)          errs.password         = 'Parol kiritilmadi';
-    else if (s1.password.length < 8) errs.password   = "Kamida 8 ta belgi bo'lsin";
-    if (!s1.confirmPassword)   errs.confirmPassword  = 'Parolni tasdiqlang';
+    if (!s1.password) errs.password = 'Parol kiritilmadi';
+    else if (s1.password.length < 8) errs.password = "Kamida 8 ta belgi bo'lsin";
+    if (!s1.confirmPassword) errs.confirmPassword = 'Parolni tasdiqlang';
     else if (s1.password !== s1.confirmPassword)
       errs.confirmPassword = "Parollar mos kelmadi";
     setS1Errors(errs);
@@ -877,7 +877,7 @@ export function RegisterPage() {
         onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = t.border; (e.currentTarget as HTMLElement).style.color = t.textMuted; }}
       >
         {t.isDark
-          ? <Sun  style={{ width: 17, height: 17 }} strokeWidth={1.75} />
+          ? <Sun style={{ width: 17, height: 17 }} strokeWidth={1.75} />
           : <Moon style={{ width: 17, height: 17 }} strokeWidth={1.75} />
         }
       </button>

@@ -1,11 +1,11 @@
-import {useState, useMemo, useEffect, useRef} from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import {
     Search, Plus, Eye, ChevronDown, Users,
     X, Check, UserPlus, Mail, BookOpen,
 } from 'lucide-react';
-import {useTheme} from '../../components/ThemeContext.tsx';
-import {useNavigate} from 'react-router';
-import {getValidAccessToken, refreshStoredAuthToken} from '../../lib/auth.ts';
+import { useTheme } from '../../components/ThemeContext.tsx';
+import { useNavigate } from 'react-router';
+import { getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth.ts';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -194,20 +194,20 @@ async function fetchWithAuthRetry(url: string, init: RequestInit = {}) {
 }
 
 function scoreColor(score: number) {
-    if (score >= 75) return {color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.25)'};
-    if (score >= 50) return {color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)'};
-    return {color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)'};
+    if (score >= 75) return { color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.25)' };
+    if (score >= 50) return { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)' };
+    return { color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)' };
 }
 
 function ProfileAvatar({
-                           name,
-                           initials,
-                           profileImage,
-                           color,
-                           sizeClass,
-                           textClass,
-                           ringColor,
-                       }: {
+    name,
+    initials,
+    profileImage,
+    color,
+    sizeClass,
+    textClass,
+    ringColor,
+}: {
     name: string;
     initials: string;
     profileImage: string | null;
@@ -236,10 +236,10 @@ function ProfileAvatar({
 }
 
 function GroupNamesDropdown({
-                                groups,
-                                t,
-                                compact = false,
-                            }: {
+    groups,
+    t,
+    compact = false,
+}: {
     groups: string[];
     t: ReturnType<typeof useTheme>['theme'];
     compact?: boolean;
@@ -255,9 +255,8 @@ function GroupNamesDropdown({
                 <button
                     type="button"
                     disabled={!isExpandable}
-                    className={`inline-flex max-w-full items-center gap-2 rounded-lg border transition-all ${
-                        compact ? 'px-2.5 py-1.5 text-xs' : 'px-2.5 py-1 text-sm'
-                    }`}
+                    className={`inline-flex max-w-full items-center gap-2 rounded-lg border transition-all ${compact ? 'px-2.5 py-1.5 text-xs' : 'px-2.5 py-1 text-sm'
+                        }`}
                     style={{
                         background: t.bgInner,
                         color: t.textSecondary,
@@ -291,7 +290,7 @@ function GroupNamesDropdown({
                         </span>
                     )}
                     {isExpandable && (
-                        <ChevronDown className="h-3.5 w-3.5 shrink-0" style={{color: t.textMuted}}/>
+                        <ChevronDown className="h-3.5 w-3.5 shrink-0" style={{ color: t.textMuted }} />
                     )}
                 </button>
             </DropdownMenuTrigger>
@@ -319,7 +318,7 @@ function GroupNamesDropdown({
                         >
                             <span className="truncate">{group}</span>
                             {index === 0 && (
-                                <span className="shrink-0 text-[11px] font-semibold" style={{color: t.textMuted}}>
+                                <span className="shrink-0 text-[11px] font-semibold" style={{ color: t.textMuted }}>
                                     Asosiy
                                 </span>
                             )}
@@ -333,8 +332,8 @@ function GroupNamesDropdown({
 
 // ── FilterSelect ───────────────────────────────────────────────────────────────
 function FilterSelect({
-                          value, options, onChange, t,
-                      }: {
+    value, options, onChange, t,
+}: {
     value: string;
     options: string[];
     onChange: (v: string) => void;
@@ -364,14 +363,14 @@ function FilterSelect({
                 }}
             >
                 {options.map((o) => (
-                    <option key={o} value={o} style={{background: t.bgCard, color: t.textPrimary}}>
+                    <option key={o} value={o} style={{ background: t.bgCard, color: t.textPrimary }}>
                         {o}
                     </option>
                 ))}
             </select>
             <ChevronDown
                 className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 pointer-events-none"
-                style={{color: t.textMuted}}
+                style={{ color: t.textMuted }}
             />
         </div>
     );
@@ -379,17 +378,17 @@ function FilterSelect({
 
 // ── Add Student Modal ──────────────────────────────────────────────────────────
 function AddStudentModal({
-                             open,
-                             onClose,
-                             onAdd,
-                             alreadyAdded,
-                         }: {
+    open,
+    onClose,
+    onAdd,
+    alreadyAdded,
+}: {
     open: boolean;
     onClose: () => void;
     onAdd: (user: AvailableUser) => Promise<void>;
     alreadyAdded: number[];
 }) {
-    const {theme: t} = useTheme();
+    const { theme: t } = useTheme();
     const [query, setQuery] = useState('');
     const [selected, setSelected] = useState<AvailableUser | null>(null);
     const [adding, setAdding] = useState(false);
@@ -498,7 +497,7 @@ function AddStudentModal({
     return (
         <div
             className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)'}}
+            style={{ background: 'rgba(0,0,0,0.55)', backdropFilter: 'blur(4px)' }}
             onClick={(e) => {
                 if (e.target === e.currentTarget) onClose();
             }}
@@ -517,7 +516,7 @@ function AddStudentModal({
                 {/* ── Header ── */}
                 <div
                     className="flex items-center justify-between px-5 py-4 shrink-0"
-                    style={{borderBottom: `1px solid ${t.border}`}}
+                    style={{ borderBottom: `1px solid ${t.border}` }}
                 >
                     <div className="flex items-center gap-3">
                         <div
@@ -527,13 +526,13 @@ function AddStudentModal({
                                 border: '1.5px solid rgba(99,102,241,0.25)',
                             }}
                         >
-                            <UserPlus className="w-4 h-4" style={{color: '#6366F1'}} strokeWidth={1.75}/>
+                            <UserPlus className="w-4 h-4" style={{ color: '#6366F1' }} strokeWidth={1.75} />
                         </div>
                         <div>
-                            <h2 className="text-sm font-bold" style={{color: t.textPrimary}}>
+                            <h2 className="text-sm font-bold" style={{ color: t.textPrimary }}>
                                 O'quvchi qo'shish
                             </h2>
-                            <p className="text-xs" style={{color: t.textMuted}}>
+                            <p className="text-xs" style={{ color: t.textMuted }}>
                                 Foydalanuvchini qidiring va tanlang
                             </p>
                         </div>
@@ -541,7 +540,7 @@ function AddStudentModal({
                     <button
                         onClick={onClose}
                         className="w-8 h-8 rounded-xl flex items-center justify-center transition-all"
-                        style={{background: t.bgInner, border: `1px solid ${t.border}`, color: t.textMuted}}
+                        style={{ background: t.bgInner, border: `1px solid ${t.border}`, color: t.textMuted }}
                         onMouseEnter={(e) => {
                             (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.08)';
                             (e.currentTarget as HTMLElement).style.color = '#EF4444';
@@ -553,7 +552,7 @@ function AddStudentModal({
                             (e.currentTarget as HTMLElement).style.borderColor = t.border;
                         }}
                     >
-                        <X className="w-4 h-4" strokeWidth={2}/>
+                        <X className="w-4 h-4" strokeWidth={2} />
                     </button>
                 </div>
 
@@ -575,7 +574,7 @@ function AddStudentModal({
                             (e.currentTarget as HTMLElement).style.boxShadow = 'none';
                         }}
                     >
-                        <Search className="w-4 h-4 shrink-0" style={{color: t.textMuted}} strokeWidth={1.75}/>
+                        <Search className="w-4 h-4 shrink-0" style={{ color: t.textMuted }} strokeWidth={1.75} />
                         <input
                             ref={searchRef}
                             value={query}
@@ -585,7 +584,7 @@ function AddStudentModal({
                             }}
                             placeholder="Ism, email yoki rol bo'yicha qidirish..."
                             className="flex-1 bg-transparent outline-none text-sm"
-                            style={{color: t.textPrimary}}
+                            style={{ color: t.textPrimary }}
                         />
                         {query && (
                             <button
@@ -595,18 +594,18 @@ function AddStudentModal({
                                     searchRef.current?.focus();
                                 }}
                                 className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
-                                style={{background: t.border, color: t.textMuted}}
+                                style={{ background: t.border, color: t.textMuted }}
                             >
-                                <X className="w-3 h-3" strokeWidth={2.5}/>
+                                <X className="w-3 h-3" strokeWidth={2.5} />
                             </button>
                         )}
                     </div>
 
                     {/* Result count badge */}
                     <div className="flex items-center gap-2 mt-2.5">
-            <span className="text-xs" style={{color: t.textMuted}}>
-              {loadingUsers ? 'Yuklanmoqda...' : `${users.length} ta foydalanuvchi topildi`}
-            </span>
+                        <span className="text-xs" style={{ color: t.textMuted }}>
+                            {loadingUsers ? 'Yuklanmoqda...' : `${users.length} ta foydalanuvchi topildi`}
+                        </span>
                         {query && (
                             <span
                                 className="text-xs px-2 py-0.5 rounded-lg"
@@ -616,8 +615,8 @@ function AddStudentModal({
                                     border: `1px solid ${t.accentBorder}`
                                 }}
                             >
-                "{query}"
-              </span>
+                                "{query}"
+                            </span>
                         )}
                     </div>
                 </div>
@@ -628,14 +627,14 @@ function AddStudentModal({
                         <div className="flex flex-col items-center justify-center py-10">
                             <div
                                 className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3"
-                                style={{background: t.bgInner, border: `1px solid ${t.border}`}}
+                                style={{ background: t.bgInner, border: `1px solid ${t.border}` }}
                             >
                                 <div
                                     className="w-6 h-6 rounded-full border-2 border-current border-t-transparent animate-spin"
-                                    style={{color: '#6366F1'}}/>
+                                    style={{ color: '#6366F1' }} />
                             </div>
-                            <p className="text-sm font-semibold" style={{color: t.textPrimary}}>Yuklanmoqda</p>
-                            <p className="text-xs mt-1 text-center" style={{color: t.textMuted}}>
+                            <p className="text-sm font-semibold" style={{ color: t.textPrimary }}>Yuklanmoqda</p>
+                            <p className="text-xs mt-1 text-center" style={{ color: t.textMuted }}>
                                 Foydalanuvchilar backenddan olinmoqda
                             </p>
                         </div>
@@ -643,12 +642,12 @@ function AddStudentModal({
                         <div className="flex flex-col items-center justify-center py-10">
                             <div
                                 className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3"
-                                style={{background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)'}}
+                                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
                             >
-                                <X className="w-6 h-6" style={{color: '#EF4444'}} strokeWidth={1.5}/>
+                                <X className="w-6 h-6" style={{ color: '#EF4444' }} strokeWidth={1.5} />
                             </div>
-                            <p className="text-sm font-semibold" style={{color: t.textPrimary}}>Xatolik</p>
-                            <p className="text-xs mt-1 text-center" style={{color: t.textMuted}}>
+                            <p className="text-sm font-semibold" style={{ color: t.textPrimary }}>Xatolik</p>
+                            <p className="text-xs mt-1 text-center" style={{ color: t.textMuted }}>
                                 {usersError}
                             </p>
                         </div>
@@ -656,12 +655,12 @@ function AddStudentModal({
                         <div className="flex flex-col items-center justify-center py-10">
                             <div
                                 className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3"
-                                style={{background: t.bgInner, border: `1px solid ${t.border}`}}
+                                style={{ background: t.bgInner, border: `1px solid ${t.border}` }}
                             >
-                                <Search className="w-6 h-6" style={{color: t.textMuted}} strokeWidth={1.5}/>
+                                <Search className="w-6 h-6" style={{ color: t.textMuted }} strokeWidth={1.5} />
                             </div>
-                            <p className="text-sm font-semibold" style={{color: t.textPrimary}}>Topilmadi</p>
-                            <p className="text-xs mt-1 text-center" style={{color: t.textMuted}}>
+                            <p className="text-sm font-semibold" style={{ color: t.textPrimary }}>Topilmadi</p>
+                            <p className="text-xs mt-1 text-center" style={{ color: t.textMuted }}>
                                 "{query}" bo'yicha hech kim topilmadi
                             </p>
                         </div>
@@ -715,13 +714,13 @@ function AddStudentModal({
                                         {/* Info */}
                                         <div className="flex-1 min-w-0">
                                             <p className="text-sm font-semibold truncate"
-                                               style={{color: t.textPrimary}}>
+                                                style={{ color: t.textPrimary }}>
                                                 {user.name}
                                             </p>
                                             <div className="flex items-center gap-1.5 mt-0.5">
-                                                <Mail className="w-3 h-3 shrink-0" style={{color: t.textMuted}}
-                                                      strokeWidth={1.75}/>
-                                                <p className="text-xs truncate" style={{color: t.textMuted}}>
+                                                <Mail className="w-3 h-3 shrink-0" style={{ color: t.textMuted }}
+                                                    strokeWidth={1.75} />
+                                                <p className="text-xs truncate" style={{ color: t.textMuted }}>
                                                     {user.email}
                                                 </p>
                                             </div>
@@ -729,16 +728,16 @@ function AddStudentModal({
 
                                         {/* Role badge + check */}
                                         <div className="flex items-center gap-2 shrink-0">
-                      <span
-                          className="text-xs px-2 py-0.5 rounded-lg hidden sm:inline-block"
-                          style={{
-                              background: t.bgInner,
-                              color: t.textSecondary,
-                              border: `1px solid ${t.border}`,
-                          }}
-                      >
-                        {isDisabled ? "Band" : user.role}
-                      </span>
+                                            <span
+                                                className="text-xs px-2 py-0.5 rounded-lg hidden sm:inline-block"
+                                                style={{
+                                                    background: t.bgInner,
+                                                    color: t.textSecondary,
+                                                    border: `1px solid ${t.border}`,
+                                                }}
+                                            >
+                                                {isDisabled ? "Band" : user.role}
+                                            </span>
 
                                             {/* Selection indicator */}
                                             <div
@@ -747,16 +746,16 @@ function AddStudentModal({
                                                     background: isDisabled
                                                         ? 'transparent'
                                                         : isSelected
-                                                        ? '#6366F1'
-                                                        : (t.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'),
+                                                            ? '#6366F1'
+                                                            : (t.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)'),
                                                     border: `1.5px solid ${isDisabled ? t.border : isSelected ? '#6366F1' : t.border}`,
                                                 }}
                                             >
                                                 {isSelected && !isDisabled && (
-                                                    <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5}/>
+                                                    <Check className="w-3.5 h-3.5 text-white" strokeWidth={2.5} />
                                                 )}
                                                 {isDisabled && (
-                                                    <X className="w-3.5 h-3.5" style={{color: t.textMuted}} strokeWidth={2.5}/>
+                                                    <X className="w-3.5 h-3.5" style={{ color: t.textMuted }} strokeWidth={2.5} />
                                                 )}
                                             </div>
                                         </div>
@@ -792,19 +791,19 @@ function AddStudentModal({
                                 textClass="text-xs"
                             />
                             <div className="flex-1 min-w-0">
-                                <p className="text-xs font-semibold truncate" style={{color: t.textPrimary}}>
+                                <p className="text-xs font-semibold truncate" style={{ color: t.textPrimary }}>
                                     {selected.name}
                                 </p>
-                                <p className="text-xs truncate" style={{color: t.textMuted}}>
+                                <p className="text-xs truncate" style={{ color: t.textMuted }}>
                                     {selected.email}
                                 </p>
                             </div>
                             <button
                                 onClick={() => setSelected(null)}
                                 className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
-                                style={{background: t.border, color: t.textMuted}}
+                                style={{ background: t.border, color: t.textMuted }}
                             >
-                                <X className="w-3 h-3" strokeWidth={2.5}/>
+                                <X className="w-3 h-3" strokeWidth={2.5} />
                             </button>
                         </div>
                     ) : (
@@ -815,8 +814,8 @@ function AddStudentModal({
                                 border: `1px dashed ${t.border}`,
                             }}
                         >
-                            <BookOpen className="w-4 h-4 shrink-0" style={{color: t.textMuted}} strokeWidth={1.5}/>
-                            <p className="text-xs" style={{color: t.textMuted}}>
+                            <BookOpen className="w-4 h-4 shrink-0" style={{ color: t.textMuted }} strokeWidth={1.5} />
+                            <p className="text-xs" style={{ color: t.textMuted }}>
                                 Ro'yxatdan o'quvchi tanlang
                             </p>
                         </div>
@@ -881,7 +880,7 @@ function AddStudentModal({
                                 </>
                             ) : (
                                 <>
-                                    <UserPlus className="w-4 h-4" strokeWidth={2}/>
+                                    <UserPlus className="w-4 h-4" strokeWidth={2} />
                                     Qo'shish
                                 </>
                             )}
@@ -895,7 +894,7 @@ function AddStudentModal({
 
 // ── Main Page ──────────────────────────────────────────────────────────────────
 export function StudentsPage() {
-    const {theme: t} = useTheme();
+    const { theme: t } = useTheme();
     const navigate = useNavigate();
     const scrollTrack = t.isDark ? 'rgba(148,163,184,0.12)' : 'rgba(148,163,184,0.18)';
     const scrollThumb = t.isDark ? 'rgba(148,163,184,0.4)' : 'rgba(100,116,139,0.38)';
@@ -1073,10 +1072,10 @@ export function StudentsPage() {
 
             {/* ── Page header ── */}
             <div className="mb-5 sm:mb-6">
-                <h1 className="text-xl sm:text-2xl font-bold" style={{color: t.textPrimary}}>
+                <h1 className="text-xl sm:text-2xl font-bold" style={{ color: t.textPrimary }}>
                     O'quvchilar
                 </h1>
-                <p className="text-xs sm:text-sm mt-1" style={{color: t.textMuted}}>
+                <p className="text-xs sm:text-sm mt-1" style={{ color: t.textMuted }}>
                     Barcha o'quvchilarni ko'ring va kuzating
                 </p>
             </div>
@@ -1087,7 +1086,7 @@ export function StudentsPage() {
                 <div className="relative flex-1">
                     <Search
                         className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 pointer-events-none"
-                        style={{color: t.textMuted}}
+                        style={{ color: t.textMuted }}
                     />
                     <input
                         type="text"
@@ -1115,9 +1114,9 @@ export function StudentsPage() {
 
                 {/* Filters */}
                 <div className="flex items-center gap-2 flex-wrap">
-                    <FilterSelect value={classF} options={classOptions} onChange={setClassF} t={t}/>
-                    <FilterSelect value={perfF} options={PERF_OPTIONS} onChange={setPerfF} t={t}/>
-                    <FilterSelect value={statusF} options={STATUS_OPTIONS} onChange={setStatusF} t={t}/>
+                    <FilterSelect value={classF} options={classOptions} onChange={setClassF} t={t} />
+                    <FilterSelect value={perfF} options={PERF_OPTIONS} onChange={setPerfF} t={t} />
+                    <FilterSelect value={statusF} options={STATUS_OPTIONS} onChange={setStatusF} t={t} />
                 </div>
 
                 {/* Add Student */}
@@ -1144,7 +1143,7 @@ export function StudentsPage() {
                             : '0 3px 12px rgba(99,102,241,0.22)';
                     }}
                 >
-                    <Plus className="w-4 h-4"/>
+                    <Plus className="w-4 h-4" />
                     <span>O'quvchi qo'shish</span>
                 </button>
             </div>
@@ -1159,7 +1158,7 @@ export function StudentsPage() {
                         color: t.accent,
                     }}
                 >
-                    <Users className="w-3.5 h-3.5"/>
+                    <Users className="w-3.5 h-3.5" />
                     {total} o'quvchi topildi
                 </div>
                 {(search || classF !== 'Barchasi' || perfF !== 'Barchasi' || statusF !== 'Barchasi') && (
@@ -1196,16 +1195,16 @@ export function StudentsPage() {
                     <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
                         <div
                             className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-                            style={{background: t.bgInner, border: `1px solid ${t.border}`}}
+                            style={{ background: t.bgInner, border: `1px solid ${t.border}` }}
                         >
                             <div
                                 className="w-7 h-7 rounded-full border-2 border-current border-t-transparent animate-spin"
-                                style={{color: '#6366F1'}}/>
+                                style={{ color: '#6366F1' }} />
                         </div>
-                        <p className="text-sm font-semibold mb-1" style={{color: t.textPrimary}}>
+                        <p className="text-sm font-semibold mb-1" style={{ color: t.textPrimary }}>
                             O'quvchilar yuklanmoqda
                         </p>
-                        <p className="text-xs" style={{color: t.textMuted}}>
+                        <p className="text-xs" style={{ color: t.textMuted }}>
                             Ro'yxat backenddan olinmoqda
                         </p>
                     </div>
@@ -1213,14 +1212,14 @@ export function StudentsPage() {
                     <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
                         <div
                             className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-                            style={{background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)'}}
+                            style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}
                         >
-                            <X className="w-8 h-8" style={{color: '#EF4444'}}/>
+                            <X className="w-8 h-8" style={{ color: '#EF4444' }} />
                         </div>
-                        <p className="text-sm font-semibold mb-1" style={{color: t.textPrimary}}>
+                        <p className="text-sm font-semibold mb-1" style={{ color: t.textPrimary }}>
                             O'quvchilar topilmadi
                         </p>
-                        <p className="text-xs mb-4" style={{color: t.textMuted}}>
+                        <p className="text-xs mb-4" style={{ color: t.textMuted }}>
                             {error}
                         </p>
                         <button
@@ -1239,205 +1238,205 @@ export function StudentsPage() {
                     <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
                         <div
                             className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-                            style={{background: t.bgInner, border: `1px solid ${t.border}`}}
+                            style={{ background: t.bgInner, border: `1px solid ${t.border}` }}
                         >
-                            <Users className="w-8 h-8" style={{color: t.textMuted}}/>
+                            <Users className="w-8 h-8" style={{ color: t.textMuted }} />
                         </div>
-                        <p className="text-sm font-semibold mb-1" style={{color: t.textPrimary}}>
+                        <p className="text-sm font-semibold mb-1" style={{ color: t.textPrimary }}>
                             O'quvchilar topilmadi
                         </p>
-                        <p className="text-xs" style={{color: t.textMuted}}>
+                        <p className="text-xs" style={{ color: t.textMuted }}>
                             Qidiruv yoki filtr shartlarini o'zgartiring
                         </p>
                     </div>
                 ) : (
                     <>
                         {/* ── Desktop / Tablet Table ── */}
-                        <div className="students-scroll hidden sm:block overflow-x-auto overflow-y-auto" style={{maxHeight: 560}}>
+                        <div className="students-scroll hidden sm:block overflow-x-auto overflow-y-auto" style={{ maxHeight: 560 }}>
                             <table className="w-full">
                                 <thead>
-                                <tr style={{
-                                    borderBottom: `1px solid ${t.border}`,
-                                    background: t.bgInner,
-                                    position: 'sticky',
-                                    top: 0,
-                                    zIndex: 1
-                                }}>
-                                    {TABLE_HEADERS.map((h) => (
-                                        <th
-                                            key={h}
-                                            className="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider whitespace-nowrap"
-                                            style={{color: t.textMuted}}
-                                        >
-                                            {h}
-                                        </th>
-                                    ))}
-                                </tr>
+                                    <tr style={{
+                                        borderBottom: `1px solid ${t.border}`,
+                                        background: t.bgInner,
+                                        position: 'sticky',
+                                        top: 0,
+                                        zIndex: 1
+                                    }}>
+                                        {TABLE_HEADERS.map((h) => (
+                                            <th
+                                                key={h}
+                                                className="text-left px-5 py-3.5 text-xs font-semibold uppercase tracking-wider whitespace-nowrap"
+                                                style={{ color: t.textMuted }}
+                                            >
+                                                {h}
+                                            </th>
+                                        ))}
+                                    </tr>
                                 </thead>
                                 <tbody>
-                                {students.map((student, idx) => {
-                                    const sc = scoreColor(student.avgScore);
-                                    return (
-                                        <tr
-                                            key={student.id}
-                                            className="transition-colors cursor-default"
-                                            style={{
-                                                borderBottom: idx < students.length - 1
-                                                    ? `1px solid ${t.border}`
-                                                    : 'none',
-                                            }}
-                                            onMouseEnter={(e) => {
-                                                (e.currentTarget as HTMLElement).style.background = t.bgCardHover;
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                (e.currentTarget as HTMLElement).style.background = 'transparent';
-                                            }}
-                                        >
-                                            {/* Student */}
-                                            <td className="px-5 py-3.5">
-                                                <div className="flex items-center gap-3">
-                                                    <ProfileAvatar
-                                                        name={student.name}
-                                                        initials={student.initials}
-                                                        profileImage={student.profileImage}
-                                                        color={AVATAR_COLORS[idx % AVATAR_COLORS.length]}
-                                                        sizeClass="w-9 h-9"
-                                                        textClass="text-xs"
-                                                    />
-                                                    <div className="min-w-0">
-                                                        <p className="text-sm font-semibold truncate"
-                                                           style={{color: t.textPrimary}}>
-                                                            {student.name}
-                                                        </p>
-                                                        <p className="text-xs truncate" style={{color: t.textMuted}}>
-                                                            {student.email}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            </td>
-
-                                            {/* Class */}
-                                            <td className="px-5 py-3.5">
-                                                <GroupNamesDropdown groups={student.groupNames} t={t}/>
-                                            </td>
-
-                                            {/* Average Score */}
-                                            <td className="px-5 py-3.5">
-                                                <div className="flex items-center gap-2.5">
-                            <span
-                                className="text-xs font-bold px-2.5 py-1 rounded-lg"
-                                style={{
-                                    background: sc.bg,
-                                    color: sc.color,
-                                    border: `1px solid ${sc.border}`,
-                                    minWidth: '3.5rem',
-                                    display: 'inline-flex',
-                                    justifyContent: 'center',
-                                }}
-                            >
-                              {student.avgScore}
-                            </span>
-                                                    <div
-                                                        className="w-20 h-1.5 rounded-full overflow-hidden hidden lg:block"
-                                                        style={{background: t.bgInner}}
-                                                    >
-                                                        <div
-                                                            className="h-1.5 rounded-full transition-all"
-                                                            style={{
-                                                                width: `${Math.min(student.avgScore, 100)}%`,
-                                                                background: sc.color,
-                                                                opacity: 0.7
-                                                            }}
+                                    {students.map((student, idx) => {
+                                        const sc = scoreColor(student.avgScore);
+                                        return (
+                                            <tr
+                                                key={student.id}
+                                                className="transition-colors cursor-default"
+                                                style={{
+                                                    borderBottom: idx < students.length - 1
+                                                        ? `1px solid ${t.border}`
+                                                        : 'none',
+                                                }}
+                                                onMouseEnter={(e) => {
+                                                    (e.currentTarget as HTMLElement).style.background = t.bgCardHover;
+                                                }}
+                                                onMouseLeave={(e) => {
+                                                    (e.currentTarget as HTMLElement).style.background = 'transparent';
+                                                }}
+                                            >
+                                                {/* Student */}
+                                                <td className="px-5 py-3.5">
+                                                    <div className="flex items-center gap-3">
+                                                        <ProfileAvatar
+                                                            name={student.name}
+                                                            initials={student.initials}
+                                                            profileImage={student.profileImage}
+                                                            color={AVATAR_COLORS[idx % AVATAR_COLORS.length]}
+                                                            sizeClass="w-9 h-9"
+                                                            textClass="text-xs"
                                                         />
+                                                        <div className="min-w-0">
+                                                            <p className="text-sm font-semibold truncate"
+                                                                style={{ color: t.textPrimary }}>
+                                                                {student.name}
+                                                            </p>
+                                                            <p className="text-xs truncate" style={{ color: t.textMuted }}>
+                                                                {student.email}
+                                                            </p>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </td>
+                                                </td>
 
-                                            {/* Tests */}
-                                            <td className="px-5 py-3.5">
-                          <span className="text-sm" style={{color: t.textSecondary}}>
-                            {student.testsCompleted} test
-                          </span>
-                                            </td>
+                                                {/* Class */}
+                                                <td className="px-5 py-3.5">
+                                                    <GroupNamesDropdown groups={student.groupNames} t={t} />
+                                                </td>
 
-                                            {/* Last Activity */}
-                                            <td className="px-5 py-3.5">
-                          <span className="text-xs font-medium tracking-wide" style={{color: t.textMuted}}>
-                            {student.lastActivity}
-                          </span>
-                                            </td>
+                                                {/* Average Score */}
+                                                <td className="px-5 py-3.5">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <span
+                                                            className="text-xs font-bold px-2.5 py-1 rounded-lg"
+                                                            style={{
+                                                                background: sc.bg,
+                                                                color: sc.color,
+                                                                border: `1px solid ${sc.border}`,
+                                                                minWidth: '3.5rem',
+                                                                display: 'inline-flex',
+                                                                justifyContent: 'center',
+                                                            }}
+                                                        >
+                                                            {student.avgScore}
+                                                        </span>
+                                                        <div
+                                                            className="w-20 h-1.5 rounded-full overflow-hidden hidden lg:block"
+                                                            style={{ background: t.bgInner }}
+                                                        >
+                                                            <div
+                                                                className="h-1.5 rounded-full transition-all"
+                                                                style={{
+                                                                    width: `${Math.min(student.avgScore, 100)}%`,
+                                                                    background: sc.color,
+                                                                    opacity: 0.7
+                                                                }}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </td>
 
-                                            {/* Status */}
-                                            <td className="px-5 py-3.5">
-                                                {student.status === 'active' ? (
-                                                    <span
-                                                        className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg"
+                                                {/* Tests */}
+                                                <td className="px-5 py-3.5">
+                                                    <span className="text-sm" style={{ color: t.textSecondary }}>
+                                                        {student.testsCompleted} test
+                                                    </span>
+                                                </td>
+
+                                                {/* Last Activity */}
+                                                <td className="px-5 py-3.5">
+                                                    <span className="text-xs font-medium tracking-wide" style={{ color: t.textMuted }}>
+                                                        {student.lastActivity}
+                                                    </span>
+                                                </td>
+
+                                                {/* Status */}
+                                                <td className="px-5 py-3.5">
+                                                    {student.status === 'active' ? (
+                                                        <span
+                                                            className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg"
+                                                            style={{
+                                                                background: 'rgba(34,197,94,0.1)',
+                                                                color: '#22C55E',
+                                                                border: '1px solid rgba(34,197,94,0.25)',
+                                                            }}
+                                                        >
+                                                            <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />
+                                                            Faol
+                                                        </span>
+                                                    ) : (
+                                                        <span
+                                                            className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg"
+                                                            style={{
+                                                                background: t.bgInner,
+                                                                color: t.textMuted,
+                                                                border: `1px solid ${t.border}`,
+                                                            }}
+                                                        >
+                                                            <span
+                                                                className="w-1.5 h-1.5 rounded-full inline-block"
+                                                                style={{ background: t.textMuted }}
+                                                            />
+                                                            Nofaol
+                                                        </span>
+                                                    )}
+                                                </td>
+
+                                                {/* Actions */}
+                                                <td className="px-5 py-3.5">
+                                                    <button
+                                                        className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
                                                         style={{
-                                                            background: 'rgba(34,197,94,0.1)',
-                                                            color: '#22C55E',
-                                                            border: '1px solid rgba(34,197,94,0.25)',
+                                                            background: t.accentMuted,
+                                                            color: t.accent,
+                                                            border: `1px solid ${t.accentBorder}`,
+                                                        }}
+                                                        onClick={() => navigate(`/students/${student.id}`)}
+                                                        onMouseEnter={(e) => {
+                                                            (e.currentTarget as HTMLElement).style.background = t.isDark
+                                                                ? 'rgba(99,102,241,0.2)'
+                                                                : 'rgba(99,102,241,0.14)';
+                                                        }}
+                                                        onMouseLeave={(e) => {
+                                                            (e.currentTarget as HTMLElement).style.background = t.accentMuted;
                                                         }}
                                                     >
-                              <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block"/>
-                              Faol
-                            </span>
-                                                ) : (
-                                                    <span
-                                                        className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg"
-                                                        style={{
-                                                            background: t.bgInner,
-                                                            color: t.textMuted,
-                                                            border: `1px solid ${t.border}`,
-                                                        }}
-                                                    >
-                              <span
-                                  className="w-1.5 h-1.5 rounded-full inline-block"
-                                  style={{background: t.textMuted}}
-                              />
-                              Nofaol
-                            </span>
-                                                )}
-                                            </td>
-
-                                            {/* Actions */}
-                                            <td className="px-5 py-3.5">
-                                                <button
-                                                    className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all"
-                                                    style={{
-                                                        background: t.accentMuted,
-                                                        color: t.accent,
-                                                        border: `1px solid ${t.accentBorder}`,
-                                                    }}
-                                                    onClick={() => navigate(`/students/${student.id}`)}
-                                                    onMouseEnter={(e) => {
-                                                        (e.currentTarget as HTMLElement).style.background = t.isDark
-                                                            ? 'rgba(99,102,241,0.2)'
-                                                            : 'rgba(99,102,241,0.14)';
-                                                    }}
-                                                    onMouseLeave={(e) => {
-                                                        (e.currentTarget as HTMLElement).style.background = t.accentMuted;
-                                                    }}
-                                                >
-                                                    <Eye className="w-3.5 h-3.5"/>
-                                                    Ko'rish
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
+                                                        <Eye className="w-3.5 h-3.5" />
+                                                        Ko'rish
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                                 </tbody>
                             </table>
                         </div>
 
                         {/* ── Mobile cards ── */}
-                        <div className="block sm:hidden divide-y" style={{borderColor: t.border}}>
+                        <div className="block sm:hidden divide-y" style={{ borderColor: t.border }}>
                             {students.map((student, idx) => {
                                 const sc = scoreColor(student.avgScore);
                                 return (
                                     <div
                                         key={student.id}
                                         className="p-4 transition-colors"
-                                        style={{borderBottom: idx < students.length - 1 ? `1px solid ${t.border}` : 'none'}}
+                                        style={{ borderBottom: idx < students.length - 1 ? `1px solid ${t.border}` : 'none' }}
                                     >
                                         <div className="flex items-center gap-3 mb-3">
                                             <ProfileAvatar
@@ -1450,10 +1449,10 @@ export function StudentsPage() {
                                             />
                                             <div className="flex-1 min-w-0">
                                                 <p className="text-sm font-semibold truncate"
-                                                   style={{color: t.textPrimary}}>
+                                                    style={{ color: t.textPrimary }}>
                                                     {student.name}
                                                 </p>
-                                                <p className="text-xs truncate" style={{color: t.textMuted}}>
+                                                <p className="text-xs truncate" style={{ color: t.textMuted }}>
                                                     {student.email}
                                                 </p>
                                             </div>
@@ -1466,9 +1465,9 @@ export function StudentsPage() {
                                                         border: '1px solid rgba(34,197,94,0.25)'
                                                     }}
                                                 >
-                          <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block"/>
-                          Faol
-                        </span>
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />
+                                                    Faol
+                                                </span>
                                             ) : (
                                                 <span
                                                     className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-lg shrink-0"
@@ -1478,36 +1477,36 @@ export function StudentsPage() {
                                                         border: `1px solid ${t.border}`
                                                     }}
                                                 >
-                          <span className="w-1.5 h-1.5 rounded-full inline-block" style={{background: t.textMuted}}/>
-                          Nofaol
-                        </span>
+                                                    <span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: t.textMuted }} />
+                                                    Nofaol
+                                                </span>
                                             )}
                                         </div>
 
                                         <div
                                             className="grid grid-cols-3 gap-2 p-3 rounded-xl mb-3"
-                                            style={{background: t.bgInner, border: `1px solid ${t.border}`}}
+                                            style={{ background: t.bgInner, border: `1px solid ${t.border}` }}
                                         >
                                             <div className="text-center">
-                                                <p className="text-xs mb-0.5" style={{color: t.textMuted}}>Sinf</p>
+                                                <p className="text-xs mb-0.5" style={{ color: t.textMuted }}>Sinf</p>
                                                 <div className="flex justify-center">
-                                                    <GroupNamesDropdown groups={student.groupNames} t={t} compact/>
+                                                    <GroupNamesDropdown groups={student.groupNames} t={t} compact />
                                                 </div>
                                             </div>
                                             <div className="text-center" style={{
                                                 borderLeft: `1px solid ${t.border}`,
                                                 borderRight: `1px solid ${t.border}`
                                             }}>
-                                                <p className="text-xs mb-0.5" style={{color: t.textMuted}}>O'rtacha
+                                                <p className="text-xs mb-0.5" style={{ color: t.textMuted }}>O'rtacha
                                                     ball</p>
                                                 <span className="text-xs font-bold px-1.5 py-0.5 rounded"
-                                                      style={{background: sc.bg, color: sc.color}}>
-                          {student.avgScore}
-                        </span>
+                                                    style={{ background: sc.bg, color: sc.color }}>
+                                                    {student.avgScore}
+                                                </span>
                                             </div>
                                             <div className="text-center">
-                                                <p className="text-xs mb-0.5" style={{color: t.textMuted}}>Testlar</p>
-                                                <p className="text-xs font-semibold" style={{color: t.textPrimary}}>
+                                                <p className="text-xs mb-0.5" style={{ color: t.textMuted }}>Testlar</p>
+                                                <p className="text-xs font-semibold" style={{ color: t.textPrimary }}>
                                                     {student.testsCompleted}
                                                 </p>
                                             </div>
@@ -1515,7 +1514,7 @@ export function StudentsPage() {
 
                                         <div className="flex items-center justify-between">
                                             <p className="text-xs font-medium tracking-wide"
-                                               style={{color: t.textMuted}}>
+                                                style={{ color: t.textMuted }}>
                                                 So'nggi: {student.lastActivity}
                                             </p>
                                             <button
@@ -1528,7 +1527,7 @@ export function StudentsPage() {
                                                 }}
                                                 onClick={() => navigate(`/students/${student.id}`)}
                                             >
-                                                <Eye className="w-3.5 h-3.5"/>
+                                                <Eye className="w-3.5 h-3.5" />
                                                 Ko'rish
                                             </button>
                                         </div>
@@ -1551,9 +1550,9 @@ export function StudentsPage() {
                     >
                         <span>Jami {total} ta o'quvchi</span>
                         <div className="flex items-center gap-3">
-              <span style={{color: t.textSecondary}}>
-                Ko'rsatilmoqda: {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)}
-              </span>
+                            <span style={{ color: t.textSecondary }}>
+                                Ko'rsatilmoqda: {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)}
+                            </span>
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
@@ -1568,9 +1567,9 @@ export function StudentsPage() {
                                 >
                                     Oldingi
                                 </button>
-                                <span style={{color: t.textSecondary}}>
-                  {page} / {pages}
-                </span>
+                                <span style={{ color: t.textSecondary }}>
+                                    {page} / {pages}
+                                </span>
                                 <button
                                     onClick={() => setPage((prev) => Math.min(prev + 1, pages))}
                                     disabled={page >= pages || loading}

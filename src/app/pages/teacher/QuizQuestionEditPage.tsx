@@ -234,10 +234,10 @@ function parseMathSegments(value: string) {
     const mathValue = match.startsWith('$$')
       ? match.slice(2, -2)
       : match.startsWith('\\[')
-      ? match.slice(2, -2)
-      : match.startsWith('\\(')
-      ? match.slice(2, -2)
-      : match.slice(1, -1);
+        ? match.slice(2, -2)
+        : match.startsWith('\\(')
+          ? match.slice(2, -2)
+          : match.slice(1, -1);
 
     segments.push({ type: 'math', value: mathValue, displayMode });
     lastIndex = offset + match.length;
@@ -286,29 +286,29 @@ function MathText({ text }: { text: string }) {
 // ─────────────────────────────────────────────
 function tableToMarkdown(rows: string[][]): string {
   if (rows.length === 0) return '';
-  
+
   const lines: string[] = [];
-  
+
   // Header row
   lines.push('| ' + rows[0].map(cell => cell.trim() || ' ').join(' | ') + ' |');
-  
+
   // Separator
   lines.push('| ' + rows[0].map(() => '---').join(' | ') + ' |');
-  
+
   // Data rows
   for (let i = 1; i < rows.length; i++) {
     lines.push('| ' + rows[i].map(cell => cell.trim() || ' ').join(' | ') + ' |');
   }
-  
+
   return lines.join('\n');
 }
 
 // ─────────────────────────────────────────────
 //  Table Builder Component
 // ─────────────────────────────────────────────
-function TableBuilder({ 
-  onConvert 
-}: { 
+function TableBuilder({
+  onConvert
+}: {
   onConvert: (markdown: string) => void;
 }) {
   const { theme: t } = useTheme();
@@ -319,8 +319,8 @@ function TableBuilder({
   ]);
 
   const updateCell = (rowIdx: number, colIdx: number, value: string) => {
-    setRows(prev => prev.map((row, r) => 
-      r === rowIdx 
+    setRows(prev => prev.map((row, r) =>
+      r === rowIdx
         ? row.map((cell, c) => c === colIdx ? value : cell)
         : row
     ));
@@ -331,7 +331,7 @@ function TableBuilder({
   };
 
   const addColumn = () => {
-    setRows(prev => prev.map((row, idx) => 
+    setRows(prev => prev.map((row, idx) =>
       [...row, idx === 0 ? `Ustun ${row.length + 1}` : '']
     ));
   };
@@ -362,7 +362,7 @@ function TableBuilder({
   return (
     <div className="space-y-4">
       {/* Table builder */}
-      <div 
+      <div
         className="overflow-x-auto rounded-xl p-4"
         style={{ background: t.bgInner, border: `1px solid ${t.border}` }}
       >
@@ -376,10 +376,10 @@ function TableBuilder({
                     onClick={() => removeColumn(colIdx)}
                     disabled={rows[0].length <= 2}
                     className="w-6 h-6 rounded-lg flex items-center justify-center mx-auto transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                    style={{ 
-                      background: t.bgCard, 
-                      border: `1px solid ${t.border}`, 
-                      color: t.textMuted 
+                    style={{
+                      background: t.bgCard,
+                      border: `1px solid ${t.border}`,
+                      color: t.textMuted
                     }}
                     onMouseEnter={(e) => {
                       if (rows[0].length > 2) {
@@ -411,10 +411,10 @@ function TableBuilder({
                       onClick={() => removeRow(rowIdx)}
                       disabled={rows.length <= 2}
                       className="w-6 h-6 rounded-lg flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                      style={{ 
-                        background: t.bgCard, 
-                        border: `1px solid ${t.border}`, 
-                        color: t.textMuted 
+                      style={{
+                        background: t.bgCard,
+                        border: `1px solid ${t.border}`,
+                        color: t.textMuted
                       }}
                       onMouseEnter={(e) => {
                         if (rows.length > 2) {
@@ -465,10 +465,10 @@ function TableBuilder({
                 {/* Row grip (decorative) */}
                 <td className="pl-2">
                   {rowIdx > 0 && (
-                    <GripVertical 
-                      className="w-4 h-4 cursor-grab" 
-                      style={{ color: t.textMuted }} 
-                      strokeWidth={1.5} 
+                    <GripVertical
+                      className="w-4 h-4 cursor-grab"
+                      style={{ color: t.textMuted }}
+                      strokeWidth={1.5}
                     />
                   )}
                 </td>
@@ -482,10 +482,10 @@ function TableBuilder({
           <button
             onClick={addRow}
             className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all"
-            style={{ 
-              background: t.bgCard, 
-              border: `1px solid ${t.border}`, 
-              color: t.textMuted 
+            style={{
+              background: t.bgCard,
+              border: `1px solid ${t.border}`,
+              color: t.textMuted
             }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLElement).style.background = t.accentMuted;
@@ -505,10 +505,10 @@ function TableBuilder({
           <button
             onClick={addColumn}
             className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all"
-            style={{ 
-              background: t.bgCard, 
-              border: `1px solid ${t.border}`, 
-              color: t.textMuted 
+            style={{
+              background: t.bgCard,
+              border: `1px solid ${t.border}`,
+              color: t.textMuted
             }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLElement).style.background = t.accentMuted;
@@ -528,10 +528,10 @@ function TableBuilder({
           <button
             onClick={handleReset}
             className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold transition-all ml-auto"
-            style={{ 
-              background: t.bgCard, 
-              border: `1px solid ${t.border}`, 
-              color: t.textMuted 
+            style={{
+              background: t.bgCard,
+              border: `1px solid ${t.border}`,
+              color: t.textMuted
             }}
             onMouseEnter={(e) => {
               (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.1)';
@@ -572,7 +572,7 @@ function TableBuilder({
       </button>
 
       {/* Info */}
-      <div 
+      <div
         className="flex items-start gap-2 p-3 rounded-lg"
         style={{ background: t.accentMuted, border: `1px solid ${t.accentBorder}` }}
       >
@@ -582,7 +582,7 @@ function TableBuilder({
             Jadval qanday ishlaydi?
           </p>
           <p className="text-xs mt-1" style={{ color: t.textSecondary }}>
-            Jadvalni to'ldiring, keyin "Markdown-ga o'girish" tugmasini bosing. 
+            Jadvalni to'ldiring, keyin "Markdown-ga o'girish" tugmasini bosing.
             Jadval avtomatik ravishda Markdown formatiga aylanadi va pastdagi matn maydoniga qo'shiladi.
           </p>
         </div>
@@ -620,7 +620,7 @@ function StyledInput({
       className={`w-full px-4 rounded-xl text-sm focus:outline-none transition-all ${className}`}
       style={{ background: t.bgInner, border: `1px solid ${t.border}`, color: t.textPrimary, height: '42px' }}
       onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#6366F1'; (e.target as HTMLElement).style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; }}
-      onBlur={(e)  => { (e.target as HTMLElement).style.borderColor = t.border;  (e.target as HTMLElement).style.boxShadow = 'none'; }}
+      onBlur={(e) => { (e.target as HTMLElement).style.borderColor = t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
     />
   );
 }
@@ -639,7 +639,7 @@ function StyledSelect({
         className="w-full appearance-none pr-9 pl-4 rounded-xl text-sm focus:outline-none cursor-pointer transition-all"
         style={{ background: t.bgInner, border: `1px solid ${t.border}`, color: t.textPrimary, height: '42px' }}
         onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#6366F1'; (e.target as HTMLElement).style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; }}
-        onBlur={(e)  => { (e.target as HTMLElement).style.borderColor = t.border;  (e.target as HTMLElement).style.boxShadow = 'none'; }}
+        onBlur={(e) => { (e.target as HTMLElement).style.borderColor = t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
       >
         {options.map(({ value: v, label }) => (
           <option key={v} value={v} style={{ background: t.bgCard }}>{label}</option>
@@ -672,7 +672,7 @@ function StyledTextarea({
         minHeight: `${rows * 24 + 24}px`,
       }}
       onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#6366F1'; (e.target as HTMLElement).style.boxShadow = '0 0 0 3px rgba(99,102,241,0.12)'; }}
-      onBlur={(e)  => { (e.target as HTMLElement).style.borderColor = t.border;  (e.target as HTMLElement).style.boxShadow = 'none'; }}
+      onBlur={(e) => { (e.target as HTMLElement).style.borderColor = t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
     />
   );
 }
@@ -681,9 +681,9 @@ function StyledTextarea({
 //  Difficulty selector (coloured pills)
 // ─────────────────────────────────────────────
 const DIFF_OPTIONS: { value: Difficulty; label: string; color: string; bg: string; border: string }[] = [
-  { value: 'oson',   label: 'Oson',   color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.3)'   },
-  { value: "o'rta",  label: "O'rta",  color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.3)' },
-  { value: 'qiyin',  label: 'Qiyin',  color: '#EF4444', bg: 'rgba(239,68,68,0.1)',  border: 'rgba(239,68,68,0.3)'  },
+  { value: 'oson', label: 'Oson', color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.3)' },
+  { value: "o'rta", label: "O'rta", color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.3)' },
+  { value: 'qiyin', label: 'Qiyin', color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.3)' },
 ];
 
 function DifficultyPills({ value, onChange }: { value: Difficulty; onChange: (v: Difficulty) => void }) {
@@ -700,9 +700,9 @@ function DifficultyPills({ value, onChange }: { value: Difficulty; onChange: (v:
             className="flex-1 py-2 rounded-xl text-xs font-semibold transition-all"
             style={{
               background: active ? d.bg : t.bgInner,
-              color:      active ? d.color : t.textMuted,
-              border:     `1.5px solid ${active ? d.border : t.border}`,
-              boxShadow:  active ? `0 0 0 3px ${d.bg}` : 'none',
+              color: active ? d.color : t.textMuted,
+              border: `1.5px solid ${active ? d.border : t.border}`,
+              boxShadow: active ? `0 0 0 3px ${d.bg}` : 'none',
             }}
           >
             {d.label}
@@ -717,10 +717,10 @@ function DifficultyPills({ value, onChange }: { value: Difficulty; onChange: (v:
 //  Options editor
 // ─────────────────────────────────────────────
 const OPTION_COLORS: Record<string, { color: string; bg: string; border: string }> = {
-  A: { color: '#6366F1', bg: 'rgba(99,102,241,0.1)',  border: 'rgba(99,102,241,0.25)'  },
-  B: { color: '#3B82F6', bg: 'rgba(59,130,246,0.1)',  border: 'rgba(59,130,246,0.25)'  },
+  A: { color: '#6366F1', bg: 'rgba(99,102,241,0.1)', border: 'rgba(99,102,241,0.25)' },
+  B: { color: '#3B82F6', bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.25)' },
   C: { color: '#8B5CF6', bg: 'rgba(139,92,246,0.1)', border: 'rgba(139,92,246,0.25)' },
-  D: { color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.25)'   },
+  D: { color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.25)' },
 };
 
 function OptionsEditor({
@@ -1212,7 +1212,7 @@ export function QuizQuestionEditPage() {
             className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all"
             style={{ background: t.bgCard, border: `1px solid ${t.border}`, color: t.textMuted }}
             onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = '#F59E0B'; (e.currentTarget as HTMLElement).style.color = '#F59E0B'; }}
-            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = t.border;  (e.currentTarget as HTMLElement).style.color = t.textMuted; }}
+            onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = t.border; (e.currentTarget as HTMLElement).style.color = t.textMuted; }}
           >
             <RotateCcw className="w-4 h-4" strokeWidth={1.75} />
             <span className="hidden sm:inline">Qayta tiklash</span>
@@ -1232,8 +1232,8 @@ export function QuizQuestionEditPage() {
             {saved
               ? <><CheckCircle className="w-4 h-4" strokeWidth={2} />Saqlandi!</>
               : saving
-              ? <><div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />Saqlanmoqda...</>
-              : <><Save className="w-4 h-4" strokeWidth={1.75} />Saqlash</>}
+                ? <><div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />Saqlanmoqda...</>
+                : <><Save className="w-4 h-4" strokeWidth={1.75} />Saqlash</>}
           </button>
         </div>
       </div>
@@ -1289,8 +1289,8 @@ export function QuizQuestionEditPage() {
                       className="px-2 py-0.5 rounded-lg text-xs transition-all"
                       style={{
                         background: form.topic === tp ? t.accentMuted : t.bgInner,
-                        color:      form.topic === tp ? t.accent       : t.textMuted,
-                        border:     `1px solid ${form.topic === tp ? t.accentBorder : t.border}`,
+                        color: form.topic === tp ? t.accent : t.textMuted,
+                        border: `1px solid ${form.topic === tp ? t.accentBorder : t.border}`,
                       }}
                     >
                       {tp}
@@ -1381,11 +1381,11 @@ export function QuizQuestionEditPage() {
                 <label className="block text-xs font-semibold mb-2" style={{ color: t.textSecondary }}>
                   Jadval Yaratish (Grafikli)
                 </label>
-                <TableBuilder 
+                <TableBuilder
                   onConvert={(markdown) => {
                     update('tableMarkdown', markdown);
                     setHasChanges(true);
-                  }} 
+                  }}
                 />
               </div>
 
@@ -1486,8 +1486,8 @@ export function QuizQuestionEditPage() {
             {saved
               ? <><CheckCircle className="w-4 h-4" strokeWidth={2} />Muvaffaqiyatli saqlandi!</>
               : saving
-              ? <><div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />Saqlanmoqda...</>
-              : <><Save className="w-4 h-4" strokeWidth={1.75} />O'zgarishlarni saqlash</>}
+                ? <><div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />Saqlanmoqda...</>
+                : <><Save className="w-4 h-4" strokeWidth={1.75} />O'zgarishlarni saqlash</>}
           </button>
         </div>
       </div>

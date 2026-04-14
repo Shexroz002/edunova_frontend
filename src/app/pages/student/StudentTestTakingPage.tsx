@@ -344,7 +344,7 @@ function formatTime(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const mins = Math.floor((seconds % 3600) / 60);
   const secs = seconds % 60;
-  
+
   if (hours > 0) {
     return `${hours}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   }
@@ -394,10 +394,10 @@ function parseMathSegments(value: string) {
     const mathValue = match.startsWith('$$')
       ? match.slice(2, -2)
       : match.startsWith('\\[')
-      ? match.slice(2, -2)
-      : match.startsWith('\\(')
-      ? match.slice(2, -2)
-      : match.slice(1, -1);
+        ? match.slice(2, -2)
+        : match.startsWith('\\(')
+          ? match.slice(2, -2)
+          : match.slice(1, -1);
 
     segments.push({ type: 'math', value: mathValue, displayMode });
     lastIndex = offset + match.length;
@@ -533,7 +533,7 @@ function QuestionMapModal({
   onClose: () => void;
 }) {
   const { theme: t } = useTheme();
-  
+
   const answeredCount = Object.keys(answers).length;
   const unansweredCount = questions.length - answeredCount;
 
@@ -650,7 +650,7 @@ function QuestionMapModal({
             {questions.map((question, index) => {
               const isAnswered = !!answers[question.id];
               const isCurrent = index === currentQuestionIndex;
-              
+
               return (
                 <button
                   key={question.id}
@@ -663,18 +663,18 @@ function QuestionMapModal({
                     background: isCurrent
                       ? (t.isDark ? 'rgba(99,102,241,0.2)' : 'rgba(99,102,241,0.15)')
                       : isAnswered
-                      ? (t.isDark ? 'rgba(34,197,94,0.12)' : 'rgba(34,197,94,0.08)')
-                      : (t.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'),
+                        ? (t.isDark ? 'rgba(34,197,94,0.12)' : 'rgba(34,197,94,0.08)')
+                        : (t.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'),
                     border: isCurrent
                       ? `2px solid #6366F1`
                       : isAnswered
-                      ? `1.5px solid rgba(34,197,94,0.3)`
-                      : `1.5px solid ${t.border}`,
+                        ? `1.5px solid rgba(34,197,94,0.3)`
+                        : `1.5px solid ${t.border}`,
                     color: isCurrent
                       ? '#6366F1'
                       : isAnswered
-                      ? '#22C55E'
-                      : t.textSecondary,
+                        ? '#22C55E'
+                        : t.textSecondary,
                   }}
                   onMouseEnter={(e) => {
                     if (!isCurrent) {
@@ -687,8 +687,8 @@ function QuestionMapModal({
                     (e.currentTarget as HTMLElement).style.borderColor = isCurrent
                       ? '#6366F1'
                       : isAnswered
-                      ? 'rgba(34,197,94,0.3)'
-                      : t.border;
+                        ? 'rgba(34,197,94,0.3)'
+                        : t.border;
                   }}
                 >
                   {index + 1}
@@ -760,7 +760,7 @@ function SubmitConfirmationModal({
           >
             <AlertTriangle className="w-8 h-8" style={{ color: '#FBBF24' }} strokeWidth={2} />
           </div>
-          
+
           <h3 className="text-xl font-bold mb-2" style={{ color: t.textPrimary }}>
             Testni yakunlash
           </h3>
@@ -784,7 +784,7 @@ function SubmitConfirmationModal({
                 {answeredCount} ta
               </span>
             </div>
-            
+
             {unansweredCount > 0 && (
               <div
                 className="px-4 py-3 rounded-xl flex items-center justify-between"
@@ -1320,7 +1320,7 @@ export function StudentTestTakingPage() {
               >
                 {renderMathText(currentQuestion.question_text)}
               </div>
-              
+
               {currentQuestion.table_markdown && (
                 <div
                   className="mt-4 p-4 rounded-xl"
@@ -1381,7 +1381,7 @@ export function StudentTestTakingPage() {
             <div className="space-y-2.5 sm:space-y-3">
               {currentQuestion.options.map((option) => {
                 const isSelected = currentAnswer === option.label;
-                
+
                 return (
                   <button
                     key={option.label}
@@ -1423,7 +1423,7 @@ export function StudentTestTakingPage() {
                     >
                       {option.label}
                     </div>
-                    
+
                     {/* Option Text */}
                     <div
                       className="flex-1 font-medium text-sm sm:text-base"

@@ -96,18 +96,18 @@ const DEFAULT_CLASS_ITEM: ClassItem = {
 function getClassDetails(cls: ClassItem) {
   const seed = cls.id * 13;
   const students = [
-    { initials: 'NR', name: 'Nilufar Rahimova',   correct: 145, incorrect: 28, tests: 12, avgScore: 85 },
-    { initials: 'BS', name: 'Bobur Saidov',       correct: 138, incorrect: 35, tests: 11, avgScore: 82 },
-    { initials: 'AK', name: 'Ali Karimov',        correct: 132, incorrect: 41, tests: 11, avgScore: 78 },
-    { initials: 'MY', name: 'Malika Yusupova',    correct: 125, incorrect: 48, tests: 10, avgScore: 74 },
-    { initials: 'DS', name: 'Dilshod Sharipov',   correct: 118, incorrect: 55, tests: 10, avgScore: 70 },
+    { initials: 'NR', name: 'Nilufar Rahimova', correct: 145, incorrect: 28, tests: 12, avgScore: 85 },
+    { initials: 'BS', name: 'Bobur Saidov', correct: 138, incorrect: 35, tests: 11, avgScore: 82 },
+    { initials: 'AK', name: 'Ali Karimov', correct: 132, incorrect: 41, tests: 11, avgScore: 78 },
+    { initials: 'MY', name: 'Malika Yusupova', correct: 125, incorrect: 48, tests: 10, avgScore: 74 },
+    { initials: 'DS', name: 'Dilshod Sharipov', correct: 118, incorrect: 55, tests: 10, avgScore: 70 },
   ].sort((a, b) => b.avgScore - a.avgScore).slice(0, 5);
 
   const quizzes = [
-    { sessionId: cls.id * 1000 + 1, name: `${cls.subject} — 1-bo'lim testi`,    date: '14 mart', avgScore: Math.min(98, 72 + seed % 20), submissions: Math.min(cls.students, 22 + seed % 8) },
-    { sessionId: cls.id * 1000 + 2, name: `${cls.subject} — Amaliyot testi`,    date: '10 mart', avgScore: Math.min(98, 65 + seed % 25), submissions: Math.min(cls.students, 18 + seed % 6) },
-    { sessionId: cls.id * 1000 + 3, name: `${cls.subject} — Oraliq nazorat`,    date: '5 mart',  avgScore: Math.min(98, 78 + seed % 18), submissions: Math.min(cls.students, 25 + seed % 5) },
-    { sessionId: cls.id * 1000 + 4, name: `${cls.subject} — Mustaqil topshiriq`,date: '1 mart',  avgScore: Math.min(98, 60 + seed % 30), submissions: Math.min(cls.students, 15 + seed % 7) },
+    { sessionId: cls.id * 1000 + 1, name: `${cls.subject} — 1-bo'lim testi`, date: '14 mart', avgScore: Math.min(98, 72 + seed % 20), submissions: Math.min(cls.students, 22 + seed % 8) },
+    { sessionId: cls.id * 1000 + 2, name: `${cls.subject} — Amaliyot testi`, date: '10 mart', avgScore: Math.min(98, 65 + seed % 25), submissions: Math.min(cls.students, 18 + seed % 6) },
+    { sessionId: cls.id * 1000 + 3, name: `${cls.subject} — Oraliq nazorat`, date: '5 mart', avgScore: Math.min(98, 78 + seed % 18), submissions: Math.min(cls.students, 25 + seed % 5) },
+    { sessionId: cls.id * 1000 + 4, name: `${cls.subject} — Mustaqil topshiriq`, date: '1 mart', avgScore: Math.min(98, 60 + seed % 30), submissions: Math.min(cls.students, 15 + seed % 7) },
   ].slice(0, cls.quizzes > 4 ? 4 : Math.max(2, cls.quizzes));
 
   return { students, quizzes };
@@ -264,31 +264,31 @@ function mapPerformanceStudent(s: StudentPerformanceApiItem): LeaderboardStudent
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-const AVATAR_COLORS = ['#6366F1','#3B82F6','#22C55E','#F59E0B','#EF4444'];
+const AVATAR_COLORS = ['#6366F1', '#3B82F6', '#22C55E', '#F59E0B', '#EF4444'];
 
 function scoreColor(score: number) {
-  if (score >= 75) return { color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.25)'   };
+  if (score >= 75) return { color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.25)' };
   if (score >= 50) return { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)' };
-  return              { color: '#EF4444', bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.25)'   };
+  return { color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)' };
 }
 
 function SubjectIcon({ type, color, size = 20 }: { type: string; color: string; size?: number }) {
   const props = { style: { color }, strokeWidth: 1.75, width: size, height: size };
   switch (type) {
-    case 'zap':    return <Zap {...props} />;
-    case 'flask':  return <FlaskConical {...props} />;
-    case 'leaf':   return <Leaf {...props} />;
-    default:       return <Calculator {...props} />;
+    case 'zap': return <Zap {...props} />;
+    case 'flask': return <FlaskConical {...props} />;
+    case 'leaf': return <Leaf {...props} />;
+    default: return <Calculator {...props} />;
   }
 }
 
 function ActivityIcon({ type, t }: { type: string; t: ReturnType<typeof useTheme>['theme'] }) {
   const map: Record<string, { Icon: React.ElementType; color: string }> = {
     check: { Icon: CheckCircle, color: '#22C55E' },
-    zap:   { Icon: Zap,         color: '#6366F1' },
-    book:  { Icon: BookOpen,    color: '#3B82F6' },
-    award: { Icon: Award,       color: '#F59E0B' },
-    warn:  { Icon: AlertTriangle, color: '#EF4444' },
+    zap: { Icon: Zap, color: '#6366F1' },
+    book: { Icon: BookOpen, color: '#3B82F6' },
+    award: { Icon: Award, color: '#F59E0B' },
+    warn: { Icon: AlertTriangle, color: '#EF4444' },
   };
   const cfg = map[type] || map['check'];
   const Icon = cfg.Icon;
@@ -343,7 +343,7 @@ export function ClassDetailPage() {
   const [cls, setCls] = useState<ClassItem>(initialClass);
   const [students, setStudents] = useState<LeaderboardStudent[]>(initialDetails.students);
   const [performanceStudents, setPerformanceStudents] = useState<LeaderboardStudent[]>(initialDetails.students);
-  const [quizzes, setQuizzes] = useState<QuizCard[]>(initialDetails.quizzes);
+  const [quizzes, setQuizzes] = useState<QuizCard[]>([]);
   const [sessionsPage, setSessionsPage] = useState(1);
   const [sessionsPages, setSessionsPages] = useState(1);
   const [studentsPage, setStudentsPage] = useState(1);
@@ -356,7 +356,7 @@ export function ClassDetailPage() {
     setCls(initialClass);
     setStudents(initialDetails.students);
     setPerformanceStudents(initialDetails.students);
-    setQuizzes(initialDetails.quizzes);
+    setQuizzes([]);
     setSessionsPage(1);
     setSessionsPages(1);
     setStudentsPage(1);
@@ -409,11 +409,7 @@ export function ClassDetailPage() {
           setStudents(initialDetails.students);
           setPerformanceStudents(initialDetails.students);
         }
-        if (mappedQuizzes.length > 0) {
-          setQuizzes(mappedQuizzes);
-        } else {
-          setQuizzes(initialDetails.quizzes);
-        }
+        setQuizzes(mappedQuizzes);
         setSessionsPage(sessionsData.page ?? 1);
         setSessionsPages(sessionsData.pages ?? 1);
         setStudentsPage(performanceData.page ?? 1);
@@ -590,9 +586,9 @@ export function ClassDetailPage() {
 
               {/* Active badge */}
               {{
-                active:   <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: 'rgba(34,197,94,0.1)', color: '#22C55E', border: '1px solid rgba(34,197,94,0.25)' }}><span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />Faol</span>,
+                active: <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: 'rgba(34,197,94,0.1)', color: '#22C55E', border: '1px solid rgba(34,197,94,0.25)' }}><span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />Faol</span>,
                 moderate: <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: 'rgba(245,158,11,0.1)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.25)' }}><span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: '#F59E0B' }} />O'rtacha</span>,
-                low:      <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: t.bgInner, color: t.textMuted, border: `1px solid ${t.border}` }}><span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: t.textMuted }} />Kam faol</span>,
+                low: <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg" style={{ background: t.bgInner, color: t.textMuted, border: `1px solid ${t.border}` }}><span className="w-1.5 h-1.5 rounded-full inline-block" style={{ background: t.textMuted }} />Kam faol</span>,
               }[cls.activityLevel]}
             </div>
 
@@ -673,7 +669,7 @@ export function ClassDetailPage() {
                     {/* Decorative lines */}
                     <div className="absolute -left-8 sm:-left-12 top-1/2 w-6 sm:w-10 h-0.5 bg-gradient-to-r from-transparent to-current opacity-30" style={{ color: '#C0C0C0' }} />
                     <div className="absolute -right-8 sm:-right-12 top-1/2 w-6 sm:w-10 h-0.5 bg-gradient-to-l from-transparent to-current opacity-30" style={{ color: '#C0C0C0' }} />
-                    
+
                     {/* Avatar circle */}
                     <div className="relative">
                       {students[1].profileImage ? (
@@ -704,7 +700,7 @@ export function ClassDetailPage() {
                         </div>
                       )}
                       {/* Crown/Badge */}
-                      <div 
+                      <div
                         className="absolute -top-1 -right-1 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold z-20"
                         style={{
                           background: t.isDark ? 'linear-gradient(135deg, #E8E8E8, #C0C0C0)' : 'linear-gradient(135deg, #F5F5F5, #D1D1D1)',
@@ -728,21 +724,21 @@ export function ClassDetailPage() {
 
                   {/* Score bar */}
                   <div className="w-full">
-                    <div 
+                    <div
                       className="h-1.5 sm:h-2 rounded-full mb-1.5"
-                      style={{ 
+                      style={{
                         background: t.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
                       }}
                     >
-                      <div 
+                      <div
                         className="h-full rounded-full transition-all"
-                        style={{ 
+                        style={{
                           width: `${students[1].avgScore}%`,
                           background: 'linear-gradient(90deg, #E8E8E8, #C0C0C0)',
                         }}
                       />
                     </div>
-                    <div 
+                    <div
                       className="text-center text-xs sm:text-sm font-bold px-2 py-1 rounded-lg"
                       style={{
                         background: t.isDark ? 'rgba(192,192,192,0.12)' : 'rgba(192,192,192,0.15)',
@@ -763,7 +759,7 @@ export function ClassDetailPage() {
                     {/* Decorative lines */}
                     <div className="absolute -left-10 sm:-left-16 top-1/2 w-8 sm:w-14 h-0.5 bg-gradient-to-r from-transparent to-current opacity-40" style={{ color: '#FFD700' }} />
                     <div className="absolute -right-10 sm:-right-16 top-1/2 w-8 sm:w-14 h-0.5 bg-gradient-to-l from-transparent to-current opacity-40" style={{ color: '#FFD700' }} />
-                    
+
                     {/* Avatar circle */}
                     <div className="relative">
                       {students[0].profileImage ? (
@@ -794,7 +790,7 @@ export function ClassDetailPage() {
                         </div>
                       )}
                       {/* Crown Badge */}
-                      <div 
+                      <div
                         className="absolute -top-1 sm:-top-2 left-1/2 -translate-x-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center z-20"
                         style={{
                           background: t.isDark ? 'linear-gradient(135deg, #FFD700, #FFA500)' : 'linear-gradient(135deg, #FBBF24, #F59E0B)',
@@ -817,22 +813,22 @@ export function ClassDetailPage() {
 
                   {/* Score bar */}
                   <div className="w-full">
-                    <div 
+                    <div
                       className="h-2 sm:h-2.5 rounded-full mb-1.5"
-                      style={{ 
+                      style={{
                         background: t.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
                       }}
                     >
-                      <div 
+                      <div
                         className="h-full rounded-full transition-all"
-                        style={{ 
+                        style={{
                           width: `${students[0].avgScore}%`,
                           background: 'linear-gradient(90deg, #FFD700, #FFA500)',
                           boxShadow: '0 2px 8px rgba(255,215,0,0.3)',
                         }}
                       />
                     </div>
-                    <div 
+                    <div
                       className="text-center text-sm sm:text-base font-bold px-3 py-1.5 rounded-lg"
                       style={{
                         background: t.isDark ? 'rgba(255,215,0,0.15)' : 'rgba(251,191,36,0.2)',
@@ -853,7 +849,7 @@ export function ClassDetailPage() {
                     {/* Decorative lines */}
                     <div className="absolute -left-8 sm:-left-12 top-1/2 w-6 sm:w-10 h-0.5 bg-gradient-to-r from-transparent to-current opacity-30" style={{ color: '#CD7F32' }} />
                     <div className="absolute -right-8 sm:-right-12 top-1/2 w-6 sm:w-10 h-0.5 bg-gradient-to-l from-transparent to-current opacity-30" style={{ color: '#CD7F32' }} />
-                    
+
                     {/* Avatar circle */}
                     <div className="relative">
                       {students[2].profileImage ? (
@@ -884,7 +880,7 @@ export function ClassDetailPage() {
                         </div>
                       )}
                       {/* Badge */}
-                      <div 
+                      <div
                         className="absolute -top-1 -right-1 w-7 h-7 sm:w-8 sm:h-8 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold z-20"
                         style={{
                           background: t.isDark ? 'linear-gradient(135deg, #D97706, #B45309)' : 'linear-gradient(135deg, #F59E0B, #D97706)',
@@ -908,21 +904,21 @@ export function ClassDetailPage() {
 
                   {/* Score bar */}
                   <div className="w-full">
-                    <div 
+                    <div
                       className="h-1.5 sm:h-2 rounded-full mb-1.5"
-                      style={{ 
+                      style={{
                         background: t.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.05)',
                       }}
                     >
-                      <div 
+                      <div
                         className="h-full rounded-full transition-all"
-                        style={{ 
+                        style={{
                           width: `${students[2].avgScore}%`,
                           background: 'linear-gradient(90deg, #D97706, #B45309)',
                         }}
                       />
                     </div>
-                    <div 
+                    <div
                       className="text-center text-xs sm:text-sm font-bold px-2 py-1 rounded-lg"
                       style={{
                         background: t.isDark ? 'rgba(205,127,50,0.12)' : 'rgba(217,119,6,0.15)',
@@ -943,7 +939,20 @@ export function ClassDetailPage() {
           <Card className="h-full">
             <SectionTitle title="Testlar" subtitle={`${cls.quizzes} ta test tayinlangan`} />
             <div className="space-y-3 max-h-[520px] overflow-y-auto pr-1" onScroll={onSessionsScroll}>
-              {quizzes.map((q, idx) => {
+              {quizzes.length === 0 ? (
+                <div
+                  className="p-6 rounded-xl text-center"
+                  style={{ background: t.bgInner, border: `1px solid ${t.border}` }}
+                >
+                  <div
+                    className="w-12 h-12 mx-auto mb-3 rounded-2xl flex items-center justify-center"
+                    style={{ background: t.accentMuted, border: `1px solid ${t.accentBorder}` }}
+                  >
+                    <ClipboardCheck className="w-5 h-5" style={{ color: t.accent }} strokeWidth={1.75} />
+                  </div>
+                  <p className="text-sm font-semibold" style={{ color: t.textPrimary }}>Testlar hali mavjud emas</p>
+                </div>
+              ) : quizzes.map((q, idx) => {
                 const sc = scoreColor(q.avgScore);
                 return (
                   <div
@@ -986,7 +995,6 @@ export function ClassDetailPage() {
                       </div>
                       <span className="text-xs" style={{ color: t.textMuted }}>{q.date}</span>
                     </div>
-                    {/* Submissions bar */}
                     <div className="mt-2 w-full h-1 rounded-full overflow-hidden" style={{ background: t.border }}>
                       <div className="h-1 rounded-full transition-all duration-500"
                         style={{ width: `${cls.students > 0 ? (q.submissions / cls.students) * 100 : 0}%`, background: t.accent, opacity: 0.7 }} />
@@ -1011,12 +1019,12 @@ export function ClassDetailPage() {
               <h3 className="text-base font-semibold" style={{ color: t.textPrimary }}>O'quvchilar ko'rsatkichi</h3>
               <p className="text-xs mt-0.5" style={{ color: t.textMuted }}>Batafsil natijalar va statistika</p>
             </div>
-            
+
             {/* Search input */}
             <div className="relative w-full sm:w-64">
-              <Search 
-                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4" 
-                style={{ color: t.textMuted }} 
+              <Search
+                className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4"
+                style={{ color: t.textMuted }}
               />
               <input
                 type="text"
@@ -1024,7 +1032,7 @@ export function ClassDetailPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl text-sm outline-none transition-all"
-                style={{ 
+                style={{
                   background: t.bgInner,
                   border: `1px solid ${t.border}`,
                   color: t.textPrimary,

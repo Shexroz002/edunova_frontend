@@ -177,10 +177,10 @@ async function fetchStudentGroups(search: string, page = 1, size = 50) {
 function SubjectIcon({ type, color, size = 20 }: { type: string; color: string; size?: number }) {
     const props = { style: { color }, strokeWidth: 1.75, width: size, height: size };
     switch (type) {
-        case 'zap':    return <Zap {...props} />;
-        case 'flask':  return <FlaskConical {...props} />;
-        case 'leaf':   return <Leaf {...props} />;
-        default:       return <Calculator {...props} />;
+        case 'zap': return <Zap {...props} />;
+        case 'flask': return <FlaskConical {...props} />;
+        case 'leaf': return <Leaf {...props} />;
+        default: return <Calculator {...props} />;
     }
 }
 
@@ -459,8 +459,8 @@ export function StudentGroupsPage() {
                                     <div className="flex items-center gap-1.5 mb-1">
                                         <BookOpen className="w-3 h-3 shrink-0" style={{ color: group.color }} />
                                         <span className="text-xs font-semibold truncate" style={{ color: group.color }}>
-                      {group.subject}
-                    </span>
+                                            {group.subject}
+                                        </span>
                                     </div>
                                 </div>
                             </div>
@@ -529,16 +529,16 @@ export function StudentGroupsPage() {
                                             {group.name}
                                         </h3>
                                         <div className="flex flex-wrap items-center gap-2">
-                      <span
-                          className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md"
-                          style={{ background: `${group.color}18`, color: group.color }}
-                      >
-                        <BookOpen className="w-3 h-3" />
-                          {group.subject}
-                      </span>
+                                            <span
+                                                className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-md"
+                                                style={{ background: `${group.color}18`, color: group.color }}
+                                            >
+                                                <BookOpen className="w-3 h-3" />
+                                                {group.subject}
+                                            </span>
                                             <span className="text-xs truncate" style={{ color: t.textMuted }}>
-                        {group.description}
-                      </span>
+                                                {group.description}
+                                            </span>
                                         </div>
                                     </div>
                                 </div>

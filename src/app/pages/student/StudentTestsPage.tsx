@@ -59,9 +59,9 @@ interface StartSinglePlayerSessionResponse {
 // ─────────────────────────────────────────────────────────────────────────────
 function difficultyStyle(d: Difficulty) {
   switch (d) {
-    case 'Oson':  return { color: '#22C55E', bg: 'rgba(34,197,94,0.12)',  border: 'rgba(34,197,94,0.25)'  };
-    case "O'rta": return { color: '#FBBF24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.3)'  };
-    case 'Qiyin': return { color: '#EF4444', bg: 'rgba(239,68,68,0.12)',  border: 'rgba(239,68,68,0.25)'  };
+    case 'Oson': return { color: '#22C55E', bg: 'rgba(34,197,94,0.12)', border: 'rgba(34,197,94,0.25)' };
+    case "O'rta": return { color: '#FBBF24', bg: 'rgba(251,191,36,0.12)', border: 'rgba(251,191,36,0.3)' };
+    case 'Qiyin': return { color: '#EF4444', bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.25)' };
   }
 }
 
@@ -82,12 +82,12 @@ function quizTypeStyle(type: QuizGenerateType) {
 function SubjectIcon({ type, color, size = 20 }: { type: string; color: string; size?: number }) {
   const p = { style: { color }, strokeWidth: 1.75, width: size, height: size };
   switch (type) {
-    case 'flask':     return <FlaskConical {...p} />;
-    case 'leaf':      return <Leaf {...p} />;
-    case 'book':      return <BookOpen {...p} />;
+    case 'flask': return <FlaskConical {...p} />;
+    case 'leaf': return <Leaf {...p} />;
+    case 'book': return <BookOpen {...p} />;
     case 'languages': return <Languages {...p} />;
-    case 'globe':     return <Globe {...p} />;
-    default:          return <Calculator {...p} />;
+    case 'globe': return <Globe {...p} />;
+    default: return <Calculator {...p} />;
   }
 }
 
@@ -681,15 +681,15 @@ export function StudentTestsPage() {
       ) : (
         <div className="flex flex-col gap-3">
           {quizzes.map((quiz) => (
-              <QuizCard
-                key={quiz.id}
-                quiz={quiz}
-                onView={handleView}
-                onStart={handleStart}
-                onMulti={handleMulti}
-                isStarting={startingQuizId === quiz.id}
-              />
-            ))}
+            <QuizCard
+              key={quiz.id}
+              quiz={quiz}
+              onView={handleView}
+              onStart={handleStart}
+              onMulti={handleMulti}
+              isStarting={startingQuizId === quiz.id}
+            />
+          ))}
         </div>
       )}
 

@@ -39,7 +39,7 @@ function Sidebar() {
                     <Zap className="w-4 h-4 text-white"/>
                 </div>
                 <h1 className="text-lg font-bold tracking-tight" style={{color: t.textPrimary}}>
-                    EduPlatform
+                    EduNova
                 </h1>
             </div>
 
@@ -185,7 +185,7 @@ function MobileTopBar() {
                 >
                     <Zap className="w-3.5 h-3.5 text-white"/>
                 </div>
-                <span className="font-bold text-base" style={{color: t.textPrimary}}>EduPlatform</span>
+                <span className="font-bold text-base" style={{color: t.textPrimary}}>EduNova</span>
             </div>
 
             {/* Actions */}

@@ -1,9 +1,194 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   User, Bell, Shield, Palette, Globe, Save, Camera,
   Moon, Sun, Check,
 } from 'lucide-react';
 import { useTheme } from '../../components/ThemeContext.tsx';
+import { getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth.ts';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
+
+interface MeResponse {
+  id: number;
+  username: string;
+  first_name: string | null;
+  last_name: string | null;
+  role: string | null;
+  profile_image: string | null;
+  email: string | null;
+  phone_number: string | null;
+  school_name: string | null;
+  education_level: string | null;
+  subjects: Array<{
+    id: number | null;
+    subject: {
+      id: number | null;
+      name: string | null;
+      type: string | null;
+      icon: string | null;
+    } | null;
+  }> | null;
+}
+
+interface SettingsProfile {
+  userId: number | null;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  school: string;
+  educationLevel: string;
+  avatar: string | null;
+  subjectIds: number[];
+}
+
+interface SubjectOption {
+  id: number;
+  name: string;
+  type: string | null;
+  icon: string | null;
+}
+
+function getSubjectTone(subject: SubjectOption) {
+  const type = normalizeText(subject.type).toLowerCase();
+
+  if (type === 'stem') {
+    return {
+      color: '#38BDF8',
+      bg: 'rgba(56,189,248,0.14)',
+      border: 'rgba(56,189,248,0.35)',
+    };
+  }
+
+  if (type === 'languages') {
+    return {
+      color: '#818CF8',
+      bg: 'rgba(129,140,248,0.14)',
+      border: 'rgba(129,140,248,0.35)',
+    };
+  }
+
+  return {
+    color: '#22C55E',
+    bg: 'rgba(34,197,94,0.14)',
+    border: 'rgba(34,197,94,0.35)',
+  };
+}
+
+async function fetchWithAuthRetry(url: string, init: RequestInit = {}) {
+  let token = await getValidAccessToken();
+  if (!token) {
+    throw new Error('Tizimga qayta kiring');
+  }
+
+  const makeRequest = (accessToken: string) => fetch(url, {
+    ...init,
+    headers: {
+      accept: 'application/json',
+      ...(init.headers ?? {}),
+      Authorization: `Bearer ${accessToken}`,
+    },
+  });
+
+  let response = await makeRequest(token);
+
+  if (response.status === 401) {
+    const refreshed = await refreshStoredAuthToken();
+    token = refreshed?.access_token ?? null;
+
+    if (!token) {
+      throw new Error('Sessiya tugagan. Qayta kiring');
+    }
+
+    response = await makeRequest(token);
+  }
+
+  return response;
+}
+
+function normalizeText(value: string | null | undefined, fallback = '') {
+  return typeof value === 'string' && value.trim() ? value.trim() : fallback;
+}
+
+async function fetchSubjectList() {
+  const response = await fetch(`${API_BASE_URL}/api/v1/subject/list/`, {
+    method: 'GET',
+    headers: {
+      accept: 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Fanlar ro'yxatini olishda xatolik: ${response.status}`);
+  }
+
+  return response.json() as Promise<SubjectOption[]>;
+}
+
+async function updateProfile(profile: SettingsProfile) {
+  if (!profile.userId) {
+    throw new Error('Foydalanuvchi aniqlanmadi');
+  }
+
+  const response = await fetchWithAuthRetry(`${API_BASE_URL}/api/v1/users/${profile.userId}/`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      first_name: profile.firstName.trim(),
+      last_name: profile.lastName.trim(),
+      email: profile.email.trim(),
+      phone_number: profile.phone.trim(),
+      school_name: profile.school.trim(),
+      education_level: profile.educationLevel.trim(),
+      subject_ids: profile.subjectIds,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Profilni saqlashda xatolik: ${response.status}`);
+  }
+
+  return response;
+}
+
+async function updateAvatar(userId: number, file: File) {
+  const formData = new FormData();
+  formData.append('avatar', file);
+
+  const response = await fetchWithAuthRetry(`${API_BASE_URL}/api/v1/users/${userId}/avatar/`, {
+    method: 'PUT',
+    body: formData,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Avatarni saqlashda xatolik: ${response.status}`);
+  }
+
+  return response;
+}
+
+function mapMeToProfile(data: MeResponse): SettingsProfile {
+  const avatar = typeof data.profile_image === 'string' && data.profile_image.trim()
+    ? data.profile_image.trim()
+    : null;
+  const subjectIds = (Array.isArray(data.subjects) ? data.subjects : [])
+    .map((item) => item.subject?.id)
+    .filter((id): id is number => typeof id === 'number');
+
+  return {
+    userId: data.id ?? null,
+    firstName: normalizeText(data.first_name, data.username || ''),
+    lastName: normalizeText(data.last_name),
+    email: normalizeText(data.email),
+    phone: normalizeText(data.phone_number),
+    school: normalizeText(data.school_name),
+    educationLevel: normalizeText(data.education_level),
+    avatar,
+    subjectIds,
+  };
+}
 
 function Card({ children, className = '' }: { children: React.ReactNode; className?: string }) {
   const { theme: t } = useTheme();
@@ -61,14 +246,29 @@ const TABS = [
 ];
 
 export function SettingsPage() {
-  const { theme: t, isDark, toggleTheme } = useTheme();
+  const { theme: t, toggleTheme } = useTheme();
+  const avatarInputRef = useRef<HTMLInputElement | null>(null);
+  const isDark = t.isDark;
   const [activeTab, setActiveTab] = useState('profile');
   const [saved, setSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [profileLoading, setProfileLoading] = useState(true);
+  const [profileError, setProfileError] = useState('');
+  const [saveError, setSaveError] = useState('');
+  const [subjectOptions, setSubjectOptions] = useState<SubjectOption[]>([]);
+  const [subjectsLoading, setSubjectsLoading] = useState(true);
 
   const [profile, setProfile] = useState({
-    firstName: 'Anna', lastName: 'Smirnova',
-    email: 'anna.smirnova@edu.uz', phone: '+998 90 123 45 67',
-    subject: 'Matematika', school: '45-maktab, Toshkent',
+    userId: null as number | null,
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: '',
+    school: '',
+    educationLevel: '',
+    avatar: null as string | null,
+    subjectIds: [] as number[],
   });
 
   const [notifications, setNotifications] = useState({
@@ -76,10 +276,112 @@ export function SettingsPage() {
     weeklyReport: false, systemUpdates: false,
   });
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+  useEffect(() => {
+    let isMounted = true;
+
+    async function loadProfile() {
+      try {
+        setProfileLoading(true);
+        setProfileError('');
+
+        const [profileResponse, subjectsResponse] = await Promise.all([
+          fetchWithAuthRetry(`${API_BASE_URL}/api/v1/auth/me/`, {
+            method: 'GET',
+          }),
+          fetchSubjectList(),
+        ]);
+
+        if (!profileResponse.ok) {
+          throw new Error(`Profilni olishda xatolik: ${profileResponse.status}`);
+        }
+
+        const data: MeResponse = await profileResponse.json();
+        if (!isMounted) return;
+
+        setProfile(mapMeToProfile(data));
+        setSubjectOptions(Array.isArray(subjectsResponse) ? subjectsResponse : []);
+      } catch (error) {
+        if (!isMounted) return;
+        setProfileError(error instanceof Error ? error.message : 'Profil ma\'lumotlarini yuklab bo\'lmadi');
+      } finally {
+        if (isMounted) {
+          setProfileLoading(false);
+          setSubjectsLoading(false);
+        }
+      }
+    }
+
+    loadProfile();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const handleSave = async () => {
+    if (activeTab !== 'profile') {
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 2500);
+      return;
+    }
+
+    try {
+      setIsSaving(true);
+      setSaveError('');
+      await updateProfile(profile);
+      setSaved(true);
+      window.setTimeout(() => setSaved(false), 2500);
+    } catch (error) {
+      setSaveError(error instanceof Error ? error.message : 'Profilni saqlab bo\'lmadi');
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  const handleAvatarChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+
+    if (!file) {
+      return;
+    }
+
+    if (!profile.userId) {
+      setSaveError('Foydalanuvchi aniqlanmadi');
+      return;
+    }
+
+    const previewUrl = URL.createObjectURL(file);
+
+    try {
+      setIsUploadingAvatar(true);
+      setSaveError('');
+      setProfile((current) => ({ ...current, avatar: previewUrl }));
+      await updateAvatar(profile.userId, file);
+    } catch (error) {
+      URL.revokeObjectURL(previewUrl);
+      setSaveError(error instanceof Error ? error.message : 'Avatarni yuklab bo\'lmadi');
+    } finally {
+      setIsUploadingAvatar(false);
+      if (avatarInputRef.current) {
+        avatarInputRef.current.value = '';
+      }
+    }
+  };
+
+  const profileFullName = useMemo(() => {
+    const fullName = `${profile.firstName} ${profile.lastName}`.trim();
+    return fullName || 'Foydalanuvchi';
+  }, [profile.firstName, profile.lastName]);
+
+  const selectedSubjects = useMemo(
+    () => subjectOptions.filter((subject) => profile.subjectIds.includes(subject.id)),
+    [profile.subjectIds, subjectOptions],
+  );
+  const profileSubtitle = selectedSubjects.length > 0
+    ? selectedSubjects.map((subject) => subject.name).join(', ')
+    : "Fan ko'rsatilmagan";
+  const profileSchoolMeta = [profile.school, profile.educationLevel].filter(Boolean).join(' • ') || "Maktab ko'rsatilmagan";
+  const profileInitials = `${profile.firstName[0] ?? ''}${profile.lastName[0] ?? ''}`.trim().toUpperCase() || 'U';
 
   const inputStyle = {
     background: t.bgInner, border: `1px solid ${t.border}`,
@@ -131,28 +433,88 @@ export function SettingsPage() {
 
               {/* Avatar */}
               <div className="flex items-center gap-4 mb-6 pb-6" style={{ borderBottom: `1px solid ${t.border}` }}>
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => {
+                    void handleAvatarChange(e);
+                  }}
+                />
                 <div className="relative">
-                  <img
-                    src="https://images.unsplash.com/photo-1551989745-347c28b620e5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&w=200"
-                    alt="Avatar"
-                    className="w-16 h-16 rounded-2xl object-cover"
-                    style={{ border: `2px solid ${t.accentBorder}` }}
-                  />
+                  {profile.avatar ? (
+                    <img
+                      src={profile.avatar}
+                      alt={profileFullName}
+                      className="w-16 h-16 rounded-2xl object-cover"
+                      style={{ border: `2px solid ${t.accentBorder}` }}
+                    />
+                  ) : (
+                    <div
+                      className="w-16 h-16 rounded-2xl flex items-center justify-center text-lg font-bold"
+                      style={{
+                        background: t.accentMuted,
+                        color: t.accent,
+                        border: `2px solid ${t.accentBorder}`,
+                      }}
+                    >
+                      {profileInitials}
+                    </div>
+                  )}
                   <button
+                    type="button"
+                    onClick={() => avatarInputRef.current?.click()}
+                    disabled={isUploadingAvatar || profileLoading}
                     className="absolute -bottom-1.5 -right-1.5 w-7 h-7 rounded-full flex items-center justify-center"
-                    style={{ background: '#6366F1', border: `2px solid ${t.bgCard}` }}
+                    style={{
+                      background: '#6366F1',
+                      border: `2px solid ${t.bgCard}`,
+                      opacity: isUploadingAvatar || profileLoading ? 0.7 : 1,
+                    }}
                   >
-                    <Camera className="w-3.5 h-3.5 text-white" />
+                    {isUploadingAvatar ? (
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Camera className="w-3.5 h-3.5 text-white" />
+                    )}
                   </button>
                 </div>
                 <div>
                   <p className="text-sm font-semibold" style={{ color: t.textPrimary }}>
-                    {profile.firstName} {profile.lastName}
+                    {profileFullName}
                   </p>
-                  <p className="text-xs" style={{ color: t.textMuted }}>{profile.subject} o'qituvchisi</p>
-                  <p className="text-xs mt-0.5" style={{ color: t.textMuted }}>{profile.school}</p>
+                  <p className="text-xs" style={{ color: t.textMuted }}>{profileSubtitle}</p>
+                  <p className="text-xs mt-0.5" style={{ color: t.textMuted }}>{profileSchoolMeta}</p>
+                  <p className="text-xs mt-1" style={{ color: t.textMuted }}>
+                    {isUploadingAvatar ? 'Avatar yuklanmoqda...' : 'Avatarni almashtirish'}
+                  </p>
                 </div>
               </div>
+
+              {profileLoading && (
+                <div className="mb-4 text-sm" style={{ color: t.textMuted }}>
+                  Profil ma'lumotlari yuklanmoqda...
+                </div>
+              )}
+
+              {!profileLoading && profileError && (
+                <div
+                  className="mb-4 px-4 py-3 rounded-xl text-sm"
+                  style={{ background: t.trendDownBg, color: t.trendDownText, border: `1px solid ${t.trendDownText}33` }}
+                >
+                  {profileError}
+                </div>
+              )}
+
+              {!profileLoading && !profileError && saveError && (
+                <div
+                  className="mb-4 px-4 py-3 rounded-xl text-sm"
+                  style={{ background: t.trendDownBg, color: t.trendDownText, border: `1px solid ${t.trendDownText}33` }}
+                >
+                  {saveError}
+                </div>
+              )}
 
               {/* Fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
@@ -161,8 +523,8 @@ export function SettingsPage() {
                   { label: 'Familiya', key: 'lastName' },
                   { label: 'Email', key: 'email' },
                   { label: 'Telefon', key: 'phone' },
-                  { label: 'Fan', key: 'subject' },
                   { label: 'Maktab', key: 'school' },
+                  { label: "Ta'lim darajasi", key: 'educationLevel' },
                 ].map(({ label, key }) => (
                   <div key={key}>
                     <label className="block text-xs font-semibold mb-1.5" style={{ color: t.textMuted }}>{label}</label>
@@ -176,6 +538,86 @@ export function SettingsPage() {
                     />
                   </div>
                 ))}
+              </div>
+
+              <div
+                className="rounded-2xl p-4 sm:p-5"
+                style={{
+                  background: t.isDark ? 'rgba(15,23,42,0.38)' : t.bgInner,
+                  border: `1px solid ${t.border}`,
+                }}
+              >
+                <div className="mb-4">
+                  <p className="text-sm font-semibold" style={{ color: t.textPrimary }}>
+                    Fanlar
+                  </p>
+                  <p className="text-xs mt-1" style={{ color: t.textMuted }}>
+                    Qiziqadigan fanlaringizni tanlang
+                  </p>
+                </div>
+                {subjectsLoading ? (
+                  <div className="text-sm" style={{ color: t.textMuted }}>
+                    Fanlar yuklanmoqda...
+                  </div>
+                ) : subjectOptions.length === 0 ? (
+                  <div className="text-sm" style={{ color: t.textMuted }}>
+                    Fanlar ro'yxati mavjud emas
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3">
+                    {subjectOptions.map((subject) => {
+                      const selected = profile.subjectIds.includes(subject.id);
+                      const tone = getSubjectTone(subject);
+                      return (
+                        <button
+                          key={subject.id}
+                          type="button"
+                          onClick={() => {
+                            setProfile((current) => ({
+                              ...current,
+                              subjectIds: selected
+                                ? current.subjectIds.filter((id) => id !== subject.id)
+                                : [...current.subjectIds, subject.id],
+                            }));
+                          }}
+                          className="px-4 py-3 rounded-2xl text-sm font-medium transition-all text-left flex items-center justify-between gap-3"
+                          style={{
+                            background: selected
+                              ? tone.bg
+                              : (t.isDark ? 'rgba(51,65,85,0.42)' : t.bgCard),
+                            color: selected ? tone.color : t.textSecondary,
+                            border: `1px solid ${selected ? tone.border : t.border}`,
+                            boxShadow: selected ? `0 0 0 1px ${tone.border} inset` : 'none',
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!selected) {
+                              e.currentTarget.style.borderColor = t.isDark ? 'rgba(148,163,184,0.45)' : t.accentBorder;
+                              e.currentTarget.style.transform = 'translateY(-1px)';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!selected) {
+                              e.currentTarget.style.borderColor = t.border;
+                              e.currentTarget.style.transform = 'translateY(0)';
+                            }
+                          }}
+                        >
+                          <span className="truncate">{subject.name}</span>
+                          <span
+                            className="w-5 h-5 rounded-full flex items-center justify-center shrink-0"
+                            style={{
+                              background: selected ? tone.border : 'transparent',
+                              color: selected ? tone.color : 'transparent',
+                              border: `1px solid ${selected ? 'transparent' : t.border}`,
+                            }}
+                          >
+                            <Check className="w-3.5 h-3.5" strokeWidth={2.5} />
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             </Card>
           )}
@@ -301,18 +743,26 @@ export function SettingsPage() {
           <div className="flex justify-end mt-4">
             <button
               onClick={handleSave}
+              disabled={isSaving || profileLoading}
               className="flex items-center gap-2 px-6 py-2.5 rounded-xl text-sm font-semibold text-white transition-all"
               style={{
                 background: saved ? '#22C55E' : 'linear-gradient(135deg, #6366F1, #4F46E5)',
                 boxShadow: saved ? '0 4px 14px rgba(34,197,94,0.3)' : '0 4px 14px rgba(99,102,241,0.25)',
                 minWidth: '140px',
                 justifyContent: 'center',
+                opacity: isSaving || profileLoading ? 0.7 : 1,
               }}
               onMouseEnter={(e) => { if (!saved) (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; }}
               onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
             >
-              {saved ? <Check className="w-4 h-4" strokeWidth={2.5} /> : <Save className="w-4 h-4" />}
-              {saved ? 'Saqlandi!' : 'Saqlash'}
+              {isSaving ? (
+                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : saved ? (
+                <Check className="w-4 h-4" strokeWidth={2.5} />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              {isSaving ? 'Saqlanmoqda...' : saved ? 'Saqlandi!' : 'Saqlash'}
             </button>
           </div>
         </div>

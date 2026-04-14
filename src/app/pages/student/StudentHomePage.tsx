@@ -419,7 +419,7 @@ function JoinRealtimeSessionModal({
 
           <div className="mt-7">
             <label className="block text-xs font-semibold mb-2.5" style={{ color: t.isDark ? '#94A3B8' : '#64748B' }}>
-            Sessiya kodi
+              Sessiya kodi
             </label>
             <input
               type="text"
@@ -1383,7 +1383,7 @@ export function StudentHomePage() {
       <CreateQuizModal
         open={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
-        onCreate={() => {}}
+        onCreate={() => { }}
         onPdfCreated={(payload) => {
           setCreateModalOpen(false);
           setQuizCreatedModalData(payload);

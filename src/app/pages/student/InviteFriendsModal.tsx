@@ -121,10 +121,10 @@ function mapUser(item: ContactApiItem): User {
 // ─────────────────────────────────────────────────────────────────────────────
 // Main Component
 // ─────────────────────────────────────────────────────────────────────────────
-export function InviteFriendsModal({ 
+export function InviteFriendsModal({
   sessionId,
-  sessionCode, 
-  quizTitle, 
+  sessionCode,
+  quizTitle,
   onClose,
   excludedUserIds = []
 }: InviteFriendsModalProps) {
@@ -155,14 +155,14 @@ export function InviteFriendsModal({
   // Filter users based on search query and exclusions
   const filteredUsers = useMemo(() => {
     const query = searchQuery.toLowerCase().trim();
-    
+
     return users.filter(user => {
       // Exclude already joined participants
       if (excludedUserIds.includes(user.user_id)) return false;
-      
+
       // If no search query, show all
       if (!query) return true;
-      
+
       // Search by full_name or username
       return (
         user.full_name.toLowerCase().includes(query) ||
@@ -223,13 +223,13 @@ export function InviteFriendsModal({
           }}
         >
           {/* Pattern overlay */}
-          <div 
-            className="absolute inset-0 opacity-10" 
-            style={{ 
-              background: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")' 
-            }} 
+          <div
+            className="absolute inset-0 opacity-10"
+            style={{
+              background: 'url("data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'1\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")'
+            }}
           />
-          
+
           <div className="relative flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2.5 mb-2">
@@ -247,7 +247,7 @@ export function InviteFriendsModal({
                 Do'stlaringizni "{quizTitle}" testiga taklif qiling
               </p>
             </div>
-            
+
             <button
               onClick={onClose}
               className="w-9 h-9 rounded-xl flex items-center justify-center transition-all shrink-0"
@@ -269,8 +269,8 @@ export function InviteFriendsModal({
         ══════════════════════════════════════════════════════ */}
         <div className="px-6 py-4 shrink-0" style={{ borderBottom: `1px solid ${t.border}` }}>
           <div className="relative">
-            <Search 
-              className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4" 
+            <Search
+              className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4"
               style={{ color: t.textMuted }}
               strokeWidth={2}
             />
@@ -295,7 +295,7 @@ export function InviteFriendsModal({
               }}
             />
           </div>
-          
+
           {/* Results count */}
           <p className="text-xs mt-2" style={{ color: t.textMuted }}>
             {filteredUsers.length} ta foydalanuvchi topildi
@@ -305,13 +305,13 @@ export function InviteFriendsModal({
         {/* ══════════════════════════════════════════════════════
             USERS LIST SECTION
         ══════════════════════════════════════════════════════ */}
-        <div 
+        <div
           className="flex-1 overflow-y-auto custom-scrollbar"
           style={{
             // Custom scrollbar styling
             scrollbarWidth: 'thin',
-            scrollbarColor: t.isDark 
-              ? 'rgba(255,255,255,0.2) rgba(255,255,255,0.05)' 
+            scrollbarColor: t.isDark
+              ? 'rgba(255,255,255,0.2) rgba(255,255,255,0.05)'
               : 'rgba(0,0,0,0.2) rgba(0,0,0,0.05)',
           }}
         >
@@ -363,7 +363,7 @@ export function InviteFriendsModal({
                     key={user.user_id}
                     className="px-6 py-4 transition-colors"
                     style={{
-                      background: isInvited 
+                      background: isInvited
                         ? (t.isDark ? 'rgba(34,197,94,0.05)' : 'rgba(34,197,94,0.03)')
                         : 'transparent',
                     }}
@@ -397,7 +397,7 @@ export function InviteFriendsModal({
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <span 
+                            <span
                               className="text-sm font-bold"
                               style={{ color: '#6366F1' }}
                             >
@@ -426,8 +426,8 @@ export function InviteFriendsModal({
                           background: isInvited
                             ? (t.isDark ? 'rgba(34,197,94,0.15)' : 'rgba(34,197,94,0.1)')
                             : isSending
-                            ? (t.isDark ? 'rgba(99,102,241,0.18)' : 'rgba(99,102,241,0.12)')
-                            : (t.isDark ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.08)'),
+                              ? (t.isDark ? 'rgba(99,102,241,0.18)' : 'rgba(99,102,241,0.12)')
+                              : (t.isDark ? 'rgba(99,102,241,0.12)' : 'rgba(99,102,241,0.08)'),
                           border: `1.5px solid ${isInvited ? 'rgba(34,197,94,0.3)' : 'rgba(99,102,241,0.25)'}`,
                           color: isInvited ? '#22C55E' : '#6366F1',
                           cursor: isInvited || isSending ? 'default' : 'pointer',

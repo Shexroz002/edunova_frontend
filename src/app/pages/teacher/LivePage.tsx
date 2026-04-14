@@ -113,9 +113,9 @@ const DURATIONS = ['10 daqiqa', '20 daqiqa', '30 daqiqa', '60 daqiqa'];
 //  Helpers
 // ─────────────────────────────────────────────
 function scoreColor(s: number) {
-  if (s >= 75) return { color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.25)'  };
+  if (s >= 75) return { color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.25)' };
   if (s >= 55) return { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)' };
-  return               { color: '#EF4444', bg: 'rgba(239,68,68,0.1)',  border: 'rgba(239,68,68,0.25)'  };
+  return { color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)' };
 }
 
 async function fetchWithAuthRetry(url: string, init: RequestInit = {}) {
@@ -312,9 +312,9 @@ function Card({ children, className = '', glow = false }: {
     <div
       className={`rounded-2xl p-5 sm:p-6 ${className}`}
       style={{
-        background:  t.bgCard,
-        border:     `1px solid ${glow ? 'rgba(239,68,68,0.35)' : t.border}`,
-        boxShadow:   glow
+        background: t.bgCard,
+        border: `1px solid ${glow ? 'rgba(239,68,68,0.35)' : t.border}`,
+        boxShadow: glow
           ? (t.isDark ? '0 0 28px rgba(239,68,68,0.14)' : '0 4px 22px rgba(239,68,68,0.1)')
           : t.shadowCard,
       }}
@@ -344,10 +344,10 @@ function StepDots({ current, total }: { current: number; total: number }) {
           key={i}
           className="rounded-full transition-all duration-300"
           style={{
-            width:      i === current ? 18 : 6,
-            height:     6,
+            width: i === current ? 18 : 6,
+            height: 6,
             background: i <= current ? '#6366F1' : t.border,
-            opacity:    i < current ? 0.5 : 1,
+            opacity: i < current ? 0.5 : 1,
           }}
         />
       ))}
@@ -451,10 +451,10 @@ function QuizDropdown({
         onClick={() => setOpen((p) => !p)}
         className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm transition-all text-left"
         style={{
-          background:  t.bgInner,
-          border:     `1px solid ${open ? '#6366F1' : t.border}`,
-          color:       value ? t.textPrimary : t.textMuted,
-          boxShadow:   open ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none',
+          background: t.bgInner,
+          border: `1px solid ${open ? '#6366F1' : t.border}`,
+          color: value ? t.textPrimary : t.textMuted,
+          boxShadow: open ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none',
         }}
       >
         <span className="truncate">
@@ -500,7 +500,7 @@ function QuizDropdown({
               const element = e.currentTarget;
               const threshold = 32;
               if (element.scrollTop + element.clientHeight >= element.scrollHeight - threshold) {
-                handleLoadMore().catch(() => {});
+                handleLoadMore().catch(() => { });
               }
             }}
           >
@@ -602,10 +602,10 @@ function ClassMultiSelect({
         onClick={() => setOpen((p) => !p)}
         className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm transition-all text-left"
         style={{
-          background:  t.bgInner,
-          border:     `1px solid ${open ? '#6366F1' : t.border}`,
-          color:       selected.length > 0 ? t.textPrimary : t.textMuted,
-          boxShadow:   open ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none',
+          background: t.bgInner,
+          border: `1px solid ${open ? '#6366F1' : t.border}`,
+          color: selected.length > 0 ? t.textPrimary : t.textMuted,
+          boxShadow: open ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none',
         }}
       >
         <span className="text-sm" style={{ color: selected.length > 0 ? t.textPrimary : t.textMuted }}>
@@ -647,7 +647,7 @@ function ClassMultiSelect({
                 onClick={() => toggle(cls)}
                 className="w-full flex items-center justify-between px-4 py-2.5 text-left transition-colors"
                 style={{
-                  background:   isSelected ? t.accentMuted : 'transparent',
+                  background: isSelected ? t.accentMuted : 'transparent',
                   borderBottom: `1px solid ${t.borderSubtle}`,
                 }}
                 onMouseEnter={(e) => { if (!isSelected) (e.currentTarget as HTMLElement).style.background = t.bgInner; }}
@@ -663,7 +663,7 @@ function ClassMultiSelect({
                   className="w-4 h-4 rounded flex items-center justify-center shrink-0 transition-all"
                   style={{
                     background: isSelected ? '#6366F1' : 'transparent',
-                    border:    `1.5px solid ${isSelected ? '#6366F1' : t.border}`,
+                    border: `1.5px solid ${isSelected ? '#6366F1' : t.border}`,
                   }}
                 >
                   {isSelected && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
@@ -720,10 +720,10 @@ function DurationDropdown({ value, onChange }: { value: string; onChange: (v: st
         onClick={() => setOpen((p) => !p)}
         className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm transition-all"
         style={{
-          background:  t.bgInner,
-          border:     `1px solid ${open ? '#6366F1' : t.border}`,
-          color:       value ? t.textPrimary : t.textMuted,
-          boxShadow:   open ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none',
+          background: t.bgInner,
+          border: `1px solid ${open ? '#6366F1' : t.border}`,
+          color: value ? t.textPrimary : t.textMuted,
+          boxShadow: open ? '0 0 0 3px rgba(99,102,241,0.12)' : 'none',
         }}
       >
         <div className="flex items-center gap-2">
@@ -748,8 +748,8 @@ function DurationDropdown({ value, onChange }: { value: string; onChange: (v: st
               onClick={() => { onChange(d); setOpen(false); }}
               className="w-full flex items-center justify-between px-4 py-2.5 text-sm text-left transition-colors"
               style={{
-                background:   value === d ? t.accentMuted : 'transparent',
-                color:        value === d ? t.accent : t.textPrimary,
+                background: value === d ? t.accentMuted : 'transparent',
+                color: value === d ? t.accent : t.textPrimary,
                 borderBottom: `1px solid ${t.borderSubtle}`,
               }}
               onMouseEnter={(e) => { if (value !== d) (e.currentTarget as HTMLElement).style.background = t.bgInner; }}
@@ -1160,7 +1160,7 @@ export function CreateSessionCard({ onRequestClose }: { onRequestClose?: () => v
         <div className="space-y-4 mb-5">
           {/* Summary */}
           <div className="p-3.5 rounded-xl space-y-1.5"
-              style={{ background: t.bgInner, border: `1px solid ${t.border}` }}>
+            style={{ background: t.bgInner, border: `1px solid ${t.border}` }}>
             <div className="flex items-center gap-2">
               <BookOpen className="w-3.5 h-3.5 shrink-0" style={{ color: t.accent }} strokeWidth={1.75} />
               <span className="text-xs font-medium truncate" style={{ color: valueTextColor }}>{quiz?.title}</span>
@@ -1263,9 +1263,9 @@ export function CreateSessionCard({ onRequestClose }: { onRequestClose?: () => v
               background: canNext()
                 ? 'linear-gradient(135deg,#6366F1,#4F46E5)'
                 : (t.isDark ? '#1E293B' : '#E2E8F0'),
-              boxShadow:  canNext() ? '0 4px 16px rgba(99,102,241,0.3)' : 'none',
-              color:      canNext() ? '#fff' : t.textMuted,
-              cursor:     canNext() ? 'pointer' : 'not-allowed',
+              boxShadow: canNext() ? '0 4px 16px rgba(99,102,241,0.3)' : 'none',
+              color: canNext() ? '#fff' : t.textMuted,
+              cursor: canNext() ? 'pointer' : 'not-allowed',
             }}
             onMouseEnter={(e) => { if (canNext()) { (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; } }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
@@ -1280,9 +1280,9 @@ export function CreateSessionCard({ onRequestClose }: { onRequestClose?: () => v
             className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white transition-all"
             style={{
               background: canNext() ? 'linear-gradient(135deg,#6366F1,#4F46E5)' : (t.isDark ? '#1E293B' : '#E2E8F0'),
-              boxShadow:  canNext() ? '0 4px 16px rgba(99,102,241,0.3)' : 'none',
-              color:      canNext() ? '#fff' : t.textMuted,
-              cursor:     canNext() ? 'pointer' : 'not-allowed',
+              boxShadow: canNext() ? '0 4px 16px rgba(99,102,241,0.3)' : 'none',
+              color: canNext() ? '#fff' : t.textMuted,
+              cursor: canNext() ? 'pointer' : 'not-allowed',
             }}
             onMouseEnter={(e) => { if (canNext()) { (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; } }}
             onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
@@ -1338,7 +1338,7 @@ function ActiveSessionCard() {
   const statLabelColor = t.isDark ? '#CBD5E1' : '#475569';
   const infoTextColor = t.isDark ? '#E2E8F0' : '#334155';
   const [copied, setCopied] = useState(false);
-  const [ended,  setEnded]  = useState(false);
+  const [ended, setEnded] = useState(false);
   const [sessions, setSessions] = useState<ActiveSessionItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -1381,7 +1381,7 @@ function ActiveSessionCard() {
 
   const handleCopy = () => {
     if (!selectedSession) return;
-    navigator.clipboard.writeText(selectedSession.joinCode).catch(() => {});
+    navigator.clipboard.writeText(selectedSession.joinCode).catch(() => { });
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -1485,9 +1485,9 @@ function ActiveSessionCard() {
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-3 mb-4">
         {[
-          { Icon: Users,       val: `${selectedSession.participants}`, label: "Qo'shilgan" },
-          { Icon: Clock,       val: selectedSession.duration,           label: 'Davomiyligi' },
-          { Icon: CalendarDays,val: selectedSession.startedAt,          label: 'Boshlangan'  },
+          { Icon: Users, val: `${selectedSession.participants}`, label: "Qo'shilgan" },
+          { Icon: Clock, val: selectedSession.duration, label: 'Davomiyligi' },
+          { Icon: CalendarDays, val: selectedSession.startedAt, label: 'Boshlangan' },
         ].map(({ Icon, val, label }) => (
           <div key={label} className="flex flex-col items-center justify-center gap-1 py-2.5 rounded-xl"
             style={{ background: t.bgInner, border: `1px solid ${t.border}` }}>
@@ -1512,8 +1512,8 @@ function ActiveSessionCard() {
           className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all"
           style={{
             background: copied ? 'rgba(34,197,94,0.1)' : t.accentMuted,
-            color:      copied ? '#22C55E' : t.accent,
-            border:    `1px solid ${copied ? 'rgba(34,197,94,0.25)' : t.accentBorder}`,
+            color: copied ? '#22C55E' : t.accent,
+            border: `1px solid ${copied ? 'rgba(34,197,94,0.25)' : t.accentBorder}`,
           }}
         >
           {copied ? <Check className="w-3.5 h-3.5" strokeWidth={2.5} /> : <Copy className="w-3.5 h-3.5" strokeWidth={1.75} />}
@@ -1680,117 +1680,117 @@ function PastSessionsCard() {
       ) : (
         <>
 
-      {/* Desktop table */}
-      <div className="hidden sm:block rounded-xl overflow-hidden" style={{ border: `1px solid ${t.border}` }}>
-        <table className="w-full">
-          <thead>
-            <tr style={{ background: t.bgInner, borderBottom: `1px solid ${t.border}` }}>
-              {['Quiz nomi', 'Sana', 'Ishtirokchilar', "O'rtacha ball", ''].map((h, i) => (
-                <th key={i} className="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wider"
-                  style={{ color: tableHeaderColor }}>{h}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {pastSessions.map((s, idx) => {
+          {/* Desktop table */}
+          <div className="hidden sm:block rounded-xl overflow-hidden" style={{ border: `1px solid ${t.border}` }}>
+            <table className="w-full">
+              <thead>
+                <tr style={{ background: t.bgInner, borderBottom: `1px solid ${t.border}` }}>
+                  {['Quiz nomi', 'Sana', 'Ishtirokchilar', "O'rtacha ball", ''].map((h, i) => (
+                    <th key={i} className="text-left px-4 py-2.5 text-xs font-semibold uppercase tracking-wider"
+                      style={{ color: tableHeaderColor }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {pastSessions.map((s, idx) => {
+                  const sc = scoreColor(s.avgScore);
+                  return (
+                    <tr
+                      key={s.id}
+                      className="transition-colors"
+                      style={{ borderBottom: idx < pastSessions.length - 1 ? `1px solid ${t.border}` : 'none' }}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = t.bgCardHover; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+                    >
+                      <td className="px-4 py-3">
+                        <p className="text-sm font-medium" style={{ color: t.textPrimary }}>{s.quizName}</p>
+                        <p className="text-xs mt-0.5" style={{ color: tableMetaColor }}>{s.subject}</p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1.5">
+                          <CalendarDays className="w-3.5 h-3.5 shrink-0" style={{ color: tableMetaColor }} strokeWidth={1.75} />
+                          <span className="text-sm" style={{ color: tableValueColor }}>{s.date}</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-1.5">
+                          <Users className="w-3.5 h-3.5 shrink-0" style={{ color: tableMetaColor }} strokeWidth={1.75} />
+                          <span className="text-sm" style={{ color: tableValueColor }}>{s.participants} o'quvchi</span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-lg"
+                          style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
+                          <BarChart2 className="w-3 h-3" strokeWidth={2} />
+                          {s.avgScore}%
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap"
+                          style={{ background: t.bgInner, border: `1px solid ${t.border}`, color: tableValueColor }}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = t.accentMuted; (e.currentTarget as HTMLElement).style.borderColor = t.accentBorder; (e.currentTarget as HTMLElement).style.color = t.accent; }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = t.bgInner; (e.currentTarget as HTMLElement).style.borderColor = t.border; (e.currentTarget as HTMLElement).style.color = tableValueColor; }}
+                          onClick={() => navigate(`/live/results/${s.id}`)}
+                        >
+                          Natijalar
+                          <ChevronRight className="w-3 h-3" strokeWidth={2} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Mobile cards */}
+          <div className="block sm:hidden space-y-2.5">
+            {pastSessions.map((s) => {
               const sc = scoreColor(s.avgScore);
               return (
-                <tr
-                  key={s.id}
-                  className="transition-colors"
-                  style={{ borderBottom: idx < pastSessions.length - 1 ? `1px solid ${t.border}` : 'none' }}
-                  onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = t.bgCardHover; }}
-                  onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-                >
-                  <td className="px-4 py-3">
-                    <p className="text-sm font-medium" style={{ color: t.textPrimary }}>{s.quizName}</p>
-                    <p className="text-xs mt-0.5" style={{ color: tableMetaColor }}>{s.subject}</p>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1.5">
-                      <CalendarDays className="w-3.5 h-3.5 shrink-0" style={{ color: tableMetaColor }} strokeWidth={1.75} />
-                      <span className="text-sm" style={{ color: tableValueColor }}>{s.date}</span>
+                <div key={s.id} className="p-3.5 rounded-xl" style={{ background: t.bgInner, border: `1px solid ${t.border}` }}>
+                  <div className="flex items-start justify-between gap-2 mb-2.5">
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold truncate" style={{ color: t.textPrimary }}>{s.quizName}</p>
+                      <p className="text-xs mt-0.5" style={{ color: tableMetaColor }}>{s.subject}</p>
                     </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-1.5">
-                      <Users className="w-3.5 h-3.5 shrink-0" style={{ color: tableMetaColor }} strokeWidth={1.75} />
-                      <span className="text-sm" style={{ color: tableValueColor }}>{s.participants} o'quvchi</span>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    <span className="inline-flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-lg"
+                    <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-lg shrink-0"
                       style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
-                      <BarChart2 className="w-3 h-3" strokeWidth={2} />
                       {s.avgScore}%
                     </span>
-                  </td>
-                  <td className="px-4 py-3">
-                    <button
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all whitespace-nowrap"
-                      style={{ background: t.bgInner, border: `1px solid ${t.border}`, color: tableValueColor }}
-                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = t.accentMuted; (e.currentTarget as HTMLElement).style.borderColor = t.accentBorder; (e.currentTarget as HTMLElement).style.color = t.accent; }}
-                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = t.bgInner; (e.currentTarget as HTMLElement).style.borderColor = t.border; (e.currentTarget as HTMLElement).style.color = tableValueColor; }}
-                      onClick={() => navigate(`/live/results/${s.id}`)}
-                    >
-                      Natijalar
-                      <ChevronRight className="w-3 h-3" strokeWidth={2} />
-                    </button>
-                  </td>
-                </tr>
+                  </div>
+                  <div className="flex items-center gap-4 mb-3">
+                    <div className="flex items-center gap-1">
+                      <CalendarDays className="w-3 h-3" style={{ color: tableMetaColor }} />
+                      <span className="text-xs" style={{ color: tableValueColor }}>{s.date}</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <Users className="w-3 h-3" style={{ color: tableMetaColor }} />
+                      <span className="text-xs" style={{ color: tableValueColor }}>{s.participants} o'quvchi</span>
+                    </div>
+                  </div>
+                  <button
+                    className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all"
+                    style={{ background: t.bgCard, border: `1px solid ${t.border}`, color: tableValueColor }}
+                    onClick={() => navigate(`/live/results/${s.id}`)}
+                  >
+                    Natijalar <ChevronRight className="w-3 h-3" strokeWidth={2} />
+                  </button>
+                </div>
               );
             })}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Mobile cards */}
-      <div className="block sm:hidden space-y-2.5">
-        {pastSessions.map((s) => {
-          const sc = scoreColor(s.avgScore);
-          return (
-            <div key={s.id} className="p-3.5 rounded-xl" style={{ background: t.bgInner, border: `1px solid ${t.border}` }}>
-              <div className="flex items-start justify-between gap-2 mb-2.5">
-                <div className="min-w-0">
-                  <p className="text-xs font-semibold truncate" style={{ color: t.textPrimary }}>{s.quizName}</p>
-                  <p className="text-xs mt-0.5" style={{ color: tableMetaColor }}>{s.subject}</p>
-                </div>
-                <span className="inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-lg shrink-0"
-                  style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
-                  {s.avgScore}%
-                </span>
-              </div>
-              <div className="flex items-center gap-4 mb-3">
-                <div className="flex items-center gap-1">
-                  <CalendarDays className="w-3 h-3" style={{ color: tableMetaColor }} />
-                  <span className="text-xs" style={{ color: tableValueColor }}>{s.date}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Users className="w-3 h-3" style={{ color: tableMetaColor }} />
-                  <span className="text-xs" style={{ color: tableValueColor }}>{s.participants} o'quvchi</span>
-                </div>
-              </div>
-              <button
-                className="w-full flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold transition-all"
-                style={{ background: t.bgCard, border: `1px solid ${t.border}`, color: tableValueColor }}
-                onClick={() => navigate(`/live/results/${s.id}`)}
-              >
-                Natijalar <ChevronRight className="w-3 h-3" strokeWidth={2} />
-              </button>
+          </div>
+          {loadingMore && (
+            <div className="pt-3 text-center text-xs" style={{ color: t.textMuted }}>
+              Yana sessionlar yuklanmoqda...
             </div>
-          );
-        })}
-      </div>
-      {loadingMore && (
-        <div className="pt-3 text-center text-xs" style={{ color: t.textMuted }}>
-          Yana sessionlar yuklanmoqda...
-        </div>
-      )}
-      {error && pastSessions.length > 0 && (
-        <div className="pt-3 text-center text-xs" style={{ color: '#EF4444' }}>
-          {error}
-        </div>
-      )}
+          )}
+          {error && pastSessions.length > 0 && (
+            <div className="pt-3 text-center text-xs" style={{ color: '#EF4444' }}>
+              {error}
+            </div>
+          )}
         </>
       )}
     </Card>

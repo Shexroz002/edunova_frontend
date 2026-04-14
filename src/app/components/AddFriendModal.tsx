@@ -521,7 +521,7 @@ export function AddFriendModal({ onClose }: AddFriendModalProps) {
                           {user.full_name}
                         </h3>
                       </div>
-                      
+
                       {user.username && (
                         <p className="text-xs truncate mb-1" style={{ color: t.textMuted }}>
                           {user.username}

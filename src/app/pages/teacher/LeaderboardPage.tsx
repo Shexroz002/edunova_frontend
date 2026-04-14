@@ -58,9 +58,9 @@ interface LeaderboardStudent {
 }
 
 const AVATAR_COLORS = [
-  '#6366F1','#3B82F6','#22C55E','#F59E0B','#EF4444',
-  '#8B5CF6','#0891B2','#D97706','#059669','#EC4899',
-  '#14B8A6','#F97316',
+  '#6366F1', '#3B82F6', '#22C55E', '#F59E0B', '#EF4444',
+  '#8B5CF6', '#0891B2', '#D97706', '#059669', '#EC4899',
+  '#14B8A6', '#F97316',
 ];
 
 function getInitials(name: string) {
@@ -140,9 +140,9 @@ async function fetchWithAuthRetry(url: string, init: RequestInit = {}) {
 }
 
 function scoreColor(score: number) {
-  if (score >= 75) return { color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.25)'   };
+  if (score >= 75) return { color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.25)' };
   if (score >= 50) return { color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)' };
-  return              { color: '#EF4444', bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.25)'   };
+  return { color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)' };
 }
 
 function RankBadge({ rank }: { rank: number }) {
@@ -494,8 +494,8 @@ export function LeaderboardPage() {
           const heights = ['h-28 sm:h-36', 'h-36 sm:h-44', 'h-24 sm:h-32'];
           const podiumColors = [
             { bg: t.isDark ? 'rgba(148,163,184,0.08)' : 'rgba(148,163,184,0.06)', border: 'rgba(148,163,184,0.2)' },
-            { bg: t.isDark ? 'rgba(245,158,11,0.1)'   : 'rgba(245,158,11,0.06)', border: 'rgba(245,158,11,0.3)'  },
-            { bg: t.isDark ? 'rgba(180,83,9,0.1)'     : 'rgba(180,83,9,0.06)',   border: 'rgba(180,83,9,0.25)'   },
+            { bg: t.isDark ? 'rgba(245,158,11,0.1)' : 'rgba(245,158,11,0.06)', border: 'rgba(245,158,11,0.3)' },
+            { bg: t.isDark ? 'rgba(180,83,9,0.1)' : 'rgba(180,83,9,0.06)', border: 'rgba(180,83,9,0.25)' },
           ];
           const pc = podiumColors[podiumIdx];
           return (
@@ -666,13 +666,12 @@ export function LeaderboardPage() {
           }}>
           {['#', "O'quvchi", 'Grupa', 'Ball', 'Test', 'Streak', 'Faollik'].map((h, i) => (
             <div key={i}
-              className={`text-xs font-semibold uppercase tracking-wider ${
-                i === 0 ? 'col-span-1' :
+              className={`text-xs font-semibold uppercase tracking-wider ${i === 0 ? 'col-span-1' :
                 i === 1 ? 'col-span-4' :
-                i === 2 ? 'col-span-2' :
-                i === 6 ? 'col-span-2' :
-                'col-span-1'
-              }`}
+                  i === 2 ? 'col-span-2' :
+                    i === 6 ? 'col-span-2' :
+                      'col-span-1'
+                }`}
               style={{ color: t.textSecondary }}>
               {h}
             </div>
@@ -683,149 +682,149 @@ export function LeaderboardPage() {
           ref={listContainerRef}
           className="leaderboard-table-scroll max-h-[520px] overflow-y-auto"
         >
-        {loading && page === 1 ? (
-          <div className="px-4 py-16 text-center">
-            <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-              style={{ background: t.bgInner, border: `1px solid ${t.border}` }}>
-              <div className="w-6 h-6 rounded-full border-2 border-current border-t-transparent animate-spin"
-                style={{ color: '#6366F1' }} />
-            </div>
-            <p className="text-sm font-semibold" style={{ color: t.textPrimary }}>Studentlar yuklanmoqda</p>
-          </div>
-        ) : error ? (
-          <div className="px-4 py-16 text-center">
-            <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center"
-              style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
-              <X className="w-6 h-6" style={{ color: '#EF4444' }} />
-            </div>
-            <p className="text-sm font-semibold mb-1" style={{ color: t.textPrimary }}>Student jadvali yuklanmadi</p>
-            <p className="text-xs mb-4" style={{ color: t.textMuted }}>{error}</p>
-            <button
-              onClick={() => setReloadKey((prev) => prev + 1)}
-              className="px-4 h-10 rounded-xl text-sm font-semibold"
-              style={{
-                background: t.accentMuted,
-                border: `1px solid ${t.accentBorder}`,
-                color: t.accent,
-              }}
-            >
-              Qayta urinish
-            </button>
-          </div>
-        ) : students.length === 0 ? (
-          <div className="px-4 py-16 text-center">
-            <p className="text-sm font-semibold mb-1" style={{ color: t.textPrimary }}>Studentlar topilmadi</p>
-            <p className="text-xs" style={{ color: t.textMuted }}>Qidiruv yoki filterlarni o'zgartiring</p>
-          </div>
-        ) : (
-        <>
-        {/* All rows */}
-        {students.map((s, idx) => {
-          const rank = idx + 1;
-          const sc = scoreColor(s.avgScore);
-          const avatarColor = AVATAR_COLORS[s.id % AVATAR_COLORS.length];
-          const isTop3 = rank <= 3;
-          return (
-            <div key={s.id}>
-              {/* Desktop row */}
-              <div
-                className="hidden sm:grid grid-cols-12 items-center px-5 py-3.5 transition-colors cursor-pointer"
-                style={{
-                  borderBottom: idx < students.length - 1 ? `1px solid ${t.border}` : 'none',
-                  background: isTop3 ? (t.isDark ? 'rgba(99,102,241,0.06)' : 'rgba(99,102,241,0.035)') : 'transparent',
-                }}
-                onClick={() => navigate(`/students/${s.id}`)}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = t.bgCardHover; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = isTop3 ? (t.isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.02)') : 'transparent'; }}
-              >
-                <div className="col-span-1"><RankBadge rank={rank} /></div>
-                <div className="col-span-4 flex items-center gap-3 pr-3">
-                  <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 overflow-hidden"
-                    style={{ background: avatarColor }}>
-                    {s.profileImage ? (
-                      <img src={s.profileImage} alt={s.name} className="w-full h-full object-cover rounded-full" />
-                    ) : s.initials}
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold tracking-[0.01em]" style={{ color: t.textPrimary }}>{s.name}</p>
-                    <span className="text-xs truncate block mt-1" style={{ color: t.textSecondary }}>@{s.username}</span>
-                  </div>
-                </div>
-                <div className="col-span-2 min-w-0 pr-3">
-                  <GroupNamesDropdown groups={s.groups} t={t} />
-                </div>
-                <div className="col-span-1 pr-2">
-                  <span className="text-xs font-bold px-2.5 py-1 rounded-lg"
-                    style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
-                    {s.avgScore}%
-                  </span>
-                </div>
-                <div className="col-span-1 pr-2">
-                  <span className="text-sm font-medium" style={{ color: t.textPrimary }}>{s.testsCompleted} ta</span>
-                </div>
-                <div className="col-span-1 pr-2">
-                  {s.streak > 0 ? (
-                    <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg"
-                      style={{ background: 'rgba(245,158,11,0.1)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.25)' }}>
-                      🔥 {s.streak} kun
-                    </span>
-                  ) : (
-                    <span className="text-xs" style={{ color: t.textMuted }}>—</span>
-                  )}
-                </div>
-                <div className="col-span-2 flex flex-col items-start gap-1.5">
-                  <div className="flex items-center gap-2">
-                    <Star className="w-4 h-4" style={{ color: isTop3 ? '#F59E0B' : t.border }} strokeWidth={isTop3 ? 2 : 1.5} fill={isTop3 ? '#F59E0B' : 'none'} />
-                    <span className="text-[11px] font-medium" style={{ color: t.textSecondary }}>
-                      {isTop3 ? "Top o'quvchi" : 'Reytingda'}
-                    </span>
-                  </div>
-                  <span className="text-[11px] font-medium" style={{ color: t.textSecondary }}>{s.lastActivity}</span>
-                </div>
+          {loading && page === 1 ? (
+            <div className="px-4 py-16 text-center">
+              <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+                style={{ background: t.bgInner, border: `1px solid ${t.border}` }}>
+                <div className="w-6 h-6 rounded-full border-2 border-current border-t-transparent animate-spin"
+                  style={{ color: '#6366F1' }} />
               </div>
+              <p className="text-sm font-semibold" style={{ color: t.textPrimary }}>Studentlar yuklanmoqda</p>
+            </div>
+          ) : error ? (
+            <div className="px-4 py-16 text-center">
+              <div className="w-12 h-12 rounded-2xl mx-auto mb-4 flex items-center justify-center"
+                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)' }}>
+                <X className="w-6 h-6" style={{ color: '#EF4444' }} />
+              </div>
+              <p className="text-sm font-semibold mb-1" style={{ color: t.textPrimary }}>Student jadvali yuklanmadi</p>
+              <p className="text-xs mb-4" style={{ color: t.textMuted }}>{error}</p>
+              <button
+                onClick={() => setReloadKey((prev) => prev + 1)}
+                className="px-4 h-10 rounded-xl text-sm font-semibold"
+                style={{
+                  background: t.accentMuted,
+                  border: `1px solid ${t.accentBorder}`,
+                  color: t.accent,
+                }}
+              >
+                Qayta urinish
+              </button>
+            </div>
+          ) : students.length === 0 ? (
+            <div className="px-4 py-16 text-center">
+              <p className="text-sm font-semibold mb-1" style={{ color: t.textPrimary }}>Studentlar topilmadi</p>
+              <p className="text-xs" style={{ color: t.textMuted }}>Qidiruv yoki filterlarni o'zgartiring</p>
+            </div>
+          ) : (
+            <>
+              {/* All rows */}
+              {students.map((s, idx) => {
+                const rank = idx + 1;
+                const sc = scoreColor(s.avgScore);
+                const avatarColor = AVATAR_COLORS[s.id % AVATAR_COLORS.length];
+                const isTop3 = rank <= 3;
+                return (
+                  <div key={s.id}>
+                    {/* Desktop row */}
+                    <div
+                      className="hidden sm:grid grid-cols-12 items-center px-5 py-3.5 transition-colors cursor-pointer"
+                      style={{
+                        borderBottom: idx < students.length - 1 ? `1px solid ${t.border}` : 'none',
+                        background: isTop3 ? (t.isDark ? 'rgba(99,102,241,0.06)' : 'rgba(99,102,241,0.035)') : 'transparent',
+                      }}
+                      onClick={() => navigate(`/students/${s.id}`)}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = t.bgCardHover; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = isTop3 ? (t.isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.02)') : 'transparent'; }}
+                    >
+                      <div className="col-span-1"><RankBadge rank={rank} /></div>
+                      <div className="col-span-4 flex items-center gap-3 pr-3">
+                        <div className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 overflow-hidden"
+                          style={{ background: avatarColor }}>
+                          {s.profileImage ? (
+                            <img src={s.profileImage} alt={s.name} className="w-full h-full object-cover rounded-full" />
+                          ) : s.initials}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-sm font-semibold tracking-[0.01em]" style={{ color: t.textPrimary }}>{s.name}</p>
+                          <span className="text-xs truncate block mt-1" style={{ color: t.textSecondary }}>@{s.username}</span>
+                        </div>
+                      </div>
+                      <div className="col-span-2 min-w-0 pr-3">
+                        <GroupNamesDropdown groups={s.groups} t={t} />
+                      </div>
+                      <div className="col-span-1 pr-2">
+                        <span className="text-xs font-bold px-2.5 py-1 rounded-lg"
+                          style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
+                          {s.avgScore}%
+                        </span>
+                      </div>
+                      <div className="col-span-1 pr-2">
+                        <span className="text-sm font-medium" style={{ color: t.textPrimary }}>{s.testsCompleted} ta</span>
+                      </div>
+                      <div className="col-span-1 pr-2">
+                        {s.streak > 0 ? (
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-lg"
+                            style={{ background: 'rgba(245,158,11,0.1)', color: '#F59E0B', border: '1px solid rgba(245,158,11,0.25)' }}>
+                            🔥 {s.streak} kun
+                          </span>
+                        ) : (
+                          <span className="text-xs" style={{ color: t.textMuted }}>—</span>
+                        )}
+                      </div>
+                      <div className="col-span-2 flex flex-col items-start gap-1.5">
+                        <div className="flex items-center gap-2">
+                          <Star className="w-4 h-4" style={{ color: isTop3 ? '#F59E0B' : t.border }} strokeWidth={isTop3 ? 2 : 1.5} fill={isTop3 ? '#F59E0B' : 'none'} />
+                          <span className="text-[11px] font-medium" style={{ color: t.textSecondary }}>
+                            {isTop3 ? "Top o'quvchi" : 'Reytingda'}
+                          </span>
+                        </div>
+                        <span className="text-[11px] font-medium" style={{ color: t.textSecondary }}>{s.lastActivity}</span>
+                      </div>
+                    </div>
 
-              {/* Mobile row */}
-              <div
-                className="flex sm:hidden items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors"
-                style={{
-                  borderBottom: idx < students.length - 1 ? `1px solid ${t.border}` : 'none',
-                  background: isTop3 ? (t.isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.03)') : 'transparent',
-                }}
-                onClick={() => navigate(`/students/${s.id}`)}
-                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = t.bgCardHover; }}
-                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = isTop3 ? (t.isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.03)') : 'transparent'; }}
-              >
-                <div className="w-8 shrink-0 flex items-center justify-center">
-                  {rank <= 3
-                    ? <RankBadge rank={rank} />
-                    : <span className="text-sm font-bold" style={{ color: t.textMuted }}>{rank}</span>}
-                </div>
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 overflow-hidden"
-                  style={{ background: avatarColor }}>
-                  {s.profileImage ? (
-                    <img src={s.profileImage} alt={s.name} className="w-full h-full object-cover rounded-full" />
-                  ) : s.initials}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold truncate" style={{ color: t.textPrimary }}>{s.name}</p>
-                  <span className="text-xs truncate block mt-1" style={{ color: t.textSecondary }}>{s.username}</span>
-                  <div className="mt-1">
-                    <GroupNamesDropdown groups={s.groups} t={t} />
+                    {/* Mobile row */}
+                    <div
+                      className="flex sm:hidden items-center gap-3 px-4 py-3.5 cursor-pointer transition-colors"
+                      style={{
+                        borderBottom: idx < students.length - 1 ? `1px solid ${t.border}` : 'none',
+                        background: isTop3 ? (t.isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.03)') : 'transparent',
+                      }}
+                      onClick={() => navigate(`/students/${s.id}`)}
+                      onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = t.bgCardHover; }}
+                      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = isTop3 ? (t.isDark ? 'rgba(99,102,241,0.04)' : 'rgba(99,102,241,0.03)') : 'transparent'; }}
+                    >
+                      <div className="w-8 shrink-0 flex items-center justify-center">
+                        {rank <= 3
+                          ? <RankBadge rank={rank} />
+                          : <span className="text-sm font-bold" style={{ color: t.textMuted }}>{rank}</span>}
+                      </div>
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-white shrink-0 overflow-hidden"
+                        style={{ background: avatarColor }}>
+                        {s.profileImage ? (
+                          <img src={s.profileImage} alt={s.name} className="w-full h-full object-cover rounded-full" />
+                        ) : s.initials}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold truncate" style={{ color: t.textPrimary }}>{s.name}</p>
+                        <span className="text-xs truncate block mt-1" style={{ color: t.textSecondary }}>{s.username}</span>
+                        <div className="mt-1">
+                          <GroupNamesDropdown groups={s.groups} t={t} />
+                        </div>
+                      </div>
+                      <div className="shrink-0 text-right">
+                        <span className="text-xs font-bold px-2 py-0.5 rounded-lg inline-flex"
+                          style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
+                          {s.avgScore}%
+                        </span>
+                        <p className="text-[11px] mt-1 font-medium" style={{ color: t.textSecondary }}>{s.lastActivity}</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-                <div className="shrink-0 text-right">
-                  <span className="text-xs font-bold px-2 py-0.5 rounded-lg inline-flex"
-                    style={{ background: sc.bg, color: sc.color, border: `1px solid ${sc.border}` }}>
-                    {s.avgScore}%
-                  </span>
-                  <p className="text-[11px] mt-1 font-medium" style={{ color: t.textSecondary }}>{s.lastActivity}</p>
-                </div>
-              </div>
-            </div>
-          );
-        })}
-        </>
-        )}
+                );
+              })}
+            </>
+          )}
           {loadingMore && (
             <div className="px-4 sm:px-5 py-4 text-center text-xs" style={{ color: t.textMuted }}>
               Yana yuklanmoqda...

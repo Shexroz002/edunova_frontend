@@ -175,12 +175,12 @@ async function createCompetition(quizId: number, durationMinutes: number, maxPar
 function SubjectIcon({ icon, color, size = 16 }: { icon: string; color: string; size?: number }) {
   const p = { style: { color }, strokeWidth: 1.75, width: size, height: size };
   switch (icon) {
-    case 'flask':     return <FlaskConical {...p} />;
-    case 'leaf':      return <Leaf {...p} />;
-    case 'book':      return <BookOpen {...p} />;
+    case 'flask': return <FlaskConical {...p} />;
+    case 'leaf': return <Leaf {...p} />;
+    case 'book': return <BookOpen {...p} />;
     case 'languages': return <Languages {...p} />;
-    case 'globe':     return <Globe {...p} />;
-    default:          return <Calculator {...p} />;
+    case 'globe': return <Globe {...p} />;
+    default: return <Calculator {...p} />;
   }
 }
 
@@ -195,9 +195,9 @@ function genCode() {
 // ─────────────────────────────────────────────────────────────────────────────
 function StepProgress({
   step1Done, step2Done, step3Done, onEditStep,
-}: { 
-  step1Done: boolean; 
-  step2Done: boolean; 
+}: {
+  step1Done: boolean;
+  step2Done: boolean;
   step3Done: boolean;
   onEditStep: (step: number) => void;
 }) {
@@ -291,9 +291,9 @@ function QuizDropdown({
   selected, onSelect, quizzes,
 }: { selected: Quiz | null; onSelect: (q: Quiz | null) => void; quizzes: Quiz[] }) {
   const { theme: t } = useTheme();
-  const [open, setOpen]     = useState(false);
+  const [open, setOpen] = useState(false);
   const [search, setSearch] = useState('');
-  const ref  = useRef<HTMLDivElement>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
 
   // Close on outside click
@@ -713,9 +713,8 @@ function StepCard({ step, title, subtitle, icon: Icon, color, children, complete
       className="rounded-2xl transition-all duration-300"
       style={{
         background: t.bgCard,
-        border: `2px solid ${
-          complete ? color + '45' : active ? color + '30' : t.border
-        }`,
+        border: `2px solid ${complete ? color + '45' : active ? color + '30' : t.border
+          }`,
         boxShadow: complete
           ? (t.isDark ? `0 0 0 1px ${color}12, ${t.shadowCard}` : t.shadowCard)
           : t.shadowCard,
@@ -728,8 +727,8 @@ function StepCard({ step, title, subtitle, icon: Icon, color, children, complete
           background: complete
             ? `linear-gradient(90deg, ${color}, ${color}50)`
             : active
-            ? `linear-gradient(90deg, ${color}50, transparent)`
-            : 'transparent',
+              ? `linear-gradient(90deg, ${color}50, transparent)`
+              : 'transparent',
         }}
       />
 
@@ -743,8 +742,8 @@ function StepCard({ step, title, subtitle, icon: Icon, color, children, complete
               background: complete
                 ? `${color}18`
                 : active
-                ? `${color}10`
-                : (t.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'),
+                  ? `${color}10`
+                  : (t.isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.04)'),
               border: `2px solid ${complete ? color + '45' : active ? color + '30' : t.border}`,
             }}
           >
@@ -803,7 +802,7 @@ function SuccessModal({
   const { theme: t } = useTheme();
   const navigate = useNavigate();
   const [visible, setVisible] = useState(false);
-  const [copied, setCopied]   = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => { const id = requestAnimationFrame(() => setVisible(true)); return () => cancelAnimationFrame(id); }, []);
   useEffect(() => { document.body.style.overflow = 'hidden'; return () => { document.body.style.overflow = ''; }; }, []);
@@ -816,7 +815,7 @@ function SuccessModal({
   function close() { setVisible(false); setTimeout(onClose, 230); }
 
   function handleCopy() {
-    navigator.clipboard.writeText(code).catch(() => {});
+    navigator.clipboard.writeText(code).catch(() => { });
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -847,9 +846,11 @@ function SuccessModal({
         {/* Header */}
         <div className="relative px-6 pt-8 pb-6 text-center overflow-hidden">
           <div className="absolute inset-0"
-            style={{ background: t.isDark
-              ? 'radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.25), transparent 70%)'
-              : 'radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.12), transparent 70%)' }}
+            style={{
+              background: t.isDark
+                ? 'radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.25), transparent 70%)'
+                : 'radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.12), transparent 70%)'
+            }}
           />
           <div className="relative w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4"
             style={{ background: 'linear-gradient(135deg, rgba(139,92,246,0.2), rgba(99,102,241,0.15))', border: '1.5px solid rgba(139,92,246,0.35)' }}>
@@ -898,9 +899,9 @@ function SuccessModal({
           {/* Summary chips */}
           <div className="grid grid-cols-3 gap-2">
             {[
-              { icon: BookOpen, label: 'Test',        value: quiz.questions + ' ta savol', color: quiz.subjectColor },
-              { icon: Users,    label: 'Ishtirokchi', value: participants + ' kishi',       color: '#22C55E' },
-              { icon: Clock,    label: 'Vaqt',        value: duration + ' daqiqa',          color: '#FBBF24' },
+              { icon: BookOpen, label: 'Test', value: quiz.questions + ' ta savol', color: quiz.subjectColor },
+              { icon: Users, label: 'Ishtirokchi', value: participants + ' kishi', color: '#22C55E' },
+              { icon: Clock, label: 'Vaqt', value: duration + ' daqiqa', color: '#FBBF24' },
             ].map(({ icon: Ic, label, value, color }) => (
               <div key={label} className="flex flex-col items-center py-3 px-2 rounded-xl text-center"
                 style={{ background: `${color}10`, border: `1px solid ${color}22` }}>
@@ -956,10 +957,10 @@ export function StudentCompetitionPage() {
   const navigate = useNavigate();
 
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
-  const [selectedQuiz,  setSelectedQuiz]  = useState<Quiz | null>(null);
-  const [participants,  setParticipants]  = useState<number | null>(null);
-  const [duration,      setDuration]      = useState<number | null>(null);
-  const [creating,      setCreating]      = useState(false);
+  const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
+  const [participants, setParticipants] = useState<number | null>(null);
+  const [duration, setDuration] = useState<number | null>(null);
+  const [creating, setCreating] = useState(false);
   const [loadingQuizzes, setLoadingQuizzes] = useState(true);
 
   const step1Done = selectedQuiz !== null;
@@ -1003,14 +1004,14 @@ export function StudentCompetitionPage() {
   const p2Error = participants !== null && participants < 2
     ? "Kamida 2 kishi kerak"
     : participants !== null && participants > 100
-    ? "Ko'pi bilan 100 kishi bo'lishi mumkin"
-    : null;
+      ? "Ko'pi bilan 100 kishi bo'lishi mumkin"
+      : null;
 
   const p3Error = duration !== null && duration < 1
     ? "Vaqt 1 daqiqadan kam bo'lmasin"
     : duration !== null && duration > 180
-    ? "Vaqt 180 daqiqadan oshmasin"
-    : null;
+      ? "Vaqt 180 daqiqadan oshmasin"
+      : null;
 
   useEffect(() => {
     let cancelled = false;
@@ -1048,7 +1049,7 @@ export function StudentCompetitionPage() {
   }
 
   const participantPresets = [2, 4, 6, 10, 20];
-  const durationPresets    = [10, 20, 30, 45, 60];
+  const durationPresets = [10, 20, 30, 45, 60];
 
   return (
     <div className="max-w-2xl mx-auto pb-8">
@@ -1106,9 +1107,9 @@ export function StudentCompetitionPage() {
       {/* ══════════════════════════════════════════════════════
           STEP PROGRESS
       ══════════════════════════════════════════════════════ */}
-      <StepProgress 
-        step1Done={step1Done} 
-        step2Done={step2Done} 
+      <StepProgress
+        step1Done={step1Done}
+        step2Done={step2Done}
         step3Done={step3Done}
         onEditStep={handleEditStep}
       />
@@ -1151,10 +1152,10 @@ export function StudentCompetitionPage() {
         {/* Feature pills */}
         <div className="flex items-center gap-2 px-4 pb-4 flex-wrap">
           {[
-            { icon: Zap,    label: 'Real-vaqt',    color: '#FBBF24' },
-            { icon: Trophy, label: 'Reyting',       color: '#A78BFA' },
-            { icon: Users,  label: "Ko'p o'yinchi", color: '#38BDF8' },
-            { icon: Target, label: 'Raqobat',       color: '#22C55E' },
+            { icon: Zap, label: 'Real-vaqt', color: '#FBBF24' },
+            { icon: Trophy, label: 'Reyting', color: '#A78BFA' },
+            { icon: Users, label: "Ko'p o'yinchi", color: '#38BDF8' },
+            { icon: Target, label: 'Raqobat', color: '#22C55E' },
           ].map(({ icon: Ic, label, color }) => (
             <span
               key={label}
@@ -1358,11 +1359,10 @@ export function StudentCompetitionPage() {
           className="rounded-2xl overflow-hidden transition-all duration-300"
           style={{
             background: t.bgCard,
-            border: `2px solid ${
-              canCreate
-                ? (t.isDark ? 'rgba(139,92,246,0.35)' : 'rgba(139,92,246,0.22)')
-                : t.border
-            }`,
+            border: `2px solid ${canCreate
+              ? (t.isDark ? 'rgba(139,92,246,0.35)' : 'rgba(139,92,246,0.22)')
+              : t.border
+              }`,
             boxShadow: t.shadowCard,
             opacity: canCreate ? 1 : 0.6,
           }}
@@ -1518,21 +1518,21 @@ export function StudentCompetitionPage() {
                 background: !canCreate
                   ? (t.isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)')
                   : creating
-                  ? (t.isDark ? 'rgba(139,92,246,0.3)' : 'rgba(139,92,246,0.2)')
-                  : 'linear-gradient(135deg, #A78BFA 0%, #6366F1 50%, #4F46E5 100%)',
+                    ? (t.isDark ? 'rgba(139,92,246,0.3)' : 'rgba(139,92,246,0.2)')
+                    : 'linear-gradient(135deg, #A78BFA 0%, #6366F1 50%, #4F46E5 100%)',
                 color: !canCreate
                   ? t.textMuted
                   : creating
-                  ? '#A78BFA'
-                  : '#fff',
+                    ? '#A78BFA'
+                    : '#fff',
                 boxShadow: canCreate && !creating
                   ? '0 6px 24px rgba(99,102,241,0.45)'
                   : 'none',
                 border: !canCreate
                   ? `2px solid ${t.border}`
                   : creating
-                  ? `2px solid ${t.isDark ? 'rgba(139,92,246,0.4)' : 'rgba(139,92,246,0.3)'}`
-                  : 'none',
+                    ? `2px solid ${t.isDark ? 'rgba(139,92,246,0.4)' : 'rgba(139,92,246,0.3)'}`
+                    : 'none',
                 cursor: !canCreate || creating ? 'not-allowed' : 'pointer',
               }}
               onMouseEnter={(e) => {

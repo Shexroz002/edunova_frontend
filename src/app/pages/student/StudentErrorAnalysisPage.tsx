@@ -159,10 +159,10 @@ function parseMathSegments(value: string) {
     const mathValue = match.startsWith('$$')
       ? match.slice(2, -2)
       : match.startsWith('\\[')
-      ? match.slice(2, -2)
-      : match.startsWith('\\(')
-      ? match.slice(2, -2)
-      : match.slice(1, -1);
+        ? match.slice(2, -2)
+        : match.startsWith('\\(')
+          ? match.slice(2, -2)
+          : match.slice(1, -1);
 
     segments.push({ type: 'math', value: mathValue, displayMode });
     lastIndex = offset + match.length;
@@ -626,7 +626,7 @@ export function StudentErrorAnalysisPage() {
             {currentQuestion.options.map((option) => {
               const isUserAnswer = currentQuestion.user_answer === option.label;
               const isCorrectAnswer = currentQuestion.correct_answer === option.label;
-              
+
               let borderColor = t.border;
               let bgColor = t.isDark ? 'rgba(255,255,255,0.03)' : 'rgba(0,0,0,0.02)';
               let icon = null;
@@ -658,23 +658,23 @@ export function StudentErrorAnalysisPage() {
                       background: isCorrectAnswer
                         ? '#22C55E'
                         : isUserAnswer && !isCorrectAnswer
-                        ? '#EF4444'
-                        : (t.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'),
+                          ? '#EF4444'
+                          : (t.isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)'),
                       color: isCorrectAnswer || (isUserAnswer && !isCorrectAnswer) ? '#fff' : t.textMuted,
                       border: isCorrectAnswer || (isUserAnswer && !isCorrectAnswer) ? 'none' : `1px solid ${t.border}`,
                     }}
                   >
                     {option.label}
                   </div>
-                  
+
                   <div
                     className="flex-1 font-medium text-sm sm:text-base"
                     style={{
                       color: isCorrectAnswer
                         ? '#22C55E'
                         : isUserAnswer && !isCorrectAnswer
-                        ? '#EF4444'
-                        : t.textPrimary,
+                          ? '#EF4444'
+                          : t.textPrimary,
                     }}
                   >
                     {renderMathText(option.text)}
@@ -692,13 +692,13 @@ export function StudentErrorAnalysisPage() {
               background: currentQuestion.user_answer === null
                 ? (t.isDark ? 'rgba(156,163,175,0.12)' : 'rgba(156,163,175,0.08)')
                 : currentQuestion.is_correct
-                ? (t.isDark ? 'rgba(34,197,94,0.12)' : 'rgba(34,197,94,0.08)')
-                : (t.isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)'),
+                  ? (t.isDark ? 'rgba(34,197,94,0.12)' : 'rgba(34,197,94,0.08)')
+                  : (t.isDark ? 'rgba(239,68,68,0.12)' : 'rgba(239,68,68,0.08)'),
               border: currentQuestion.user_answer === null
                 ? '1.5px solid rgba(156,163,175,0.25)'
                 : currentQuestion.is_correct
-                ? '1.5px solid rgba(34,197,94,0.25)'
-                : '1.5px solid rgba(239,68,68,0.25)',
+                  ? '1.5px solid rgba(34,197,94,0.25)'
+                  : '1.5px solid rgba(239,68,68,0.25)',
             }}
           >
             {currentQuestion.user_answer === null ? (
@@ -713,8 +713,8 @@ export function StudentErrorAnalysisPage() {
                 {currentQuestion.user_answer === null
                   ? 'Javob berilmagan'
                   : currentQuestion.is_correct
-                  ? "Siz bu savolga to'gri javob bergansiz!"
-                  : "Siz bu savolga noto'g'ri javob bergansiz!"}
+                    ? "Siz bu savolga to'gri javob bergansiz!"
+                    : "Siz bu savolga noto'g'ri javob bergansiz!"}
               </p>
               {!currentQuestion.is_correct && currentQuestion.user_answer !== null && (
                 <p className="text-xs" style={{ color: t.textMuted }}>

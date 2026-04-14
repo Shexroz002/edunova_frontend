@@ -123,18 +123,18 @@ interface SessionInfoResponse {
 }
 
 const INITIALS_COLORS = [
-  '#6366F1','#8B5CF6','#3B82F6','#22C55E','#F59E0B','#EF4444','#14B8A6','#EC4899',
+  '#6366F1', '#8B5CF6', '#3B82F6', '#22C55E', '#F59E0B', '#EF4444', '#14B8A6', '#EC4899',
 ];
 
 // ─────────────────────────────────────────────
 //  Status config
 // ─────────────────────────────────────────────
 const STATUS_CFG: Record<StudentStatus, { label: string; color: string; bg: string; border: string; Icon: React.ElementType }> = {
-  preparing:    { label: 'Tayyorlanmoqda', color: '#94A3B8', bg: 'rgba(148,163,184,0.1)', border: 'rgba(148,163,184,0.25)', Icon: Loader2       },
-  ready:        { label: 'Tayyor',         color: '#3B82F6', bg: 'rgba(59,130,246,0.1)',  border: 'rgba(59,130,246,0.25)',  Icon: Circle        },
-  active:       { label: 'Bajarayapti',    color: '#6366F1', bg: 'rgba(99,102,241,0.1)',  border: 'rgba(99,102,241,0.25)', Icon: Radio         },
-  finished:     { label: 'Tugatdi',        color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.25)',  Icon: CheckCircle2  },
-  disconnected: { label: 'Uzildi',         color: '#EF4444', bg: 'rgba(239,68,68,0.1)',   border: 'rgba(239,68,68,0.25)', Icon: WifiOff       },
+  preparing: { label: 'Tayyorlanmoqda', color: '#94A3B8', bg: 'rgba(148,163,184,0.1)', border: 'rgba(148,163,184,0.25)', Icon: Loader2 },
+  ready: { label: 'Tayyor', color: '#3B82F6', bg: 'rgba(59,130,246,0.1)', border: 'rgba(59,130,246,0.25)', Icon: Circle },
+  active: { label: 'Bajarayapti', color: '#6366F1', bg: 'rgba(99,102,241,0.1)', border: 'rgba(99,102,241,0.25)', Icon: Radio },
+  finished: { label: 'Tugatdi', color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.25)', Icon: CheckCircle2 },
+  disconnected: { label: 'Uzildi', color: '#EF4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)', Icon: WifiOff },
 };
 
 async function fetchWithAuthRetry(url: string, init: RequestInit = {}) {
@@ -354,26 +354,26 @@ export function ActiveSessionPage() {
   const [sessionInfo, setSessionInfo] = useState<SessionInfoResponse | null>(
     locationState?.session
       ? {
-          session_id: locationState.session.session_id,
-          quiz_id: locationState.session.quiz_id ?? locationState.quiz?.id ?? 0,
-          quiz_name: locationState.session.quiz_name ?? locationState.quiz?.title ?? null,
-          subject_name: locationState.session.subject_name ?? locationState.quiz?.subject ?? null,
-          host_id: 0,
-          join_code: locationState.session.join_code ?? '',
-          status: locationState.session.status ?? 'running',
-          duration_minutes: locationState.session.duration_minutes ?? 0,
-          questions_count: locationState.session.questions_count ?? locationState.quiz?.questionCount ?? 0,
-          started_at: locationState.session.started_at ?? null,
-          finished_at: locationState.session.finished_at ?? null,
-          session_type: locationState.session.session_type ?? null,
-          current_participant_id: locationState.session.current_participant_id ?? null,
-        }
+        session_id: locationState.session.session_id,
+        quiz_id: locationState.session.quiz_id ?? locationState.quiz?.id ?? 0,
+        quiz_name: locationState.session.quiz_name ?? locationState.quiz?.title ?? null,
+        subject_name: locationState.session.subject_name ?? locationState.quiz?.subject ?? null,
+        host_id: 0,
+        join_code: locationState.session.join_code ?? '',
+        status: locationState.session.status ?? 'running',
+        duration_minutes: locationState.session.duration_minutes ?? 0,
+        questions_count: locationState.session.questions_count ?? locationState.quiz?.questionCount ?? 0,
+        started_at: locationState.session.started_at ?? null,
+        finished_at: locationState.session.finished_at ?? null,
+        session_type: locationState.session.session_type ?? null,
+        current_participant_id: locationState.session.current_participant_id ?? null,
+      }
       : null,
   );
 
   const [sessionState, setSessionState] = useState<SessionState>('live');
-  const [copied,       setCopied]       = useState(false);
-  const [students,     setStudents]     = useState<Student[]>([]);
+  const [copied, setCopied] = useState(false);
+  const [students, setStudents] = useState<Student[]>([]);
   const [filterStatus, setFilterStatus] = useState<StudentStatus | 'all'>('all');
   const [showEndConfirm, setShowEndConfirm] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -505,7 +505,7 @@ export function ActiveSessionPage() {
       }
     };
 
-    connect().catch(() => {});
+    connect().catch(() => { });
 
     return () => {
       active = false;
@@ -514,14 +514,14 @@ export function ActiveSessionPage() {
   }, [sessionId]);
 
   // Stat counters
-  const totalJoined    = participantsTotal || students.length;
-  const finished       = finishedParticipants || students.filter((s) => s.status === 'finished').length;
-  const disconnected   = students.filter((s) => s.status === 'disconnected').length;
-  const activeCount    = students.filter((s) => s.status === 'active').length;
+  const totalJoined = participantsTotal || students.length;
+  const finished = finishedParticipants || students.filter((s) => s.status === 'finished').length;
+  const disconnected = students.filter((s) => s.status === 'disconnected').length;
+  const activeCount = students.filter((s) => s.status === 'active').length;
   const totalQuestions = Math.max(sessionInfo?.questions_count ?? locationState?.session?.questions_count ?? locationState?.quiz?.questionCount ?? 0, ...students.map((s) => s.totalQuestions), 0);
 
   const progressData = buildProgressData(students, totalQuestions);
-  const maxCount     = Math.max(...progressData.map((d) => d.count), 1);
+  const maxCount = Math.max(...progressData.map((d) => d.count), 1);
 
   const filteredStudents = filterStatus === 'all'
     ? students
@@ -530,7 +530,7 @@ export function ActiveSessionPage() {
   const handleCopy = () => {
     const joinCode = sessionInfo?.join_code ?? locationState?.session?.join_code;
     if (!joinCode) return;
-    navigator.clipboard.writeText(joinCode).catch(() => {});
+    navigator.clipboard.writeText(joinCode).catch(() => { });
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -642,9 +642,9 @@ export function ActiveSessionPage() {
               </p>
               <div className="flex flex-wrap gap-4">
                 {[
-                  { Icon: Users,  label: `${totalJoined} o'quvchi qo'shilgan`,                     id: 'joined'   },
-                  { Icon: Clock,  label: `Boshlangan: ${formatStartedAt(sessionInfo?.started_at ?? locationState?.session?.started_at)}`, id: 'started', extra: <ElapsedTimer paused={paused} /> },
-                  { Icon: Hash,   label: `${totalQuestions} ta savol`,            id: 'questions'},
+                  { Icon: Users, label: `${totalJoined} o'quvchi qo'shilgan`, id: 'joined' },
+                  { Icon: Clock, label: `Boshlangan: ${formatStartedAt(sessionInfo?.started_at ?? locationState?.session?.started_at)}`, id: 'started', extra: <ElapsedTimer paused={paused} /> },
+                  { Icon: Hash, label: `${totalQuestions} ta savol`, id: 'questions' },
                 ].map(({ Icon, label, extra, id }) => (
                   <div key={id} className="flex items-center gap-1.5">
                     <Icon className="w-3.5 h-3.5 shrink-0" style={{ color: t.textMuted }} strokeWidth={1.75} />
@@ -669,13 +669,13 @@ export function ActiveSessionPage() {
                 className="w-9 h-9 rounded-xl flex items-center justify-center transition-all"
                 style={{
                   background: copied ? 'rgba(34,197,94,0.1)' : t.bgInner,
-                  border:    `1px solid ${copied ? 'rgba(34,197,94,0.3)' : t.border}`,
-                  color:      copied ? '#22C55E' : t.textMuted,
+                  border: `1px solid ${copied ? 'rgba(34,197,94,0.3)' : t.border}`,
+                  color: copied ? '#22C55E' : t.textMuted,
                 }}
               >
                 {copied
                   ? <Check className="w-4 h-4" strokeWidth={2.5} />
-                  : <Copy  className="w-4 h-4" strokeWidth={1.75} />}
+                  : <Copy className="w-4 h-4" strokeWidth={1.75} />}
               </button>
             </div>
           </div>
@@ -687,10 +687,10 @@ export function ActiveSessionPage() {
       ══════════════════════════════════════ */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-5 sm:mb-6">
         {[
-          { label: "Qo'shilgan",  val: totalJoined,        color: '#6366F1', bg: 'rgba(99,102,241,0.08)',  border: 'rgba(99,102,241,0.2)',  Icon: Users       },
-          { label: 'Faol',        val: onlineParticipants || activeCount, color: '#3B82F6', bg: 'rgba(59,130,246,0.08)',  border: 'rgba(59,130,246,0.2)',  Icon: Radio       },
-          { label: 'Tugatgan',    val: finished,     color: '#22C55E', bg: 'rgba(34,197,94,0.08)',   border: 'rgba(34,197,94,0.2)',   Icon: CheckCircle2},
-          { label: 'Uzilgan',     val: disconnected, color: '#EF4444', bg: 'rgba(239,68,68,0.08)',   border: 'rgba(239,68,68,0.2)',   Icon: WifiOff     },
+          { label: "Qo'shilgan", val: totalJoined, color: '#6366F1', bg: 'rgba(99,102,241,0.08)', border: 'rgba(99,102,241,0.2)', Icon: Users },
+          { label: 'Faol', val: onlineParticipants || activeCount, color: '#3B82F6', bg: 'rgba(59,130,246,0.08)', border: 'rgba(59,130,246,0.2)', Icon: Radio },
+          { label: 'Tugatgan', val: finished, color: '#22C55E', bg: 'rgba(34,197,94,0.08)', border: 'rgba(34,197,94,0.2)', Icon: CheckCircle2 },
+          { label: 'Uzilgan', val: disconnected, color: '#EF4444', bg: 'rgba(239,68,68,0.08)', border: 'rgba(239,68,68,0.2)', Icon: WifiOff },
         ].map(({ label, val, color, bg, border, Icon }) => (
           <div key={label} className="flex items-center gap-3 px-4 py-3 rounded-xl"
             style={{ background: bg, border: `1px solid ${border}` }}>
@@ -731,8 +731,8 @@ export function ActiveSessionPage() {
                     className="px-2.5 py-1 rounded-lg text-xs font-semibold transition-all"
                     style={{
                       background: active ? t.accentMuted : t.bgInner,
-                      color:      active ? t.accent       : t.textMuted,
-                      border:    `1px solid ${active ? t.accentBorder : t.border}`,
+                      color: active ? t.accent : t.textMuted,
+                      border: `1px solid ${active ? t.accentBorder : t.border}`,
                     }}
                   >
                     {label}
@@ -793,7 +793,7 @@ export function ActiveSessionPage() {
                       {/* Connection */}
                       <td className="px-4 py-3">
                         {s.connection === 'online'
-                          ? <Wifi    className="w-4 h-4" style={{ color: '#22C55E' }} strokeWidth={1.75} />
+                          ? <Wifi className="w-4 h-4" style={{ color: '#22C55E' }} strokeWidth={1.75} />
                           : <WifiOff className="w-4 h-4" style={{ color: '#EF4444' }} strokeWidth={1.75} />}
                       </td>
                     </tr>
@@ -824,7 +824,7 @@ export function ActiveSessionPage() {
                     </div>
                   </div>
                   {s.connection === 'online'
-                    ? <Wifi    className="w-4 h-4 shrink-0" style={{ color: '#22C55E' }} strokeWidth={1.75} />
+                    ? <Wifi className="w-4 h-4 shrink-0" style={{ color: '#22C55E' }} strokeWidth={1.75} />
                     : <WifiOff className="w-4 h-4 shrink-0" style={{ color: '#EF4444' }} strokeWidth={1.75} />}
                 </div>
               );
@@ -867,7 +867,7 @@ export function ActiveSessionPage() {
                   background: paused
                     ? 'linear-gradient(135deg,#22C55E,#16A34A)'
                     : 'rgba(245,158,11,0.1)',
-                  color:   paused ? '#fff' : '#F59E0B',
+                  color: paused ? '#fff' : '#F59E0B',
                   border: `1.5px solid ${paused ? 'transparent' : 'rgba(245,158,11,0.3)'}`,
                   boxShadow: paused ? '0 4px 14px rgba(34,197,94,0.3)' : 'none',
                 }}
@@ -875,8 +875,8 @@ export function ActiveSessionPage() {
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
               >
                 {paused
-                  ? <><Play        className="w-4 h-4" strokeWidth={2} />Sessiyani davom ettirish</>
-                  : <><Pause       className="w-4 h-4" strokeWidth={1.75} />Sessiyani to'xtatish</>}
+                  ? <><Play className="w-4 h-4" strokeWidth={2} />Sessiyani davom ettirish</>
+                  : <><Pause className="w-4 h-4" strokeWidth={1.75} />Sessiyani to'xtatish</>}
               </button>
 
               {/* End session */}
@@ -885,8 +885,8 @@ export function ActiveSessionPage() {
                 className="w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-sm font-semibold transition-all"
                 style={{
                   background: 'rgba(239,68,68,0.08)',
-                  color:      '#EF4444',
-                  border:     '1.5px solid rgba(239,68,68,0.25)',
+                  color: '#EF4444',
+                  border: '1.5px solid rgba(239,68,68,0.25)',
                 }}
                 onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.16)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)'; }}
                 onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.background = 'rgba(239,68,68,0.08)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}
@@ -956,9 +956,10 @@ export function ActiveSessionPage() {
             <div className="space-y-2.5">
               {[
                 { label: 'Bajarilish darajasi', val: `${totalJoined > 0 ? Math.round((finished / totalJoined) * 100) : 0}%`, color: '#22C55E' },
-                { label: "Faol o'quvchilar",    val: onlineParticipants || activeCount,  color: '#6366F1' },
-                { label: 'Uzilganlar',           val: disconnected, color: '#EF4444' },
-                { label: "O'rtacha savol",
+                { label: "Faol o'quvchilar", val: onlineParticipants || activeCount, color: '#6366F1' },
+                { label: 'Uzilganlar', val: disconnected, color: '#EF4444' },
+                {
+                  label: "O'rtacha savol",
                   val: (() => {
                     const onQ = students.filter((s) => s.currentQuestion > 0);
                     const avg = onQ.length ? onQ.reduce((a, s) => a + s.currentQuestion, 0) / onQ.length : 0;
@@ -1015,7 +1016,7 @@ export function ActiveSessionPage() {
           >
             {progressData.map(({ question, count }) => {
               const heightPct = maxCount > 0 ? (count / maxCount) * 100 : 0;
-              const isActive  = count > 0;
+              const isActive = count > 0;
               const barHeight = isActive ? Math.max(heightPct, 12) : 4;
               return (
                 <div key={question} className="w-9 sm:w-10 md:w-11 shrink-0 flex flex-col items-center gap-1.5 group">

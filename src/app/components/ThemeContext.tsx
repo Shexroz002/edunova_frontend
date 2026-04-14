@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, ReactNode } from 'react';
+import { getStoredUserRole, type AppUserRole } from '../lib/auth';
 
 export interface StatPalette {
   iconBg: string;
@@ -139,8 +140,22 @@ const ThemeContext = createContext<ThemeContextValue>({
   toggleTheme: () => {},
 });
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [isDark, setIsDark] = useState(true);
+function getDefaultIsDark(role: AppUserRole) {
+  if (role === 'teacher') {
+    return false;
+  }
+
+  return true;
+}
+
+export function ThemeProvider({
+  children,
+  defaultRole,
+}: {
+  children: ReactNode;
+  defaultRole?: AppUserRole;
+}) {
+  const [isDark, setIsDark] = useState(() => getDefaultIsDark(defaultRole ?? getStoredUserRole()));
   const theme = isDark ? darkTheme : lightTheme;
   const toggleTheme = () => setIsDark((prev) => !prev);
   return (

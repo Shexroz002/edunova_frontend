@@ -76,44 +76,44 @@ export const ALL_CLASSES: ClassItem[] = [];
 
 const SUBJECTS: SubjectOption[] = [
   { id: null, label: 'Matematika', icon: 'calculator' },
-  { id: null, label: 'Fizika',     icon: 'zap'        },
-  { id: null, label: 'Kimyo',      icon: 'flask'      },
-  { id: null, label: 'Biologiya',  icon: 'leaf'       },
-  { id: null, label: 'Boshqa',     icon: 'graduate'   },
+  { id: null, label: 'Fizika', icon: 'zap' },
+  { id: null, label: 'Kimyo', icon: 'flask' },
+  { id: null, label: 'Biologiya', icon: 'leaf' },
+  { id: null, label: 'Boshqa', icon: 'graduate' },
 ];
 
 const COLOR_PALETTE = [
-  '#6366F1','#3B82F6','#8B5CF6','#22C55E',
-  '#F59E0B','#EF4444','#EC4899','#14B8A6',
-  '#F97316','#0891B2',
+  '#6366F1', '#3B82F6', '#8B5CF6', '#22C55E',
+  '#F59E0B', '#EF4444', '#EC4899', '#14B8A6',
+  '#F97316', '#0891B2',
 ];
 
-const SUBJECT_OPTIONS  = ['Barchasi', 'Matematika', 'Fizika', 'Kimyo', 'Biologiya'];
-const COUNT_OPTIONS    = ['Barchasi', 'Kichik (<20)', "O'rta (20–30)", 'Katta (>30)'];
+const SUBJECT_OPTIONS = ['Barchasi', 'Matematika', 'Fizika', 'Kimyo', 'Biologiya'];
+const COUNT_OPTIONS = ['Barchasi', 'Kichik (<20)', "O'rta (20–30)", 'Katta (>30)'];
 const ACTIVITY_OPTIONS = ['Barchasi', 'Faol', "O'rtacha faol", 'Kam faol'];
 const ACTIVITY_LEVEL_MAP: Record<string, string> = { active: 'Faol', moderate: "O'rtacha faol", low: 'Kam faol' };
 
 // ── Edit step config ───────────────────────────────────────────────────────────
 const EDIT_STEPS = [
   { label: "Asosiy ma'lumot", Icon: Palette },
-  { label: 'Tavsif & Rasm',   Icon: AlignLeft },
+  { label: 'Tavsif & Rasm', Icon: AlignLeft },
 ];
 
 const CREATE_STEPS = [
   { label: "Asosiy ma'lumot", Icon: Palette },
-  { label: 'Tavsif & Rasm',   Icon: AlignLeft },
-  { label: "A'zolar",         Icon: UserCheck },
+  { label: 'Tavsif & Rasm', Icon: AlignLeft },
+  { label: "A'zolar", Icon: UserCheck },
 ];
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 function SubjectIcon({ type, color, size = 20 }: { type: string; color: string; size?: number }) {
   const props = { style: { color }, strokeWidth: 1.75, width: size, height: size };
   switch (type) {
-    case 'zap':      return <Zap {...props} />;
-    case 'flask':    return <FlaskConical {...props} />;
-    case 'leaf':     return <Leaf {...props} />;
+    case 'zap': return <Zap {...props} />;
+    case 'flask': return <FlaskConical {...props} />;
+    case 'leaf': return <Leaf {...props} />;
     case 'graduate': return <GraduationCap {...props} />;
-    default:         return <Calculator {...props} />;
+    default: return <Calculator {...props} />;
   }
 }
 
@@ -270,9 +270,9 @@ async function fetchWithAuthRetry(url: string, init: RequestInit = {}) {
 
 function ActivityBadge({ level, t }: { level: ClassItem['activityLevel']; t: ReturnType<typeof useTheme>['theme'] }) {
   const cfg = {
-    active:   { label: 'Faol',     color: '#22C55E', bg: 'rgba(34,197,94,0.1)',   border: 'rgba(34,197,94,0.25)'  },
+    active: { label: 'Faol', color: '#22C55E', bg: 'rgba(34,197,94,0.1)', border: 'rgba(34,197,94,0.25)' },
     moderate: { label: "O'rtacha", color: '#F59E0B', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)' },
-    low:      { label: 'Kam faol', color: '#64748B', bg: t.bgInner,              border: t.border                },
+    low: { label: 'Kam faol', color: '#64748B', bg: t.bgInner, border: t.border },
   }[level];
   return (
     <span className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-lg"
@@ -293,7 +293,7 @@ function FilterSelect({ value, options, onChange, t }: {
         className="appearance-none pr-8 pl-3 rounded-xl text-sm focus:outline-none transition-all cursor-pointer"
         style={{ background: t.bgCard, border: `1px solid ${t.border}`, color: value === 'Barchasi' ? t.textMuted : t.textPrimary, height: '40px', minWidth: '130px', boxShadow: t.shadowCard }}
         onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#6366F1'; (e.target as HTMLElement).style.boxShadow = '0 0 0 3px rgba(99,102,241,0.15)'; }}
-        onBlur={(e)  => { (e.target as HTMLElement).style.borderColor = t.border;  (e.target as HTMLElement).style.boxShadow = t.shadowCard; }}
+        onBlur={(e) => { (e.target as HTMLElement).style.borderColor = t.border; (e.target as HTMLElement).style.boxShadow = t.shadowCard; }}
       >
         {options.map((o) => <option key={o} value={o} style={{ background: t.bgCard, color: t.textPrimary }}>{o}</option>)}
       </select>
@@ -308,10 +308,10 @@ function StepIndicator({ current, color, steps }: { current: number; color: stri
   return (
     <div className="flex items-center justify-center gap-0 mb-6">
       {steps.map((step, i) => {
-        const idx    = i + 1;
-        const done   = idx < current;
+        const idx = i + 1;
+        const done = idx < current;
         const active = idx === current;
-        const Icon   = step.Icon;
+        const Icon = step.Icon;
         return (
           <div key={idx} className="flex items-center">
             <div className="flex flex-col items-center gap-1.5">
@@ -321,23 +321,23 @@ function StepIndicator({ current, color, steps }: { current: number; color: stri
                   background: done
                     ? 'linear-gradient(135deg,#22C55E,#16A34A)'
                     : active
-                    ? `linear-gradient(135deg,${color},${color}cc)`
-                    : t.bgInner,
+                      ? `linear-gradient(135deg,${color},${color}cc)`
+                      : t.bgInner,
                   border: done
                     ? '1.5px solid rgba(34,197,94,0.4)'
                     : active
-                    ? `1.5px solid ${color}60`
-                    : `1.5px solid ${t.border}`,
+                      ? `1.5px solid ${color}60`
+                      : `1.5px solid ${t.border}`,
                   boxShadow: active
                     ? `0 4px 14px ${color}40`
                     : done
-                    ? '0 4px 14px rgba(34,197,94,0.25)'
-                    : 'none',
+                      ? '0 4px 14px rgba(34,197,94,0.25)'
+                      : 'none',
                 }}
               >
                 {done
                   ? <Check style={{ width: 15, height: 15, color: '#fff' }} strokeWidth={2.5} />
-                  : <Icon  style={{ width: 15, height: 15, color: active ? '#fff' : t.textMuted }} strokeWidth={1.75} />
+                  : <Icon style={{ width: 15, height: 15, color: active ? '#fff' : t.textMuted }} strokeWidth={1.75} />
                 }
               </div>
               <span className="text-xs font-medium hidden sm:block whitespace-nowrap"
@@ -403,7 +403,7 @@ function EditStep1({
             color: t.textPrimary, height: '44px',
           }}
           onFocus={(e) => { (e.target as HTMLElement).style.borderColor = nameError ? '#EF4444' : color; (e.target as HTMLElement).style.boxShadow = `0 0 0 3px ${nameError ? 'rgba(239,68,68,0.1)' : color + '20'}`; }}
-          onBlur={(e)  => { (e.target as HTMLElement).style.borderColor = nameError ? 'rgba(239,68,68,0.6)' : name.trim() ? color + '80' : t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
+          onBlur={(e) => { (e.target as HTMLElement).style.borderColor = nameError ? 'rgba(239,68,68,0.6)' : name.trim() ? color + '80' : t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
         />
         {nameError && (
           <p className="text-xs mt-1.5 flex items-center gap-1" style={{ color: '#EF4444' }}>
@@ -664,7 +664,7 @@ function EditStep2({
           className="w-full px-3.5 py-3 rounded-xl text-sm focus:outline-none transition-all resize-none"
           style={{ background: t.bgInner, border: `1.5px solid ${t.border}`, color: t.textPrimary, lineHeight: 1.6 }}
           onFocus={(e) => { (e.target as HTMLElement).style.borderColor = color; (e.target as HTMLElement).style.boxShadow = `0 0 0 3px ${color}18`; }}
-          onBlur={(e)  => { (e.target as HTMLElement).style.borderColor = t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
+          onBlur={(e) => { (e.target as HTMLElement).style.borderColor = t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
         />
       </div>
 
@@ -793,7 +793,7 @@ function EditStep3({
         className="flex items-center gap-2 px-3 rounded-xl transition-all"
         style={{ background: t.bgInner, border: `1.5px solid ${t.border}`, height: '40px' }}
         onFocusCapture={(e) => { (e.currentTarget as HTMLElement).style.borderColor = color; (e.currentTarget as HTMLElement).style.boxShadow = `0 0 0 3px ${color}15`; }}
-        onBlurCapture={(e)  => { (e.currentTarget as HTMLElement).style.borderColor = t.border; (e.currentTarget as HTMLElement).style.boxShadow = 'none'; }}
+        onBlurCapture={(e) => { (e.currentTarget as HTMLElement).style.borderColor = t.border; (e.currentTarget as HTMLElement).style.boxShadow = 'none'; }}
       >
         <Search style={{ width: 14, height: 14, color: t.textMuted, flexShrink: 0 }} strokeWidth={1.75} />
         <input
@@ -933,18 +933,18 @@ interface EditClassModalProps {
 function EditClassModal({ open, cls, onClose, onSave }: EditClassModalProps) {
   const { theme: t } = useTheme();
 
-  const [step,        setStep]        = useState(1);
-  const [saving,      setSaving]      = useState(false);
+  const [step, setStep] = useState(1);
+  const [saving, setSaving] = useState(false);
 
   // Step 1
-  const [name,        setName]        = useState(cls.name);
-  const [subject,     setSubject]     = useState(SUBJECTS.find((s) => s.label === cls.subject) ?? SUBJECTS[0]);
-  const [color,       setColor]       = useState(cls.color);
-  const [nameError,   setNameError]   = useState('');
+  const [name, setName] = useState(cls.name);
+  const [subject, setSubject] = useState(SUBJECTS.find((s) => s.label === cls.subject) ?? SUBJECTS[0]);
+  const [color, setColor] = useState(cls.color);
+  const [nameError, setNameError] = useState('');
 
   // Step 2
   const [description, setDescription] = useState(cls.description);
-  const [coverImage,  setCoverImage]  = useState<string | null>(cls.coverImage ?? null);
+  const [coverImage, setCoverImage] = useState<string | null>(cls.coverImage ?? null);
 
   // Reset on open
   useEffect(() => {
@@ -977,12 +977,12 @@ function EditClassModal({ open, cls, onClose, onSave }: EditClassModalProps) {
       setTimeout(() => {
         onSave({
           ...cls,
-          name:        name.trim(),
-          subject:     subject.label,
+          name: name.trim(),
+          subject: subject.label,
           subjectIcon: subject.icon,
           color,
           description: description.trim() || cls.description,
-          coverImage:  coverImage ?? undefined,
+          coverImage: coverImage ?? undefined,
         });
         setSaving(false);
         onClose();
@@ -998,7 +998,7 @@ function EditClassModal({ open, cls, onClose, onSave }: EditClassModalProps) {
 
   const stepTitles = [
     { title: "Asosiy ma'lumotlarni tahrirlash", sub: 'Grupa nomi, fan va rangini o\'zgartiring' },
-    { title: 'Tavsif va muqova rasm',            sub: 'Grupaning tavsifi va qopqog\'ini tahrirlang'  },
+    { title: 'Tavsif va muqova rasm', sub: 'Grupaning tavsifi va qopqog\'ini tahrirlang' },
   ];
 
   return (
@@ -1170,24 +1170,24 @@ interface CreateClassModalProps {
 function CreateClassModal({ open, onClose, onCreate }: CreateClassModalProps) {
   const { theme: t } = useTheme();
 
-  const [step,        setStep]        = useState(1);
-  const [creating,    setCreating]    = useState(false);
+  const [step, setStep] = useState(1);
+  const [creating, setCreating] = useState(false);
 
   // Step 1
-  const [name,        setName]        = useState('');
-  const [subject,     setSubject]     = useState(SUBJECTS[0]);
-  const [color,       setColor]       = useState(COLOR_PALETTE[0]);
-  const [nameError,   setNameError]   = useState('');
-  const [subjects,    setSubjects]    = useState<SubjectOption[]>(SUBJECTS);
+  const [name, setName] = useState('');
+  const [subject, setSubject] = useState(SUBJECTS[0]);
+  const [color, setColor] = useState(COLOR_PALETTE[0]);
+  const [nameError, setNameError] = useState('');
+  const [subjects, setSubjects] = useState<SubjectOption[]>(SUBJECTS);
   const [subjectsError, setSubjectsError] = useState('');
 
   // Step 2
   const [description, setDescription] = useState('');
-  const [coverImage,  setCoverImage]  = useState<string | null>(null);
-  const [coverFile,   setCoverFile]   = useState<File | null>(null);
+  const [coverImage, setCoverImage] = useState<string | null>(null);
+  const [coverFile, setCoverFile] = useState<File | null>(null);
 
   // Step 3
-  const [selected,    setSelected]    = useState<number[]>([]);
+  const [selected, setSelected] = useState<number[]>([]);
 
   // Reset on open
   useEffect(() => {
@@ -1278,21 +1278,21 @@ function CreateClassModal({ open, onClose, onCreate }: CreateClassModalProps) {
 
   const STEP_META = [
     {
-      title:    "Asosiy ma'lumotlar",
-      sub:      "Guruh nomini, fanini va rangini tanlang",
-      hint:     "1-qadam: Asosiy ma'lumotlar",
+      title: "Asosiy ma'lumotlar",
+      sub: "Guruh nomini, fanini va rangini tanlang",
+      hint: "1-qadam: Asosiy ma'lumotlar",
       hintDesc: "Guruh nomi majburiy. Fan va rang keyinchalik ham o'zgartirilishi mumkin.",
     },
     {
-      title:    'Rasm va tavsif',
-      sub:      "Guruh uchun qisqacha tavsif qo'shing",
-      hint:     "2-qadam: Ko'rinish va tavsif",
+      title: 'Rasm va tavsif',
+      sub: "Guruh uchun qisqacha tavsif qo'shing",
+      hint: "2-qadam: Ko'rinish va tavsif",
       hintDesc: "Tavsif ixtiyoriy, lekin guruhni tezroq tanib olishga yordam beradi.",
     },
     {
-      title:    "O'quvchilarni qo'shish",
-      sub:      "Guruhga qo'shmoqchi bo'lgan o'quvchilarni tanlang",
-      hint:     "3-qadam: Guruh a'zolari",
+      title: "O'quvchilarni qo'shish",
+      sub: "Guruhga qo'shmoqchi bo'lgan o'quvchilarni tanlang",
+      hint: "3-qadam: Guruh a'zolari",
       hintDesc: "O'quvchilarni hozir qo'shmasangiz ham bo'ladi — keyinchalik tahrirlash orqali qo'sha olasiz.",
     },
   ];
@@ -1392,15 +1392,15 @@ function CreateClassModal({ open, onClose, onCreate }: CreateClassModalProps) {
               subjects={subjects}
             />
           )}
-            {step === 2 && (
-              <EditStep2
-                description={description} setDescription={setDescription}
-                coverImage={coverImage} setCoverImage={setCoverImage}
-                color={color}
-                setCoverFile={setCoverFile}
-                showCoverImage={false}
-              />
-            )}
+          {step === 2 && (
+            <EditStep2
+              description={description} setDescription={setDescription}
+              coverImage={coverImage} setCoverImage={setCoverImage}
+              color={color}
+              setCoverFile={setCoverFile}
+              showCoverImage={false}
+            />
+          )}
           {step === 3 && (
             <EditStep3 selected={selected} setSelected={setSelected} color={color} />
           )}
@@ -1488,7 +1488,7 @@ function ClassCard({
       className="rounded-2xl flex flex-col gap-4 transition-all duration-200 group overflow-hidden"
       style={{ background: t.bgCard, border: `1px solid ${t.border}`, boxShadow: t.shadowCard }}
       onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = t.shadowHover; (e.currentTarget as HTMLElement).style.borderColor = `${cls.color}44`; }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = t.shadowCard;  (e.currentTarget as HTMLElement).style.borderColor = t.border; }}
+      onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.boxShadow = t.shadowCard; (e.currentTarget as HTMLElement).style.borderColor = t.border; }}
     >
       {/* Cover image strip */}
       {cls.coverImage ? (
@@ -1522,9 +1522,9 @@ function ClassCard({
 
         <div className="grid grid-cols-3 gap-0 rounded-xl overflow-hidden" style={{ border: `1px solid ${t.border}`, background: t.bgInner }}>
           {[
-            { Icon: Users,          val: `${cls.students}`,  label: "O'quvchi" },
-            { Icon: ClipboardCheck, val: `${cls.quizzes}`,   label: 'Test'     },
-            { Icon: BookOpen,       val: `${cls.avgScore}%`, label: "O'rtacha" },
+            { Icon: Users, val: `${cls.students}`, label: "O'quvchi" },
+            { Icon: ClipboardCheck, val: `${cls.quizzes}`, label: 'Test' },
+            { Icon: BookOpen, val: `${cls.avgScore}%`, label: "O'rtacha" },
           ].map(({ Icon, val, label }, i) => (
             <div key={label} className="flex flex-col items-center gap-0.5 py-3" style={{ borderLeft: i > 0 ? `1px solid ${t.border}` : 'none' }}>
               <p className="text-sm font-bold" style={{ color: t.textPrimary }}>{val}</p>
@@ -1603,16 +1603,16 @@ export function ClassesPage() {
   const { theme: t } = useTheme();
   const navigate = useNavigate();
 
-  const [classes,       setClasses]       = useState<ClassItem[]>([]);
-  const [showCreate,    setShowCreate]    = useState(false);
-  const [editTarget,    setEditTarget]    = useState<ClassItem | null>(null);
-  const [search,        setSearch]        = useState('');
-  const [subjectF,      setSubjectF]      = useState('Barchasi');
-  const [countF,        setCountF]        = useState('Barchasi');
-  const [activityF,     setActivityF]     = useState('Barchasi');
-  const [loading,       setLoading]       = useState(true);
-  const [error,         setError]         = useState('');
-  const [total,         setTotal]         = useState(0);
+  const [classes, setClasses] = useState<ClassItem[]>([]);
+  const [showCreate, setShowCreate] = useState(false);
+  const [editTarget, setEditTarget] = useState<ClassItem | null>(null);
+  const [search, setSearch] = useState('');
+  const [subjectF, setSubjectF] = useState('Barchasi');
+  const [countF, setCountF] = useState('Barchasi');
+  const [activityF, setActivityF] = useState('Barchasi');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [total, setTotal] = useState(0);
 
   async function handleCreate(payload: {
     name: string;
@@ -1701,11 +1701,11 @@ export function ClassesPage() {
   const filtered = useMemo(() => {
     return classes.filter((c) => {
       if (search && !c.name.toLowerCase().includes(search.toLowerCase()) &&
-          !c.subject.toLowerCase().includes(search.toLowerCase())) return false;
+        !c.subject.toLowerCase().includes(search.toLowerCase())) return false;
       if (subjectF !== 'Barchasi' && c.subject !== subjectF) return false;
-      if (countF === 'Kichik (<20)'   && c.students >= 20) return false;
-      if (countF === "O'rta (20–30)"  && (c.students < 20 || c.students > 30)) return false;
-      if (countF === 'Katta (>30)'    && c.students <= 30) return false;
+      if (countF === 'Kichik (<20)' && c.students >= 20) return false;
+      if (countF === "O'rta (20–30)" && (c.students < 20 || c.students > 30)) return false;
+      if (countF === 'Katta (>30)' && c.students <= 30) return false;
       if (activityF !== 'Barchasi' && ACTIVITY_LEVEL_MAP[c.activityLevel] !== activityF) return false;
       return true;
     });
@@ -1750,12 +1750,12 @@ export function ClassesPage() {
             className="w-full pl-10 pr-4 rounded-xl text-sm focus:outline-none transition-all"
             style={{ background: t.bgCard, border: `1px solid ${t.border}`, color: t.textPrimary, height: '40px', boxShadow: t.shadowCard }}
             onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#6366F1'; (e.target as HTMLElement).style.boxShadow = '0 0 0 3px rgba(99,102,241,0.15)'; }}
-            onBlur={(e)  => { (e.target as HTMLElement).style.borderColor = t.border;  (e.target as HTMLElement).style.boxShadow = t.shadowCard; }}
+            onBlur={(e) => { (e.target as HTMLElement).style.borderColor = t.border; (e.target as HTMLElement).style.boxShadow = t.shadowCard; }}
           />
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <FilterSelect value={subjectF}  options={subjectOptions.length > 1 ? subjectOptions : SUBJECT_OPTIONS}  onChange={setSubjectF}  t={t} />
-          <FilterSelect value={countF}    options={COUNT_OPTIONS}    onChange={setCountF}    t={t} />
+          <FilterSelect value={subjectF} options={subjectOptions.length > 1 ? subjectOptions : SUBJECT_OPTIONS} onChange={setSubjectF} t={t} />
+          <FilterSelect value={countF} options={COUNT_OPTIONS} onChange={setCountF} t={t} />
           <FilterSelect value={activityF} options={ACTIVITY_OPTIONS} onChange={setActivityF} t={t} />
         </div>
         <button
