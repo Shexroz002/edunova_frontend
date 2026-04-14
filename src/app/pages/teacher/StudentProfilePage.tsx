@@ -9,7 +9,7 @@ import { useTheme } from '../../components/ThemeContext';
 import { TestHistoryCard } from '../../components/TestHistoryCard';
 import { getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth.ts';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
 const WEAK_TOPICS_PAGE_SIZE = 3;
 const HISTORY_PAGE_SIZE = 4;
 const UZBEKISTAN_TIME_ZONE = 'Asia/Tashkent';

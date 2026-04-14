@@ -4,12 +4,13 @@ import {
   ArrowLeft, Radio, Users, Copy, Check,
   Wifi, WifiOff, Clock, Pause, Play,
   StopCircle, AlertTriangle, CheckCircle2,
-  Circle, Loader2, BarChart3, Hash,
+  Circle, Loader2, BarChart3, Hash, Eye,
 } from 'lucide-react';
 import { useTheme } from '../../components/ThemeContext.tsx';
+import { QuestionsViewModal } from '../../components/QuestionsViewModal.tsx';
 import { getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth.ts';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
 
 // ─────────────────────────────────────────────
 //  Types
@@ -44,6 +45,8 @@ interface ActiveSessionLocationState {
     questions_count?: number;
     started_at?: string | null;
     finished_at?: string | null;
+    session_type?: string | null;
+    current_participant_id?: number | null;
   };
   quiz?: {
     id: number;
@@ -103,6 +106,22 @@ interface MonitoringSnapshotSocketEvent {
   finished_participants?: number;
 }
 
+interface SessionInfoResponse {
+  session_id: number;
+  quiz_id: number;
+  quiz_name: string | null;
+  subject_name: string | null;
+  host_id: number;
+  join_code: string;
+  status: string;
+  duration_minutes: number;
+  questions_count: number;
+  started_at: string | null;
+  finished_at: string | null;
+  session_type: string | null;
+  current_participant_id: number | null;
+}
+
 const INITIALS_COLORS = [
   '#6366F1','#8B5CF6','#3B82F6','#22C55E','#F59E0B','#EF4444','#14B8A6','#EC4899',
 ];
@@ -159,6 +178,18 @@ async function fetchSessionMonitoring(sessionId: number) {
   return response.json() as Promise<MonitoringSnapshotResponse>;
 }
 
+async function fetchSessionInfo(sessionId: number) {
+  const response = await fetchWithAuthRetry(`${API_BASE_URL}/api/v1/teacher/quiz-sessions/live/${sessionId}/info/`, {
+    method: 'GET',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Session ma'lumotlarini olishda xatolik: ${response.status}`);
+  }
+
+  return response.json() as Promise<SessionInfoResponse>;
+}
+
 function toStudentStatus(status: string, connectionStatus: ConnectionStatus): StudentStatus {
   if (status === 'finished') return 'finished';
   if (connectionStatus === 'offline') return 'disconnected';
@@ -167,17 +198,17 @@ function toStudentStatus(status: string, connectionStatus: ConnectionStatus): St
   return 'preparing';
 }
 
+function toAbsoluteMediaUrl(path: string | null) {
+  if (!path) return null;
+  if (/^https?:\/\//i.test(path)) return path;
+  return `${API_BASE_URL}/${path.replace(/^\/+/, '')}`;
+}
+
 function getInitials(fullName: string, nickname?: string | null) {
   const source = fullName.trim() || nickname?.trim() || '?';
   const parts = source.split(/\s+/).filter(Boolean);
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase();
-}
-
-function toAbsoluteMediaUrl(path: string | null) {
-  if (!path) return null;
-  if (/^https?:\/\//i.test(path)) return path;
-  return `${API_BASE_URL}/${path.replace(/^\/+/, '')}`;
 }
 
 function mapParticipantToStudent(item: MonitoringParticipantApiItem): Student {
@@ -320,6 +351,25 @@ export function ActiveSessionPage() {
   const location = useLocation();
   const locationState = (location.state as ActiveSessionLocationState | null) ?? null;
   const sessionId = locationState?.session?.session_id ?? null;
+  const [sessionInfo, setSessionInfo] = useState<SessionInfoResponse | null>(
+    locationState?.session
+      ? {
+          session_id: locationState.session.session_id,
+          quiz_id: locationState.session.quiz_id ?? locationState.quiz?.id ?? 0,
+          quiz_name: locationState.session.quiz_name ?? locationState.quiz?.title ?? null,
+          subject_name: locationState.session.subject_name ?? locationState.quiz?.subject ?? null,
+          host_id: 0,
+          join_code: locationState.session.join_code ?? '',
+          status: locationState.session.status ?? 'running',
+          duration_minutes: locationState.session.duration_minutes ?? 0,
+          questions_count: locationState.session.questions_count ?? locationState.quiz?.questionCount ?? 0,
+          started_at: locationState.session.started_at ?? null,
+          finished_at: locationState.session.finished_at ?? null,
+          session_type: locationState.session.session_type ?? null,
+          current_participant_id: locationState.session.current_participant_id ?? null,
+        }
+      : null,
+  );
 
   const [sessionState, setSessionState] = useState<SessionState>('live');
   const [copied,       setCopied]       = useState(false);
@@ -331,6 +381,8 @@ export function ActiveSessionPage() {
   const [participantsTotal, setParticipantsTotal] = useState(0);
   const [onlineParticipants, setOnlineParticipants] = useState(0);
   const [finishedParticipants, setFinishedParticipants] = useState(0);
+  const [questionsModalOpen, setQuestionsModalOpen] = useState(false);
+  const [questionsError, setQuestionsError] = useState('');
 
   const paused = sessionState === 'paused';
 
@@ -348,13 +400,24 @@ export function ActiveSessionPage() {
       setError('');
 
       try {
-        const data = await fetchSessionMonitoring(sessionId);
+        const [sessionData, monitoringData] = await Promise.all([
+          fetchSessionInfo(sessionId),
+          fetchSessionMonitoring(sessionId),
+        ]);
         if (cancelled) return;
 
-        setStudents(data.participants.map(mapParticipantToStudent));
-        setParticipantsTotal(data.total_participants);
-        setOnlineParticipants(data.online_participants);
-        setFinishedParticipants(data.finished_participants);
+        setSessionInfo(sessionData);
+        setSessionState(
+          sessionData.status === 'paused'
+            ? 'paused'
+            : sessionData.status === 'finished' || sessionData.status === 'ended'
+              ? 'ended'
+              : 'live',
+        );
+        setStudents(monitoringData.participants.map(mapParticipantToStudent));
+        setParticipantsTotal(monitoringData.total_participants);
+        setOnlineParticipants(monitoringData.online_participants);
+        setFinishedParticipants(monitoringData.finished_participants);
       } catch (err) {
         if (cancelled) return;
         setStudents([]);
@@ -455,7 +518,7 @@ export function ActiveSessionPage() {
   const finished       = finishedParticipants || students.filter((s) => s.status === 'finished').length;
   const disconnected   = students.filter((s) => s.status === 'disconnected').length;
   const activeCount    = students.filter((s) => s.status === 'active').length;
-  const totalQuestions = Math.max(locationState?.session?.questions_count ?? locationState?.quiz?.questionCount ?? 0, ...students.map((s) => s.totalQuestions), 0);
+  const totalQuestions = Math.max(sessionInfo?.questions_count ?? locationState?.session?.questions_count ?? locationState?.quiz?.questionCount ?? 0, ...students.map((s) => s.totalQuestions), 0);
 
   const progressData = buildProgressData(students, totalQuestions);
   const maxCount     = Math.max(...progressData.map((d) => d.count), 1);
@@ -465,7 +528,7 @@ export function ActiveSessionPage() {
     : students.filter((s) => s.status === filterStatus);
 
   const handleCopy = () => {
-    const joinCode = locationState?.session?.join_code;
+    const joinCode = sessionInfo?.join_code ?? locationState?.session?.join_code;
     if (!joinCode) return;
     navigator.clipboard.writeText(joinCode).catch(() => {});
     setCopied(true);
@@ -476,6 +539,17 @@ export function ActiveSessionPage() {
     setSessionState('ended');
     setShowEndConfirm(false);
     setTimeout(() => navigate('/live'), 2500);
+  };
+
+  const handleOpenQuestions = () => {
+    const quizId = sessionInfo?.quiz_id || locationState?.session?.quiz_id || locationState?.quiz?.id || null;
+    if (!quizId) {
+      setQuestionsError("Test ID topilmadi. Savollarni ochib bo'lmadi.");
+      return;
+    }
+
+    setQuestionsError('');
+    setQuestionsModalOpen(true);
   };
 
   if (loading) {
@@ -564,12 +638,12 @@ export function ActiveSessionPage() {
                 </span>
               </div>
               <p className="text-sm font-medium mb-2" style={{ color: t.textSecondary }}>
-                {locationState?.quiz?.title ?? locationState?.session?.quiz_name ?? "Noma'lum quiz"}
+                {sessionInfo?.quiz_name ?? locationState?.quiz?.title ?? locationState?.session?.quiz_name ?? "Noma'lum quiz"}
               </p>
               <div className="flex flex-wrap gap-4">
                 {[
                   { Icon: Users,  label: `${totalJoined} o'quvchi qo'shilgan`,                     id: 'joined'   },
-                  { Icon: Clock,  label: `Boshlangan: ${formatStartedAt(locationState?.session?.started_at)}`, id: 'started', extra: <ElapsedTimer paused={paused} /> },
+                  { Icon: Clock,  label: `Boshlangan: ${formatStartedAt(sessionInfo?.started_at ?? locationState?.session?.started_at)}`, id: 'started', extra: <ElapsedTimer paused={paused} /> },
                   { Icon: Hash,   label: `${totalQuestions} ta savol`,            id: 'questions'},
                 ].map(({ Icon, label, extra, id }) => (
                   <div key={id} className="flex items-center gap-1.5">
@@ -587,7 +661,7 @@ export function ActiveSessionPage() {
               <div>
                 <p className="text-xs font-semibold mb-0.5" style={{ color: t.textMuted }}>Kirish kodi</p>
                 <p className="text-2xl font-bold tracking-widest" style={{ color: t.textPrimary }}>
-                  {locationState?.session?.join_code ?? '------'}
+                  {sessionInfo?.join_code ?? locationState?.session?.join_code ?? '------'}
                 </p>
               </div>
               <button
@@ -766,6 +840,25 @@ export function ActiveSessionPage() {
             <CardTitle title="Session Boshqaruvi" subtitle="Sessiyani boshqaring" />
 
             <div className="space-y-3">
+              <button
+                onClick={handleOpenQuestions}
+                className="w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-sm font-semibold transition-all"
+                style={{
+                  background: t.accentMuted,
+                  color: t.accent,
+                  border: `1.5px solid ${t.accentBorder}`,
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLElement).style.transform = 'translateY(0)';
+                }}
+              >
+                <Eye className="w-4 h-4" strokeWidth={1.75} />
+                Savollarni ko'rish
+              </button>
+
               {/* Pause / Resume */}
               <button
                 onClick={() => setSessionState(paused ? 'live' : 'paused')}
@@ -802,6 +895,19 @@ export function ActiveSessionPage() {
                 Sessiyani yakunlash
               </button>
             </div>
+
+            {questionsError && (
+              <div
+                className="mt-4 px-3.5 py-3 rounded-xl text-xs"
+                style={{
+                  background: 'rgba(239,68,68,0.08)',
+                  color: '#EF4444',
+                  border: '1px solid rgba(239,68,68,0.2)',
+                }}
+              >
+                {questionsError}
+              </div>
+            )}
 
             {/* Paused banner */}
             {paused && (
@@ -989,6 +1095,12 @@ export function ActiveSessionPage() {
           </span>
         </div>
       </Card>
+
+      <QuestionsViewModal
+        open={questionsModalOpen}
+        onClose={() => setQuestionsModalOpen(false)}
+        quizId={sessionInfo?.quiz_id || locationState?.session?.quiz_id || locationState?.quiz?.id || null}
+      />
     </>
   );
 }

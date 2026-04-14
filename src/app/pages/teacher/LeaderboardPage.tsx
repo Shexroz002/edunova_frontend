@@ -10,7 +10,7 @@ import {
   DropdownMenuTrigger,
 } from '../../components/ui/dropdown-menu.tsx';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
 const PAGE_SIZE = 6;
 const ORDER_OPTIONS = [
   { value: 'username', label: 'Username' },

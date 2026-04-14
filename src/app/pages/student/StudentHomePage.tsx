@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { useTheme } from '../../components/ThemeContext';
 import { CreateQuizModal } from '../teacher/QuizzesPage.tsx';
+import { QuizCreatedSuccessModal, type QuizCreationResult } from '../../components/QuizCreatedSuccessModal.tsx';
 import { getStoredAuthSession, getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth';
 import {
   PlayCircle,
@@ -25,7 +26,7 @@ import {
   X,
 } from 'lucide-react';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
 
 type SubjectIconType = typeof Calculator | typeof FlaskConical | typeof BookOpen | typeof Languages;
 
@@ -735,6 +736,7 @@ export function StudentHomePage() {
   const [inviteNotification, setInviteNotification] = useState<ActiveInviteNotification | null>(null);
   const [acceptingInvite, setAcceptingInvite] = useState(false);
   const [inviteError, setInviteError] = useState('');
+  const [quizCreatedModalData, setQuizCreatedModalData] = useState<QuizCreationResult | null>(null);
   const notificationSocketRef = useRef<WebSocket | null>(null);
   const storedSession = getStoredAuthSession();
   const currentUserId = storedSession?.user?.id ?? null;
@@ -807,7 +809,23 @@ export function StudentHomePage() {
 
       socket.onmessage = (event) => {
         try {
-          const payload = JSON.parse(event.data) as InviteNotificationEvent;
+          const payload = JSON.parse(event.data) as InviteNotificationEvent | QuizCreationResult;
+
+          if (payload?.type === 'completed' && payload.status === 'completed') {
+            setCreateModalOpen(false);
+            setQuizCreatedModalData({
+              type: 'completed',
+              job_id: payload.job_id,
+              status: 'completed',
+              progress: payload.progress ?? 100,
+              message: normalizeText(payload.message, "Test tayyor bo'ldi"),
+              quiz_id: payload.quiz_id ?? null,
+              question_count: payload.question_count ?? 0,
+              error: null,
+            });
+            return;
+          }
+
           if (payload?.type !== 'test_invite_notification' || !payload.data) return;
 
           const senderFirstName = normalizeText(payload.data.sender?.first_name);
@@ -1366,9 +1384,25 @@ export function StudentHomePage() {
         open={createModalOpen}
         onClose={() => setCreateModalOpen(false)}
         onCreate={() => {}}
-        onPdfCreated={(quizId) => {
+        onPdfCreated={(payload) => {
           setCreateModalOpen(false);
-          navigate(`/quizzes/${quizId}`);
+          setQuizCreatedModalData(payload);
+        }}
+      />
+
+      <QuizCreatedSuccessModal
+        open={quizCreatedModalData !== null}
+        onClose={() => setQuizCreatedModalData(null)}
+        getQuizPath={(quizId) => `/student/tests/${quizId}`}
+        data={quizCreatedModalData ?? {
+          type: 'completed',
+          job_id: '',
+          status: 'completed',
+          progress: 100,
+          message: "Test tayyor bo'ldi",
+          quiz_id: null,
+          question_count: 0,
+          error: null,
         }}
       />
 

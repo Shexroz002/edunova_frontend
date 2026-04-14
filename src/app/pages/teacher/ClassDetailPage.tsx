@@ -11,7 +11,7 @@ import { ALL_CLASSES } from './ClassesPage.tsx';
 import type { ClassItem } from './ClassesPage.tsx';
 import { getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth.ts';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
 
 interface ClassDetailApi {
   id: number;

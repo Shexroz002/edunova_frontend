@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router';
 import { useTheme } from '../../components/ThemeContext.tsx';
 import { getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth.ts';
@@ -16,7 +16,8 @@ import {
   X,
 } from 'lucide-react';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
+const PAGE_SIZE = 50;
 
 interface MemberApiItem {
   student_id: number;
@@ -29,11 +30,14 @@ interface MemberApiItem {
 
 interface SuggestionApiItem {
   id: number;
-  username: string;
-  first_name: string;
-  last_name: string;
-  role: string;
-  profile_image: string | null;
+  friend: {
+    id: number | null;
+    username: string | null;
+    first_name: string | null;
+    last_name: string | null;
+    role: string | null;
+    profile_image: string | null;
+  } | null;
 }
 
 interface PaginatedResponse<T> {
@@ -87,13 +91,42 @@ function mapMember(item: MemberApiItem): ClassMember {
 }
 
 function mapSuggestion(item: SuggestionApiItem): SuggestedStudent {
+  const friend = item.friend;
+  const firstName = typeof friend?.first_name === 'string' ? friend.first_name.trim() : '';
+  const lastName = typeof friend?.last_name === 'string' ? friend.last_name.trim() : '';
+  const username = typeof friend?.username === 'string' ? friend.username.trim() : '';
+  const fullName = `${firstName} ${lastName}`.trim() || username || 'Nomaʼlum foydalanuvchi';
+
   return {
-    id: item.id,
-    fullName: `${item.first_name} ${item.last_name}`.trim() || item.username,
-    username: item.username,
-    role: item.role,
-    profileImage: item.profile_image,
+    id: friend?.id ?? item.id,
+    fullName,
+    username,
+    role: friend?.role ?? '',
+    profileImage: friend?.profile_image ?? null,
   };
+}
+
+async function fetchContactSuggestionsPage(search: string, page: number) {
+  const params = new URLSearchParams({
+    page: String(page),
+    size: String(PAGE_SIZE),
+  });
+
+  const trimmedSearch = search.trim();
+  if (trimmedSearch) {
+    params.set('search', trimmedSearch);
+  }
+
+  const response = await fetchWithAuthRetry(
+    `${API_BASE_URL}/api/v1/users/contact/list/?${params.toString()}`,
+    { method: 'GET' },
+  );
+
+  if (!response.ok) {
+    throw new Error(`O'quvchilarni olishda xatolik: ${response.status}`);
+  }
+
+  return response.json() as Promise<PaginatedResponse<SuggestionApiItem>>;
 }
 
 async function fetchWithAuthRetry(url: string, init: RequestInit = {}) {
@@ -985,66 +1018,130 @@ interface AddMembersModalProps {
 function AddMembersModal({ currentMemberIds, onAdd, onClose, color }: AddMembersModalProps) {
   const { theme: t } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [students, setStudents] = useState<SuggestedStudent[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
+  const listRef = useRef<HTMLDivElement | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    let isMounted = true;
-
-    async function loadSuggestions() {
-      setLoading(true);
-      setError('');
-
-      try {
-        const response = await fetchWithAuthRetry(
-          `${API_BASE_URL}/api/v1/teacher/my/student/suggestions/?page=1&size=50`,
-          { method: 'GET' },
-        );
-
-        if (!response.ok) {
-          throw new Error(`Takliflarni olishda xatolik: ${response.status}`);
-        }
-
-        const data: PaginatedResponse<SuggestionApiItem> = await response.json();
-        if (isMounted) {
-          setStudents(data.items.map(mapSuggestion));
-        }
-      } catch (loadError) {
-        if (isMounted) {
-          setStudents([]);
-          setError(loadError instanceof Error ? loadError.message : "Takliflarni yuklab bo'lmadi");
-        }
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-        }
-      }
-    }
-
-    void loadSuggestions();
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
 
     return () => {
-      isMounted = false;
+      window.clearTimeout(timeoutId);
     };
-  }, []);
+  }, [searchQuery]);
 
-  const filteredStudents = useMemo(() => {
-    const available = students.filter((student) => !currentMemberIds.includes(student.id));
-    const query = searchQuery.trim().toLowerCase();
+  const availableStudents = useMemo(
+    () => students.filter((student) => !currentMemberIds.includes(student.id)),
+    [currentMemberIds, students],
+  );
 
-    if (!query) {
-      return available;
+  useEffect(() => {
+    let cancelled = false;
+
+    setLoading(true);
+    setLoadingMore(false);
+    setError('');
+    setStudents([]);
+    setPage(1);
+    setPages(1);
+
+    fetchContactSuggestionsPage(debouncedSearchQuery, 1)
+      .then((data) => {
+        if (cancelled) {
+          return;
+        }
+
+        const nextStudents = (Array.isArray(data.items) ? data.items : [])
+          .map(mapSuggestion)
+          .filter((student) => student.id > 0);
+
+        setStudents(nextStudents);
+        setPage(data.page ?? 1);
+        setPages(data.pages ?? 1);
+      })
+      .catch((loadError: unknown) => {
+        if (cancelled) {
+          return;
+        }
+
+        setStudents([]);
+        setError(loadError instanceof Error ? loadError.message : "O'quvchilarni yuklab bo'lmadi");
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedSearchQuery]);
+
+  useEffect(() => {
+    setSelectedIds((prev) => prev.filter((id) => availableStudents.some((student) => student.id === id)));
+  }, [availableStudents]);
+
+  useEffect(() => {
+    const root = listRef.current;
+    const node = loadMoreRef.current;
+
+    if (!root || !node || loading || loadingMore || page >= pages) {
+      return;
     }
 
-    return available.filter((student) =>
-      `${student.fullName} ${student.username}`.toLowerCase().includes(query),
-    );
-  }, [currentMemberIds, searchQuery, students]);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const [entry] = entries;
+        if (!entry?.isIntersecting) {
+          return;
+        }
 
-  const allSelected = filteredStudents.length > 0 && selectedIds.length === filteredStudents.length;
+        setLoadingMore(true);
+        setError('');
+
+        fetchContactSuggestionsPage(debouncedSearchQuery, page + 1)
+          .then((data) => {
+            const nextStudents = (Array.isArray(data.items) ? data.items : [])
+              .map(mapSuggestion)
+              .filter((student) => student.id > 0);
+
+            setStudents((current) => {
+              const existingIds = new Set(current.map((student) => student.id));
+              const uniqueNext = nextStudents.filter((student) => !existingIds.has(student.id));
+              return [...current, ...uniqueNext];
+            });
+            setPage(data.page ?? (page + 1));
+            setPages(data.pages ?? 1);
+          })
+          .catch((loadError: unknown) => {
+            setError(loadError instanceof Error ? loadError.message : "Keyingi o'quvchilarni yuklab bo'lmadi");
+          })
+          .finally(() => {
+            setLoadingMore(false);
+          });
+      },
+      { root, rootMargin: '120px 0px' },
+    );
+
+    observer.observe(node);
+
+    return () => {
+      observer.disconnect();
+    };
+  }, [debouncedSearchQuery, loading, loadingMore, page, pages]);
+
+  const allSelected = availableStudents.length > 0 && selectedIds.length === availableStudents.length;
 
   const toggleSelectAll = () => {
     if (allSelected) {
@@ -1052,7 +1149,7 @@ function AddMembersModal({ currentMemberIds, onAdd, onClose, color }: AddMembers
       return;
     }
 
-    setSelectedIds(filteredStudents.map((student) => student.id));
+    setSelectedIds(availableStudents.map((student) => student.id));
   };
 
   const handleSubmit = async () => {
@@ -1142,7 +1239,7 @@ function AddMembersModal({ currentMemberIds, onAdd, onClose, color }: AddMembers
             />
           </div>
 
-          {filteredStudents.length > 0 && (
+          {availableStudents.length > 0 && (
             <button
               onClick={toggleSelectAll}
               className="mt-3 text-xs font-semibold transition-colors"
@@ -1169,12 +1266,12 @@ function AddMembersModal({ currentMemberIds, onAdd, onClose, color }: AddMembers
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto min-h-0 px-4 sm:px-6">
+        <div ref={listRef} className="flex-1 overflow-y-auto min-h-0 px-4 sm:px-6">
           {loading ? (
             <div className="flex flex-col items-center justify-center py-10 text-sm" style={{ color: t.textMuted }}>
               Yuklanmoqda...
             </div>
-          ) : filteredStudents.length === 0 ? (
+          ) : availableStudents.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 sm:py-12">
               <div
                 className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl flex items-center justify-center mb-3"
@@ -1186,14 +1283,16 @@ function AddMembersModal({ currentMemberIds, onAdd, onClose, color }: AddMembers
                 O&apos;quvchi topilmadi
               </p>
               <p className="text-xs text-center" style={{ color: t.textMuted }}>
-                {students.length === 0
-                  ? 'Tavsiya etilgan o‘quvchilar mavjud emas'
-                  : "Barcha tavsiya etilgan o'quvchilar guruhga qo'shilgan"}
+                {debouncedSearchQuery.trim()
+                  ? "Qidiruv bo'yicha o'quvchi topilmadi"
+                  : students.length === 0
+                    ? "Kontakt ro'yxatida o'quvchilar mavjud emas"
+                    : "Barcha mavjud o'quvchilar guruhga qo'shilgan"}
               </p>
             </div>
           ) : (
             <div className="space-y-2 pb-4">
-              {filteredStudents.map((student) => {
+              {availableStudents.map((student) => {
                 const isSelected = selectedIds.includes(student.id);
 
                 return (
@@ -1228,7 +1327,8 @@ function AddMembersModal({ currentMemberIds, onAdd, onClose, color }: AddMembers
                         {student.fullName}
                       </p>
                       <p className="text-xs truncate" style={{ color: t.textMuted }}>
-                        @{student.username} • {student.role}
+                        @{student.username}
+                        {student.role ? ` • ${student.role}` : ''}
                       </p>
                     </div>
                     <div
@@ -1243,6 +1343,14 @@ function AddMembersModal({ currentMemberIds, onAdd, onClose, color }: AddMembers
                   </button>
                 );
               })}
+
+              <div ref={loadMoreRef} className="h-4" />
+
+              {loadingMore && (
+                <div className="py-3 text-center text-xs" style={{ color: t.textMuted }}>
+                  Yana yuklanmoqda...
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -9,12 +9,13 @@ import {
 import { useNavigate } from 'react-router';
 import { useTheme } from '../../components/ThemeContext.tsx';
 import { getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth.ts';
+import { QuizCreatedSuccessModal, type QuizCreationResult } from '../../components/QuizCreatedSuccessModal.tsx';
 
 // ── Data ──────────────────────────────────────────────────────────────────────
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'https://api.myedunova.uz';
-const AI_API_BASE_URL = import.meta.env.VITE_AI_API_BASE_URL ?? 'https://api.myedunova.uz';
-const WS_BASE_URL = import.meta.env.VITE_WS_BASE_URL ?? 'wss://api.myedunova.uz';
-const AI_WS_BASE_URL = import.meta.env.VITE_AI_WS_BASE_URL ?? 'wss://api.myedunova.uz';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
+const AI_API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
+const WS_BASE_URL = import.meta.env.WEBSOCKET_BASE_URL ?? 'ws://127.0.0.1:8000';
+const AI_WS_BASE_URL = import.meta.env.WEBSOCKET_BASE_URL ?? 'ws://127.0.0.1:8000';
 const PAGE_SIZE = 10;
 const QUIZ_JOB_STORAGE_KEY = 'teacher_dashboard_quiz_job';
 
@@ -494,7 +495,7 @@ interface CreateQuizModalProps {
   open: boolean;
   onClose: () => void;
   onCreate: (quiz: Partial<Quiz>) => void;
-  onPdfCreated: (quizId: number) => void;
+  onPdfCreated: (payload: QuizCreationResult) => void;
 }
 
 type CreateMethod = 'pdf' | 'ai' | null;
@@ -692,7 +693,16 @@ export function CreateQuizModal({ open, onClose, onCreate, onPdfCreated }: Creat
 
     if (payload.status === 'completed' && payload.quiz_id) {
       onClose();
-      onPdfCreated(payload.quiz_id);
+      onPdfCreated({
+        type: 'completed',
+        job_id: payload.job_id,
+        status: 'completed',
+        progress: payload.progress,
+        message: payload.message,
+        quiz_id: payload.quiz_id,
+        question_count: payload.question_count ?? 0,
+        error: null,
+      });
       return;
     }
 
@@ -1647,6 +1657,7 @@ export function QuizzesPage() {
   const TABLE_HEADERS = ['Test', 'Savollar', 'Test turi', 'Sana', 'Urinishlar', "O'rtacha ball", ''];
 
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [quizCreatedModalData, setQuizCreatedModalData] = useState<QuizCreationResult | null>(null);
 
   useEffect(() => {
     if (getStoredQuizJob()) {
@@ -2020,9 +2031,25 @@ export function QuizzesPage() {
           QUIZZES.unshift(newQuiz);
           setQuizzes((current) => [newQuiz, ...current]);
         }}
-        onPdfCreated={(quizId) => {
+        onPdfCreated={(payload) => {
           setCreateModalOpen(false);
-          navigate(`/quizzes/${quizId}`);
+          setQuizCreatedModalData(payload);
+        }}
+      />
+
+      <QuizCreatedSuccessModal
+        open={quizCreatedModalData !== null}
+        onClose={() => setQuizCreatedModalData(null)}
+        getQuizPath={(quizId) => `/quizzes/${quizId}`}
+        data={quizCreatedModalData ?? {
+          type: 'completed',
+          job_id: '',
+          status: 'completed',
+          progress: 100,
+          message: "Test tayyor bo'ldi",
+          quiz_id: null,
+          question_count: 0,
+          error: null,
         }}
       />
     </>
