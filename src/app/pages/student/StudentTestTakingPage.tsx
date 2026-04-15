@@ -89,6 +89,16 @@ interface FinishSessionResponse {
   }>;
 }
 
+interface QuizSessionSocketMessage {
+  event?: string;
+  data?: {
+    message?: string;
+    session_id?: number;
+    quiz_id?: number;
+    [key: string]: unknown;
+  };
+}
+
 function normalizeText(value: string | null | undefined, fallback = '') {
   return typeof value === 'string' && value.trim() ? value.trim() : fallback;
 }
@@ -227,6 +237,15 @@ function getInitialTimeRemaining(finishedAt: string) {
   const end = new Date(finishedAt).getTime();
   if (Number.isNaN(end)) return 0;
   return Math.max(0, Math.floor((end - Date.now()) / 1000));
+}
+
+function buildFinishPayload(answers: Record<number, string>) {
+  return Object.entries(answers)
+    .map(([questionId, selectedOption]) => ({
+      question_id: Number.parseInt(questionId, 10),
+      selected_option: selectedOption,
+    }))
+    .filter((item) => Number.isFinite(item.question_id) && item.selected_option.trim());
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -850,6 +869,45 @@ function SubmitConfirmationModal({
   );
 }
 
+function SessionFinishedToast({
+  message,
+}: {
+  message: string | null;
+}) {
+  const { theme: t } = useTheme();
+
+  if (!message) return null;
+
+  return (
+    <div
+      className="fixed top-5 left-1/2 -translate-x-1/2 z-[60] flex items-start gap-3 px-4 py-3 rounded-2xl shadow-2xl max-w-md w-[calc(100%-2rem)] sm:w-auto"
+      style={{
+        background: t.bgCard,
+        border: '1.5px solid rgba(245,158,11,0.32)',
+        color: t.textPrimary,
+      }}
+    >
+      <div
+        className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
+        style={{
+          background: t.isDark ? 'rgba(245,158,11,0.15)' : 'rgba(245,158,11,0.1)',
+          border: '1px solid rgba(245,158,11,0.24)',
+        }}
+      >
+        <AlertTriangle className="w-4 h-4" style={{ color: '#F59E0B' }} strokeWidth={2.2} />
+      </div>
+      <div className="min-w-0">
+        <div className="text-sm font-semibold" style={{ color: t.textPrimary }}>
+          Test yakunlandi
+        </div>
+        <div className="text-xs mt-0.5" style={{ color: t.textMuted }}>
+          {message}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Main Component
 // ─────────────────────────────────────────────────────────────────────────────
@@ -876,10 +934,26 @@ export function StudentTestTakingPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submittingAnswer, setSubmittingAnswer] = useState(false);
   const [syncingQuestionOrder, setSyncingQuestionOrder] = useState(false);
+  const [sessionFinishedNotice, setSessionFinishedNotice] = useState<string | null>(null);
   const lastSyncedQuestionIndexRef = useRef<number | null>(null);
+  const socketRef = useRef<WebSocket | null>(null);
+  const testSessionRef = useRef<TestSession | null>(null);
+  const answersRef = useRef<Record<number, string>>({});
+  const submittingRef = useRef(false);
+  const hasAutoFinishedRef = useRef(false);
+  const autoFinishMessageRef = useRef('');
+  const autoFinishTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+    hasAutoFinishedRef.current = false;
+    autoFinishMessageRef.current = '';
+    setSessionFinishedNotice(null);
+
+    if (autoFinishTimeoutRef.current !== null) {
+      window.clearTimeout(autoFinishTimeoutRef.current);
+      autoFinishTimeoutRef.current = null;
+    }
 
     if (!Number.isFinite(sessionId) || sessionId <= 0) {
       setError('Sessiya identifikatori topilmadi');
@@ -958,6 +1032,24 @@ export function StudentTestTakingPage() {
     ? (answeredCount / testSession.questions_count) * 100
     : 0;
   const shouldSyncMultiplayerState = ['public', 'group'].includes(normalizeText(sessionInfo?.session_type).toLowerCase());
+
+  useEffect(() => {
+    testSessionRef.current = testSession;
+  }, [testSession]);
+
+  useEffect(() => {
+    answersRef.current = answers;
+  }, [answers]);
+
+  useEffect(() => {
+    submittingRef.current = submitting;
+  }, [submitting]);
+
+  useEffect(() => () => {
+    if (autoFinishTimeoutRef.current !== null) {
+      window.clearTimeout(autoFinishTimeoutRef.current);
+    }
+  }, []);
 
   // Timer countdown
   useEffect(() => {
@@ -1071,33 +1163,91 @@ export function StudentTestTakingPage() {
   }
 
   async function handleSubmitTest() {
-    if (!testSession) return;
-    if (submitting) return;
+    const activeTestSession = testSessionRef.current;
+
+    if (!activeTestSession) return;
+    if (submittingRef.current) return;
 
     try {
       setSubmitting(true);
-      const payload: FinishSessionAnswerPayload[] = Object.entries(answers)
-        .map(([questionId, selectedOption]) => ({
-          question_id: Number.parseInt(questionId, 10),
-          selected_option: selectedOption,
-        }))
-        .filter((item) => Number.isFinite(item.question_id) && item.selected_option.trim());
-
-      const result = await finishTestSession(testSession.session_id, payload);
-      clearStoredTestProgress(testSession.session_id);
+      const result = await finishTestSession(activeTestSession.session_id, buildFinishPayload(answersRef.current));
+      clearStoredTestProgress(activeTestSession.session_id);
+      socketRef.current?.close();
       navigate(`/student/test-results/${result.session_id}`, {
         state: {
           result,
-          session: testSession,
+          session: activeTestSession,
+          finishMessage: autoFinishMessageRef.current || undefined,
         },
       });
     } catch (err: unknown) {
+      hasAutoFinishedRef.current = false;
+      setSessionFinishedNotice(null);
       setError(err instanceof Error ? err.message : "Testni yakunlab bo'lmadi");
       setShowSubmitModal(false);
     } finally {
       setSubmitting(false);
     }
   }
+
+  useEffect(() => {
+    let socket: WebSocket | null = null;
+    let closedByCleanup = false;
+
+    if (!Number.isFinite(sessionId) || sessionId <= 0) {
+      return undefined;
+    }
+
+    getValidAccessToken().then((token) => {
+      if (!token || closedByCleanup) return;
+
+      const wsBaseUrl = API_BASE_URL.replace(/^http/, 'ws');
+      socket = new WebSocket(`${wsBaseUrl}/ws/quiz/sessions/${sessionId}?token=${encodeURIComponent(token)}`);
+      socketRef.current = socket;
+
+      socket.onmessage = (event) => {
+        try {
+          const payload = JSON.parse(event.data) as QuizSessionSocketMessage;
+
+          if (!payload?.event) return;
+
+          if (payload.event === 'session_finished') {
+            if (hasAutoFinishedRef.current || submittingRef.current) return;
+
+            hasAutoFinishedRef.current = true;
+            autoFinishMessageRef.current = normalizeText(
+              payload.data?.message,
+              'Sessiya yaratuvchisi testni yakunladi. Javoblaringiz saqlanib, natija sahifasiga o‘tilmoqda.',
+            );
+            setSessionFinishedNotice(autoFinishMessageRef.current);
+            setShowSubmitModal(false);
+            setTimeRemaining(0);
+
+            autoFinishTimeoutRef.current = window.setTimeout(() => {
+              autoFinishTimeoutRef.current = null;
+              void handleSubmitTest();
+            }, 1600);
+          }
+        } catch (error) {
+          console.error(error);
+        }
+      };
+
+      socket.onerror = () => {
+        console.error('Quiz session websocket error');
+      };
+    }).catch((error) => {
+      console.error(error);
+    });
+
+    return () => {
+      closedByCleanup = true;
+      socketRef.current = null;
+      if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+        socket.close();
+      }
+    };
+  }, [sessionId]);
 
   if (loading) {
     return (
@@ -1159,6 +1309,8 @@ export function StudentTestTakingPage() {
 
   return (
     <div className="min-h-screen" style={{ background: t.bgBase }}>
+      <SessionFinishedToast message={sessionFinishedNotice} />
+
       {/* Header */}
       <div
         className="sticky top-0 z-40 px-3 sm:px-6 py-3 sm:py-4"

@@ -122,6 +122,10 @@ interface SessionInfoResponse {
   current_participant_id: number | null;
 }
 
+interface FinishSessionByHostResponse {
+  detail?: string;
+}
+
 const INITIALS_COLORS = [
   '#6366F1', '#8B5CF6', '#3B82F6', '#22C55E', '#F59E0B', '#EF4444', '#14B8A6', '#EC4899',
 ];
@@ -188,6 +192,18 @@ async function fetchSessionInfo(sessionId: number) {
   }
 
   return response.json() as Promise<SessionInfoResponse>;
+}
+
+async function finishSessionByHost(sessionId: number) {
+  const response = await fetchWithAuthRetry(`${API_BASE_URL}/api/v1/teacher/quiz-sessions/live/${sessionId}/finish-by-host`, {
+    method: 'GET',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Sessiyani yakunlashda xatolik: ${response.status}`);
+  }
+
+  return response.json() as Promise<FinishSessionByHostResponse>;
 }
 
 function toStudentStatus(status: string, connectionStatus: ConnectionStatus): StudentStatus {
@@ -378,6 +394,9 @@ export function ActiveSessionPage() {
   const [showEndConfirm, setShowEndConfirm] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [finishError, setFinishError] = useState('');
+  const [finishSuccessMessage, setFinishSuccessMessage] = useState('');
+  const [finishingSession, setFinishingSession] = useState(false);
   const [participantsTotal, setParticipantsTotal] = useState(0);
   const [onlineParticipants, setOnlineParticipants] = useState(0);
   const [finishedParticipants, setFinishedParticipants] = useState(0);
@@ -535,10 +554,30 @@ export function ActiveSessionPage() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleEnd = () => {
-    setSessionState('ended');
-    setShowEndConfirm(false);
-    setTimeout(() => navigate('/live'), 2500);
+  const handleEnd = async () => {
+    if (!sessionId || finishingSession) {
+      return;
+    }
+
+    try {
+      setFinishingSession(true);
+      setFinishError('');
+
+      const response = await finishSessionByHost(sessionId);
+      const message = response.detail?.trim()
+        ? "Sessiya muvaffaqiyatli yakunlandi."
+        : "Sessiya muvaffaqiyatli yakunlandi.";
+
+      setFinishSuccessMessage(message);
+      setSessionState('ended');
+      setShowEndConfirm(false);
+
+      window.setTimeout(() => navigate('/live'), 2500);
+    } catch (err) {
+      setFinishError(err instanceof Error ? err.message : "Sessiyani yakunlab bo'lmadi");
+    } finally {
+      setFinishingSession(false);
+    }
   };
 
   const handleOpenQuestions = () => {
@@ -585,7 +624,9 @@ export function ActiveSessionPage() {
         </div>
         <div className="text-center">
           <p className="text-lg font-bold" style={{ color: t.textPrimary }}>Session yakunlandi!</p>
-          <p className="text-sm mt-1" style={{ color: t.textMuted }}>Sessionlar sahifasiga yo'naltirilmoqda…</p>
+          <p className="text-sm mt-1" style={{ color: t.textMuted }}>
+            {finishSuccessMessage || "Sessiya muvaffaqiyatli yakunlandi. Sessionlar sahifasiga yo'naltirilmoqda…"}
+          </p>
         </div>
       </div>
     );
@@ -881,7 +922,10 @@ export function ActiveSessionPage() {
 
               {/* End session */}
               <button
-                onClick={() => setShowEndConfirm(true)}
+                onClick={() => {
+                  setFinishError('');
+                  setShowEndConfirm(true);
+                }}
                 className="w-full flex items-center justify-center gap-2.5 py-3 rounded-xl text-sm font-semibold transition-all"
                 style={{
                   background: 'rgba(239,68,68,0.08)',
@@ -930,20 +974,53 @@ export function ActiveSessionPage() {
                     Sessionni yakunlashni xohlaysizmi? Barcha o'quvchilar uchun davom etmagan savollar to'xtatiladi.
                   </p>
                 </div>
+                {finishError && (
+                  <div
+                    className="mb-3 px-3 py-2.5 rounded-lg text-xs"
+                    style={{
+                      background: 'rgba(239,68,68,0.08)',
+                      color: '#EF4444',
+                      border: '1px solid rgba(239,68,68,0.2)',
+                    }}
+                  >
+                    {finishError}
+                  </div>
+                )}
                 <div className="flex gap-2">
                   <button
-                    onClick={() => setShowEndConfirm(false)}
+                    onClick={() => {
+                      if (finishingSession) return;
+                      setShowEndConfirm(false);
+                    }}
+                    disabled={finishingSession}
                     className="flex-1 py-2 rounded-lg text-xs font-semibold transition-all"
-                    style={{ background: t.bgInner, border: `1px solid ${t.border}`, color: t.textMuted }}
+                    style={{
+                      background: t.bgInner,
+                      border: `1px solid ${t.border}`,
+                      color: t.textMuted,
+                      opacity: finishingSession ? 0.7 : 1,
+                    }}
                   >
                     Bekor
                   </button>
                   <button
                     onClick={handleEnd}
-                    className="flex-1 py-2 rounded-lg text-xs font-semibold text-white transition-all"
-                    style={{ background: '#EF4444', boxShadow: '0 2px 8px rgba(239,68,68,0.3)' }}
+                    disabled={finishingSession}
+                    className="flex-1 py-2 rounded-lg text-xs font-semibold text-white transition-all flex items-center justify-center gap-2"
+                    style={{
+                      background: '#EF4444',
+                      boxShadow: '0 2px 8px rgba(239,68,68,0.3)',
+                      opacity: finishingSession ? 0.85 : 1,
+                    }}
                   >
-                    Yakunlash
+                    {finishingSession ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" strokeWidth={2} />
+                        Yakunlanmoqda...
+                      </>
+                    ) : (
+                      'Yakunlash'
+                    )}
                   </button>
                 </div>
               </div>

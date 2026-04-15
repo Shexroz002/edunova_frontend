@@ -19,15 +19,15 @@ import { clearStoredAuthSession, getValidAccessToken, refreshStoredAuthToken } f
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
 
 const navigationItems = [
-  { name: 'Bosh sahifa',      icon: LayoutDashboard, path: '/'                   },
-  { name: "O'quvchilar",      icon: Users,            path: '/students'           },
-  { name: 'Sinflar',          icon: BookOpen,         path: '/classes'            },
-  { name: 'Testlar',          icon: FileText,         path: '/quizzes'            },
-  { name: 'Sessions',         icon: Video,            path: '/live'               },
-  { name: 'Tahlil',           icon: BarChart3,        path: '/analytics'          },
+  { name: 'Bosh sahifa', icon: LayoutDashboard, path: '/' },
+  { name: "O'quvchilar", icon: Users, path: '/students' },
+  { name: 'Sinflar', icon: BookOpen, path: '/classes' },
+  { name: 'Testlar', icon: FileText, path: '/quizzes' },
+  { name: 'Sessions', icon: Video, path: '/live' },
+  { name: 'Tahlil', icon: BarChart3, path: '/analytics' },
   // { name: "O'quvchi tahlili", icon: PieChart,         path: '/student-analytics'  },
-  { name: 'Reyting',          icon: Trophy,           path: '/leaderboard'        },
-  { name: 'Sozlamalar',       icon: Settings,         path: '/settings'           },
+  { name: 'Reyting', icon: Trophy, path: '/leaderboard' },
+  { name: 'Sozlamalar', icon: Settings, path: '/settings' },
 ];
 
 interface SidebarProps {
@@ -192,20 +192,20 @@ function SidebarContent({ onClose, isMobile }: { onClose: () => void; isMobile?:
               style={({ isActive }) =>
                 isActive
                   ? {
-                      background: t.isDark
-                        ? 'linear-gradient(135deg, rgba(99,102,241,0.25), rgba(124,58,237,0.15))'
-                        : 'rgba(99,102,241,0.08)',
-                      border: `1px solid ${t.isDark ? 'rgba(99,102,241,0.4)' : 'rgba(99,102,241,0.2)'}`,
-                      color: t.isDark ? '#818CF8' : '#6366F1',
-                      boxShadow: t.isDark ? '0 0 12px rgba(99,102,241,0.15)' : 'none',
-                      textDecoration: 'none',
-                    }
+                    background: t.isDark
+                      ? 'linear-gradient(135deg, rgba(99,102,241,0.25), rgba(124,58,237,0.15))'
+                      : 'rgba(99,102,241,0.08)',
+                    border: `1px solid ${t.isDark ? 'rgba(99,102,241,0.4)' : 'rgba(99,102,241,0.2)'}`,
+                    color: t.isDark ? '#818CF8' : '#6366F1',
+                    boxShadow: t.isDark ? '0 0 12px rgba(99,102,241,0.15)' : 'none',
+                    textDecoration: 'none',
+                  }
                   : {
-                      background: 'transparent',
-                      border: '1px solid transparent',
-                      color: t.textSecondary,
-                      textDecoration: 'none',
-                    }
+                    background: 'transparent',
+                    border: '1px solid transparent',
+                    color: t.textSecondary,
+                    textDecoration: 'none',
+                  }
               }
             >
               {({ isActive }) => (
@@ -305,18 +305,16 @@ export function Sidebar({ isOpen, onClose }: SidebarProps) {
 
       {/* ── Mobile backdrop ── */}
       <div
-        className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${
-          isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-        }`}
+        className={`fixed inset-0 z-40 lg:hidden transition-opacity duration-300 ${isOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
+          }`}
         style={{ background: 'rgba(0,0,0,0.5)' }}
         onClick={onClose}
       />
 
       {/* ── Mobile drawer ── */}
       <div
-        className={`fixed top-0 left-0 bottom-0 z-50 lg:hidden transition-transform duration-300 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed top-0 left-0 bottom-0 z-50 lg:hidden transition-transform duration-300 ${isOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
         style={{ borderRight: `1px solid ${t.border}`, boxShadow: '4px 0 24px rgba(0,0,0,0.15)' }}
       >
         <SidebarContent onClose={onClose} isMobile />

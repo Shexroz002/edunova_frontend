@@ -49,6 +49,14 @@ interface SubjectOption {
   icon: string | null;
 }
 
+type EditableProfileFieldKey =
+  | 'firstName'
+  | 'lastName'
+  | 'email'
+  | 'phone'
+  | 'school'
+  | 'educationLevel';
+
 function getSubjectTone(subject: SubjectOption) {
   const type = normalizeText(subject.type).toLowerCase();
 
@@ -238,11 +246,20 @@ function FieldRow({ label, subtitle, children }: { label: string; subtitle?: str
 }
 
 const TABS = [
-  { id: 'profile',   label: 'Profil',        Icon: User    },
-  { id: 'appearance',label: 'Ko\'rinish',    Icon: Palette },
+  { id: 'profile', label: 'Profil', Icon: User },
+  { id: 'appearance', label: 'Ko\'rinish', Icon: Palette },
   { id: 'notifications', label: 'Bildirishnomalar', Icon: Bell },
-  { id: 'security',  label: 'Xavfsizlik',    Icon: Shield  },
-  { id: 'language',  label: 'Til',           Icon: Globe   },
+  { id: 'security', label: 'Xavfsizlik', Icon: Shield },
+  { id: 'language', label: 'Til', Icon: Globe },
+];
+
+const PROFILE_FIELDS: Array<{ label: string; key: EditableProfileFieldKey }> = [
+  { label: 'Ism', key: 'firstName' },
+  { label: 'Familiya', key: 'lastName' },
+  { label: 'Email', key: 'email' },
+  { label: 'Telefon', key: 'phone' },
+  { label: 'Maktab', key: 'school' },
+  { label: "Ta'lim darajasi", key: 'educationLevel' },
 ];
 
 export function SettingsPage() {
@@ -518,23 +535,16 @@ export function SettingsPage() {
 
               {/* Fields */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                {[
-                  { label: 'Ism', key: 'firstName' },
-                  { label: 'Familiya', key: 'lastName' },
-                  { label: 'Email', key: 'email' },
-                  { label: 'Telefon', key: 'phone' },
-                  { label: 'Maktab', key: 'school' },
-                  { label: "Ta'lim darajasi", key: 'educationLevel' },
-                ].map(({ label, key }) => (
+                {PROFILE_FIELDS.map(({ label, key }) => (
                   <div key={key}>
                     <label className="block text-xs font-semibold mb-1.5" style={{ color: t.textMuted }}>{label}</label>
                     <input
                       type="text"
-                      value={profile[key as keyof typeof profile]}
+                      value={profile[key]}
                       onChange={(e) => setProfile((p) => ({ ...p, [key]: e.target.value }))}
                       style={inputStyle}
                       onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#6366F1'; (e.target as HTMLElement).style.boxShadow = '0 0 0 3px rgba(99,102,241,0.15)'; }}
-                      onBlur={(e)  => { (e.target as HTMLElement).style.borderColor = t.border;  (e.target as HTMLElement).style.boxShadow = 'none'; }}
+                      onBlur={(e) => { (e.target as HTMLElement).style.borderColor = t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
                     />
                   </div>
                 ))}
@@ -635,17 +645,17 @@ export function SettingsPage() {
                   </div>
                 </FieldRow>
                 <FieldRow label="Kompakt rejim" subtitle="UI elementlarini kichiklashtirish">
-                  <Toggle value={false} onChange={() => {}} />
+                  <Toggle value={false} onChange={() => { }} />
                 </FieldRow>
                 <FieldRow label="Animatsiyalar" subtitle="Interfeys animatsiyalarini yoqish">
-                  <Toggle value={true} onChange={() => {}} />
+                  <Toggle value={true} onChange={() => { }} />
                 </FieldRow>
               </div>
 
               <div className="mt-6">
                 <p className="text-sm font-semibold mb-3" style={{ color: t.textPrimary }}>Aksent rangi</p>
                 <div className="flex gap-3 flex-wrap">
-                  {['#6366F1','#3B82F6','#8B5CF6','#EC4899','#14B8A6','#F59E0B'].map((color) => (
+                  {['#6366F1', '#3B82F6', '#8B5CF6', '#EC4899', '#14B8A6', '#F59E0B'].map((color) => (
                     <button
                       key={color}
                       className="w-9 h-9 rounded-xl transition-all flex items-center justify-center"
@@ -667,11 +677,11 @@ export function SettingsPage() {
               <SectionTitle title="Bildirishnomalar" subtitle="Qaysi hodisalar haqida xabar olishni tanlang" />
               <div>
                 {[
-                  { key: 'testSubmitted', label: 'Test topshirildi',      sub: "O'quvchi test topshirganida xabar oling" },
-                  { key: 'newStudent',    label: "Yangi o'quvchi",         sub: "Sinfga yangi o'quvchi qo'shilganida" },
-                  { key: 'liveSession',  label: 'Jonli dars eslatmasi',   sub: 'Dars boshlanishidan 15 daqiqa oldin' },
-                  { key: 'weeklyReport', label: 'Haftalik hisobot',        sub: 'Har dushanba kuni umumiy hisobot' },
-                  { key: 'systemUpdates',label: 'Tizim yangilanishlari',   sub: 'Platforma yangilanishlari haqida' },
+                  { key: 'testSubmitted', label: 'Test topshirildi', sub: "O'quvchi test topshirganida xabar oling" },
+                  { key: 'newStudent', label: "Yangi o'quvchi", sub: "Sinfga yangi o'quvchi qo'shilganida" },
+                  { key: 'liveSession', label: 'Jonli dars eslatmasi', sub: 'Dars boshlanishidan 15 daqiqa oldin' },
+                  { key: 'weeklyReport', label: 'Haftalik hisobot', sub: 'Har dushanba kuni umumiy hisobot' },
+                  { key: 'systemUpdates', label: 'Tizim yangilanishlari', sub: 'Platforma yangilanishlari haqida' },
                 ].map(({ key, label, sub }) => (
                   <FieldRow key={key} label={label} subtitle={sub}>
                     <Toggle
@@ -698,13 +708,13 @@ export function SettingsPage() {
                     <label className="block text-xs font-semibold mb-1.5" style={{ color: t.textMuted }}>{label}</label>
                     <input type={type} placeholder={placeholder} style={inputStyle}
                       onFocus={(e) => { (e.target as HTMLElement).style.borderColor = '#6366F1'; (e.target as HTMLElement).style.boxShadow = '0 0 0 3px rgba(99,102,241,0.15)'; }}
-                      onBlur={(e)  => { (e.target as HTMLElement).style.borderColor = t.border;  (e.target as HTMLElement).style.boxShadow = 'none'; }}
+                      onBlur={(e) => { (e.target as HTMLElement).style.borderColor = t.border; (e.target as HTMLElement).style.boxShadow = 'none'; }}
                     />
                   </div>
                 ))}
               </div>
               <FieldRow label="Ikki faktorli autentifikatsiya" subtitle="Qo'shimcha himoya uchun 2FA ni yoqing">
-                <Toggle value={false} onChange={() => {}} />
+                <Toggle value={false} onChange={() => { }} />
               </FieldRow>
             </Card>
           )}
@@ -715,10 +725,10 @@ export function SettingsPage() {
               <SectionTitle title="Til sozlamalari" subtitle="Interfeys tilini tanlang" />
               <div className="space-y-2.5">
                 {[
-                  { code: "O'zbek (lotin)",   flag: '🇺🇿', active: true  },
-                  { code: "O'zbek (kirill)",  flag: '🇺🇿', active: false },
-                  { code: 'Русский',          flag: '🇷🇺', active: false },
-                  { code: 'English',          flag: '🇬🇧', active: false },
+                  { code: "O'zbek (lotin)", flag: '🇺🇿', active: true },
+                  { code: "O'zbek (kirill)", flag: '🇺🇿', active: false },
+                  { code: 'Русский', flag: '🇷🇺', active: false },
+                  { code: 'English', flag: '🇬🇧', active: false },
                 ].map(({ code, flag, active }) => (
                   <div
                     key={code}
