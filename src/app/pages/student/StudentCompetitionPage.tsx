@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import {
   ArrowLeft, Users, Clock, Trophy, Zap, ChevronDown,
   Search, CheckCircle, X, Play,
@@ -59,6 +59,10 @@ interface MultiplayerCreateResponse {
   questions_count: number;
   started_at: string | null;
   finished_at: string | null;
+}
+
+interface StudentCompetitionLocationState {
+  preselectedQuizId?: number;
 }
 
 function normalizeText(value: string | null | undefined, fallback = '') {
@@ -955,6 +959,11 @@ function SuccessModal({
 export function StudentCompetitionPage() {
   const { theme: t } = useTheme();
   const navigate = useNavigate();
+  const location = useLocation();
+  const locationState = (location.state as StudentCompetitionLocationState | null) ?? null;
+  const preselectedQuizId = typeof locationState?.preselectedQuizId === 'number'
+    ? locationState.preselectedQuizId
+    : null;
 
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
@@ -1035,6 +1044,15 @@ export function StudentCompetitionPage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (preselectedQuizId === null || selectedQuiz !== null || quizzes.length === 0) return;
+
+    const matchedQuiz = quizzes.find((quiz) => quiz.id === preselectedQuizId) ?? null;
+    if (matchedQuiz) {
+      setSelectedQuiz(matchedQuiz);
+    }
+  }, [preselectedQuizId, quizzes, selectedQuiz]);
 
   function handleCreate() {
     if (!canCreate) return;

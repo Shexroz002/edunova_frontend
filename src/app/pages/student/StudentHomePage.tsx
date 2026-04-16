@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router';
 import { useTheme } from '../../components/ThemeContext';
 import { CreateQuizModal } from '../teacher/QuizzesPage.tsx';
 import { QuizCreatedSuccessModal, type QuizCreationResult } from '../../components/QuizCreatedSuccessModal.tsx';
+import { StartTestModal, type Quiz as StartTestQuiz } from '../../components/StartTestModal.tsx';
 import { getStoredAuthSession, getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth';
 import {
   PlayCircle,
@@ -27,6 +28,7 @@ import {
 } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
+const STUDENT_QUIZ_PAGE_SIZE = 50;
 
 type SubjectIconType = typeof Calculator | typeof FlaskConical | typeof BookOpen | typeof Languages;
 
@@ -116,6 +118,32 @@ interface ActiveInviteNotification {
   sessionCode: string;
   senderName: string;
   senderAvatar: string;
+}
+
+type StudentQuizGenerateType = 'AI_GENERATE' | 'PDF' | 'MANUAL' | 'UNDEFINED';
+
+interface StudentQuizApiItem {
+  created_at: string;
+  question_count: number;
+  description: string | null;
+  subject: string | null;
+  is_new: boolean;
+  quiz_id: number;
+  title: string | null;
+  quiz_generate_type: StudentQuizGenerateType | null;
+}
+
+interface StudentQuizListResponse {
+  items: StudentQuizApiItem[];
+  total: number;
+  page: number;
+  size: number;
+  pages: number;
+}
+
+interface StartSinglePlayerSessionResponse {
+  session_id: number;
+  quiz_id: number;
 }
 
 // ─── Stats ────────────────────────────────────────────────────────────────────
@@ -286,6 +314,74 @@ async function fetchMe() {
   }
 
   return response.json() as Promise<UserMeResponse>;
+}
+
+function getStartTestSubjectIcon(subject: string | null | undefined) {
+  const normalized = normalizeText(subject).toLowerCase();
+
+  switch (normalized) {
+    case 'fizika':
+      return 'flask';
+    case 'kimyo':
+    case 'biologiya':
+      return 'leaf';
+    case 'ona tili':
+    case 'adabiyot':
+      return 'book';
+    case 'ingliz tili':
+    case 'rus tili':
+      return 'languages';
+    default:
+      return 'calculator';
+  }
+}
+
+function mapQuizToStartTestModal(item: StudentQuizApiItem): StartTestQuiz {
+  const questionCount = typeof item.question_count === 'number' ? item.question_count : 0;
+
+  return {
+    id: item.quiz_id,
+    title: normalizeText(item.title, 'Nomsiz test'),
+    subject: normalizeText(item.subject, "Noma'lum fan"),
+    questionCount,
+    difficulty: questionCount >= 30 ? 'Qiyin' : questionCount >= 15 ? "O'rtacha" : 'Oson',
+    icon: getStartTestSubjectIcon(item.subject),
+  };
+}
+
+async function fetchStudentQuizzes(page = 1, size = STUDENT_QUIZ_PAGE_SIZE) {
+  const params = new URLSearchParams({
+    page: String(page),
+    size: String(size),
+  });
+
+  const response = await fetchWithAuthRetry(
+    `${API_BASE_URL}/api/v1/student/quizzes/list?${params.toString()}`,
+    { method: 'GET' },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Testlarni olishda xatolik: ${response.status}`);
+  }
+
+  return response.json() as Promise<StudentQuizListResponse>;
+}
+
+async function startSinglePlayerSession(quizId: number, durationMinute: number) {
+  const params = new URLSearchParams({
+    duration_minute: String(durationMinute),
+  });
+
+  const response = await fetchWithAuthRetry(
+    `${API_BASE_URL}/api/v1/student/sessions/${quizId}/start-single-player/?${params.toString()}`,
+    { method: 'POST' },
+  );
+
+  if (!response.ok) {
+    throw new Error(`Testni boshlashda xatolik: ${response.status}`);
+  }
+
+  return response.json() as Promise<StartSinglePlayerSessionResponse>;
 }
 
 async function joinMultiplayerSession(sessionCode: string) {
@@ -729,10 +825,17 @@ export function StudentHomePage() {
   const { theme: t } = useTheme();
   const navigate = useNavigate();
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [startTestModalOpen, setStartTestModalOpen] = useState(false);
   const [joinRealtimeOpen, setJoinRealtimeOpen] = useState(false);
   const [subjects, setSubjects] = useState<StudentSubjectCard[]>([]);
   const [subjectsLoading, setSubjectsLoading] = useState(true);
   const [subjectsError, setSubjectsError] = useState('');
+  const [availableQuizzes, setAvailableQuizzes] = useState<StartTestQuiz[]>([]);
+  const [quizzesLoading, setQuizzesLoading] = useState(false);
+  const [quizzesError, setQuizzesError] = useState('');
+  const [startingQuiz, setStartingQuiz] = useState(false);
+  const [startTestError, setStartTestError] = useState('');
+  const [quizReloadKey, setQuizReloadKey] = useState(0);
   const [inviteNotification, setInviteNotification] = useState<ActiveInviteNotification | null>(null);
   const [acceptingInvite, setAcceptingInvite] = useState(false);
   const [inviteError, setInviteError] = useState('');
@@ -793,6 +896,36 @@ export function StudentHomePage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    if (!startTestModalOpen) return;
+
+    let cancelled = false;
+
+    setQuizzesLoading(true);
+    setQuizzesError('');
+    setStartTestError('');
+
+    fetchStudentQuizzes()
+      .then((data) => {
+        if (cancelled) return;
+        setAvailableQuizzes(Array.isArray(data.items) ? data.items.map(mapQuizToStartTestModal) : []);
+      })
+      .catch((err: unknown) => {
+        if (cancelled) return;
+        setAvailableQuizzes([]);
+        setQuizzesError(err instanceof Error ? err.message : "Testlarni yuklab bo'lmadi");
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setQuizzesLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [startTestModalOpen, quizReloadKey]);
 
   useEffect(() => {
     let closedByCleanup = false;
@@ -880,6 +1013,20 @@ export function StudentHomePage() {
     }
   }
 
+  async function handleStartTest(quizId: number, timeLimit: number) {
+    try {
+      setStartingQuiz(true);
+      setStartTestError('');
+      const data = await startSinglePlayerSession(quizId, timeLimit);
+      setStartTestModalOpen(false);
+      navigate(`/student/test-taking/${data.session_id}?quiz_id=${data.quiz_id}`);
+    } catch (err) {
+      setStartTestError(err instanceof Error ? err.message : "Testni boshlab bo'lmadi");
+    } finally {
+      setStartingQuiz(false);
+    }
+  }
+
   return (
     <div className="max-w-5xl mx-auto">
       <InviteNotificationModal
@@ -944,6 +1091,11 @@ export function StudentHomePage() {
             ? 'linear-gradient(135deg, #4C1D95 0%, #6366F1 55%, #3B82F6 100%)'
             : 'linear-gradient(135deg, #6366F1 0%, #4F46E5 60%, #3B82F6 100%)',
           boxShadow: '0 8px 32px rgba(99,102,241,0.4)',
+        }}
+        onClick={() => {
+          setStartTestError('');
+          setQuizzesError('');
+          setStartTestModalOpen(true);
         }}
       >
         {/* Glow orbs */}
@@ -1388,6 +1540,22 @@ export function StudentHomePage() {
           setCreateModalOpen(false);
           setQuizCreatedModalData(payload);
         }}
+      />
+
+      <StartTestModal
+        open={startTestModalOpen}
+        onClose={() => {
+          if (startingQuiz) return;
+          setStartTestModalOpen(false);
+          setStartTestError('');
+        }}
+        onStart={handleStartTest}
+        quizzes={availableQuizzes}
+        loading={quizzesLoading}
+        error={quizzesError}
+        startError={startTestError}
+        onRetry={() => setQuizReloadKey((current) => current + 1)}
+        isStarting={startingQuiz}
       />
 
       <QuizCreatedSuccessModal

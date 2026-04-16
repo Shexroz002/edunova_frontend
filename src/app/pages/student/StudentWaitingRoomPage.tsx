@@ -542,11 +542,20 @@ export function StudentWaitingRoomPage() {
   const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [leaving, setLeaving] = useState(false);
   const [leaveError, setLeaveError] = useState('');
+  const [socketStatus, setSocketStatus] = useState<'connecting' | 'connected' | 'reconnecting' | 'disconnected'>('connecting');
+  const [reconnectAttempt, setReconnectAttempt] = useState(0);
   const socketRef = useRef<WebSocket | null>(null);
+  const reconnectTimeoutRef = useRef<number | null>(null);
+  const reconnectAttemptRef = useRef(0);
+  const currentParticipantNameRef = useRef('');
   const hasNavigatedToTestRef = useRef(false);
   const isHost = currentUserId !== null && String(sessionInfo?.host_id ?? '') === currentUserId;
   const currentParticipantId = participants.find((participant) => participant.user_id === currentUserId)?.participant_id ?? null;
   const currentParticipantName = participants.find((participant) => participant.user_id === currentUserId)?.full_name ?? '';
+
+  useEffect(() => {
+    currentParticipantNameRef.current = currentParticipantName;
+  }, [currentParticipantName]);
 
   function navigateToRunningSession(nextSessionId: string, nextQuizId: string) {
     if (hasNavigatedToTestRef.current) return;
@@ -623,138 +632,188 @@ export function StudentWaitingRoomPage() {
 
     if (!sessionId) return;
 
-    getValidAccessToken().then((token) => {
-      if (!token || closedByCleanup) return;
+    function clearReconnectTimer() {
+      if (reconnectTimeoutRef.current !== null) {
+        window.clearTimeout(reconnectTimeoutRef.current);
+        reconnectTimeoutRef.current = null;
+      }
+    }
 
-      const wsBaseUrl = API_BASE_URL.replace(/^http/, 'ws');
-      socket = new WebSocket(`${wsBaseUrl}/ws/quiz/sessions/${sessionId}?token=${encodeURIComponent(token)}`);
-      socketRef.current = socket;
+    function scheduleReconnect() {
+      if (closedByCleanup) return;
 
-      socket.onopen = () => {
-        setSendingChat(false);
-      };
+      reconnectAttemptRef.current += 1;
+      setReconnectAttempt(reconnectAttemptRef.current);
+      setSocketStatus('reconnecting');
 
-      socket.onmessage = (event) => {
-        try {
-          const payload = JSON.parse(event.data) as {
-            event?: string;
-            data?: Record<string, unknown>;
-          };
+      const delay = Math.min(1000 * (2 ** Math.min(reconnectAttemptRef.current - 1, 3)), 10000);
 
-          if (!payload?.event || !payload.data) return;
+      clearReconnectTimer();
+      reconnectTimeoutRef.current = window.setTimeout(() => {
+        reconnectTimeoutRef.current = null;
+        connectSocket();
+      }, delay);
+    }
 
-          if (payload.event === 'session_started') {
-            const nextSessionId = String(payload.data.session_id ?? sessionId);
-            const nextQuizId = String(payload.data.quiz_id ?? searchParams.get('quiz_id') ?? '');
-            navigateToRunningSession(nextSessionId, nextQuizId);
-            return;
-          }
+    function connectSocket() {
+      if (closedByCleanup) return;
 
-          if (payload.event === 'chat_message') {
-            const userInfo = (payload.data.user_info ?? {}) as Record<string, unknown>;
-            const firstName = normalizeText(typeof userInfo.first_name === 'string' ? userInfo.first_name : null);
-            const lastName = normalizeText(typeof userInfo.last_name === 'string' ? userInfo.last_name : null);
-            const sender = `${firstName} ${lastName}`.trim() || 'Foydalanuvchi';
-            const text = normalizeText(typeof payload.data.message === 'string' ? payload.data.message : null);
+      setSocketStatus(reconnectAttemptRef.current > 0 ? 'reconnecting' : 'connecting');
 
-            if (!text) return;
+      getValidAccessToken().then((token) => {
+        if (!token || closedByCleanup) {
+          setSocketStatus('disconnected');
+          return;
+        }
 
-            const isOwnMessage = sender === currentParticipantName;
+        const wsBaseUrl = API_BASE_URL.replace(/^http/, 'ws');
+        socket = new WebSocket(`${wsBaseUrl}/ws/quiz/sessions/${sessionId}?token=${encodeURIComponent(token)}`);
+        socketRef.current = socket;
 
-            setChatMessages((current) => [
-              ...current,
-              {
-                id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-                sender,
-                text,
-                time: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }),
-                avatar: normalizeText(typeof userInfo.avatar_url === 'string' ? userInfo.avatar_url : null, 'https://i.pravatar.cc/150?img=1'),
-                isOwn: isOwnMessage,
-              },
-            ]);
-            if (!showChat && !isOwnMessage) {
-              setUnreadChatCount((current) => current + 1);
-              setChatNotificationData({
-                sender,
-                avatar: normalizeText(typeof userInfo.avatar_url === 'string' ? userInfo.avatar_url : null, 'https://i.pravatar.cc/150?img=1'),
-                preview: text.length > 42 ? `${text.slice(0, 42)}...` : text,
-              });
-              setShowChatNotification(true);
-            }
-            setSendingChat(false);
-            return;
-          }
+        socket.onopen = () => {
+          reconnectAttemptRef.current = 0;
+          setReconnectAttempt(0);
+          setSocketStatus('connected');
+          setSendingChat(false);
+          clearReconnectTimer();
+        };
 
-          if (payload.event === 'participant_read') {
-            const userId = String(payload.data.user_id ?? '');
-            const status = mapRealtimeStatus(typeof payload.data.status === 'string' ? payload.data.status : null);
-            setParticipants((current) => current.map((participant) => (
-              participant.user_id === userId
-                ? { ...participant, status, online: true }
-                : participant
-            )));
-            return;
-          }
-
-          if (payload.event === 'participant_joined') {
-            const firstName = normalizeText(typeof payload.data.first_name === 'string' ? payload.data.first_name : null);
-            const lastName = normalizeText(typeof payload.data.last_name === 'string' ? payload.data.last_name : null);
-            const userId = String(payload.data.user_id ?? '');
-            const fullName = `${firstName} ${lastName}`.trim()
-              || normalizeText(typeof payload.data.nickname === 'string' ? payload.data.nickname : null, 'Foydalanuvchi');
-
-            const nextParticipant: Participant = {
-              user_id: userId,
-              full_name: fullName,
-              avatar: normalizeText(typeof payload.data.profile_image === 'string' ? payload.data.profile_image : null, 'https://i.pravatar.cc/150?img=1'),
-              role: payload.data.is_host === true ? 'host' : 'participant',
-              status: mapRealtimeStatus(typeof payload.data.status === 'string' ? payload.data.status : null),
-              online: mapRealtimeOnline(typeof payload.data.status === 'string' ? payload.data.status : null),
+        socket.onmessage = (event) => {
+          try {
+            const payload = JSON.parse(event.data) as {
+              event?: string;
+              data?: Record<string, unknown>;
             };
 
-            setParticipants((current) => {
-              const exists = current.some((participant) => participant.user_id === userId);
-              if (exists) {
-                return current.map((participant) => (
-                  participant.user_id === userId ? nextParticipant : participant
-                ));
+            if (!payload?.event || !payload.data) return;
+
+            if (payload.event === 'session_started') {
+              const nextSessionId = String(payload.data.session_id ?? sessionId);
+              const nextQuizId = String(payload.data.quiz_id ?? searchParams.get('quiz_id') ?? '');
+              navigateToRunningSession(nextSessionId, nextQuizId);
+              return;
+            }
+
+            if (payload.event === 'chat_message') {
+              const userInfo = (payload.data.user_info ?? {}) as Record<string, unknown>;
+              const firstName = normalizeText(typeof userInfo.first_name === 'string' ? userInfo.first_name : null);
+              const lastName = normalizeText(typeof userInfo.last_name === 'string' ? userInfo.last_name : null);
+              const sender = `${firstName} ${lastName}`.trim() || 'Foydalanuvchi';
+              const text = normalizeText(typeof payload.data.message === 'string' ? payload.data.message : null);
+
+              if (!text) return;
+
+              const isOwnMessage = sender === currentParticipantNameRef.current;
+
+              setChatMessages((current) => [
+                ...current,
+                {
+                  id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+                  sender,
+                  text,
+                  time: new Date().toLocaleTimeString('uz-UZ', { hour: '2-digit', minute: '2-digit' }),
+                  avatar: normalizeText(typeof userInfo.avatar_url === 'string' ? userInfo.avatar_url : null, 'https://i.pravatar.cc/150?img=1'),
+                  isOwn: isOwnMessage,
+                },
+              ]);
+              if (!showChat && !isOwnMessage) {
+                setUnreadChatCount((current) => current + 1);
+                setChatNotificationData({
+                  sender,
+                  avatar: normalizeText(typeof userInfo.avatar_url === 'string' ? userInfo.avatar_url : null, 'https://i.pravatar.cc/150?img=1'),
+                  preview: text.length > 42 ? `${text.slice(0, 42)}...` : text,
+                });
+                setShowChatNotification(true);
               }
-              return [...current, nextParticipant];
-            });
-            return;
-          }
+              setSendingChat(false);
+              return;
+            }
 
-          if (payload.event === 'participant_reconnected' || payload.event === 'participant_disconnected') {
-            const userId = String(payload.data.user_id ?? '');
-            const rawStatus = typeof payload.data.status === 'string' ? payload.data.status : null;
-            setParticipants((current) => current.map((participant) => (
-              participant.user_id === userId
-                ? {
-                  ...participant,
-                  status: mapRealtimeStatus(rawStatus),
-                  online: mapRealtimeOnline(rawStatus),
+            if (payload.event === 'participant_read') {
+              const userId = String(payload.data.user_id ?? '');
+              const status = mapRealtimeStatus(typeof payload.data.status === 'string' ? payload.data.status : null);
+              setParticipants((current) => current.map((participant) => (
+                participant.user_id === userId
+                  ? { ...participant, status, online: true }
+                  : participant
+              )));
+              return;
+            }
+
+            if (payload.event === 'participant_joined') {
+              const firstName = normalizeText(typeof payload.data.first_name === 'string' ? payload.data.first_name : null);
+              const lastName = normalizeText(typeof payload.data.last_name === 'string' ? payload.data.last_name : null);
+              const userId = String(payload.data.user_id ?? '');
+              const fullName = `${firstName} ${lastName}`.trim()
+                || normalizeText(typeof payload.data.nickname === 'string' ? payload.data.nickname : null, 'Foydalanuvchi');
+
+              const nextParticipant: Participant = {
+                user_id: userId,
+                full_name: fullName,
+                avatar: normalizeText(typeof payload.data.profile_image === 'string' ? payload.data.profile_image : null, 'https://i.pravatar.cc/150?img=1'),
+                role: payload.data.is_host === true ? 'host' : 'participant',
+                status: mapRealtimeStatus(typeof payload.data.status === 'string' ? payload.data.status : null),
+                online: mapRealtimeOnline(typeof payload.data.status === 'string' ? payload.data.status : null),
+              };
+
+              setParticipants((current) => {
+                const exists = current.some((participant) => participant.user_id === userId);
+                if (exists) {
+                  return current.map((participant) => (
+                    participant.user_id === userId ? nextParticipant : participant
+                  ));
                 }
-                : participant
-            )));
-          }
-        } catch {
-          // Ignore invalid websocket payloads.
-        }
-      };
+                return [...current, nextParticipant];
+              });
+              return;
+            }
 
-      socket.onerror = () => {
-        setSendingChat(false);
-      };
-    });
+            if (payload.event === 'participant_reconnected' || payload.event === 'participant_disconnected') {
+              const userId = String(payload.data.user_id ?? '');
+              const rawStatus = typeof payload.data.status === 'string' ? payload.data.status : null;
+              setParticipants((current) => current.map((participant) => (
+                participant.user_id === userId
+                  ? {
+                    ...participant,
+                    status: mapRealtimeStatus(rawStatus),
+                    online: mapRealtimeOnline(rawStatus),
+                  }
+                  : participant
+              )));
+            }
+          } catch {
+            // Ignore invalid websocket payloads.
+          }
+        };
+
+        socket.onerror = () => {
+          setSendingChat(false);
+        };
+
+        socket.onclose = () => {
+          setSendingChat(false);
+          if (closedByCleanup) return;
+          socketRef.current = null;
+          scheduleReconnect();
+        };
+      }).catch(() => {
+        if (!closedByCleanup) {
+          scheduleReconnect();
+        }
+      });
+    }
+
+    connectSocket();
 
     return () => {
       closedByCleanup = true;
+      clearReconnectTimer();
       socketRef.current = null;
-      if (socket && socket.readyState === WebSocket.OPEN) {
+      if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
         socket.close();
       }
     };
-  }, [currentParticipantName, navigate, searchParams, sessionId, showChat]);
+  }, [navigate, searchParams, sessionId]);
 
   useEffect(() => {
     if (!showChat) return;
@@ -836,6 +895,14 @@ export function StudentWaitingRoomPage() {
       message: trimmedMessage,
     }));
   }
+
+  const socketStatusAppearance = socketStatus === 'connected'
+    ? { label: 'Ulangan', color: '#22C55E', bg: 'rgba(34,197,94,0.12)', border: 'rgba(34,197,94,0.24)' }
+    : socketStatus === 'reconnecting'
+      ? { label: reconnectAttempt > 0 ? `Qayta ulanmoqda ${reconnectAttempt}` : 'Qayta ulanmoqda', color: '#F59E0B', bg: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.24)' }
+      : socketStatus === 'connecting'
+        ? { label: 'Ulanmoqda', color: '#6366F1', bg: 'rgba(99,102,241,0.12)', border: 'rgba(99,102,241,0.24)' }
+        : { label: 'Ulanish uzildi', color: '#EF4444', bg: 'rgba(239,68,68,0.12)', border: 'rgba(239,68,68,0.24)' };
 
   function openLeaveModal() {
     setLeaveError('');
@@ -931,6 +998,17 @@ export function StudentWaitingRoomPage() {
                 <Clock className="w-3.5 h-3.5 shrink-0" strokeWidth={2} />
                 Kutish xonasi · {normalizeText(sessionInfo?.quiz_name, 'Test')}
               </p>
+              <div
+                className="inline-flex items-center gap-1.5 mt-2 px-2.5 py-1 rounded-xl text-xs font-semibold"
+                style={{
+                  background: socketStatusAppearance.bg,
+                  border: `1px solid ${socketStatusAppearance.border}`,
+                  color: socketStatusAppearance.color,
+                }}
+              >
+                <Wifi className="w-3.5 h-3.5" strokeWidth={2.2} />
+                {socketStatusAppearance.label}
+              </div>
             </div>
           </div>
 

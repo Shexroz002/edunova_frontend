@@ -7,6 +7,7 @@ import {
   Target, Zap, User, Globe,
 } from 'lucide-react';
 import { useTheme } from '../../components/ThemeContext';
+import { TestTimeModal } from '../../components/TestTimeModal';
 import { getValidAccessToken, refreshStoredAuthToken } from '../../lib/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://127.0.0.1:8000';
@@ -198,9 +199,13 @@ async function fetchStudentQuizzes(search: string, page = 1, size = PAGE_SIZE) {
   return response.json() as Promise<StudentQuizListResponse>;
 }
 
-async function startSinglePlayerSession(quizId: number) {
+async function startSinglePlayerSession(quizId: number, durationMinute: number) {
+  const params = new URLSearchParams({
+    duration_minute: String(durationMinute),
+  });
+
   const response = await fetchWithAuthRetry(
-    `${API_BASE_URL}/api/v1/student/sessions/${quizId}/start-single-player/`,
+    `${API_BASE_URL}/api/v1/student/sessions/${quizId}/start-single-player/?${params.toString()}`,
     {
       method: 'POST',
     },
@@ -249,6 +254,14 @@ function StartToast({ message, onDone }: { message: string; onDone: () => void }
   );
 }
 
+function getNearestTimeOption(value: number) {
+  const options = [10, 15, 20, 30, 45, 60, 90, 120];
+
+  return options.reduce((closest, current) => {
+    return Math.abs(current - value) < Math.abs(closest - value) ? current : closest;
+  }, 15);
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Quiz Card
 // ─────────────────────────────────────────────────────────────────────────────
@@ -261,7 +274,7 @@ function QuizCard({
 }: {
   quiz: Quiz;
   onView: (q: Quiz) => void;
-  onStart: (q: Quiz) => Promise<void>;
+  onStart: (q: Quiz) => void;
   onMulti: (q: Quiz) => void;
   isStarting: boolean;
 }) {
@@ -454,6 +467,10 @@ export function StudentTestsPage() {
   const [error, setError] = useState<string | null>(null);
   const [total, setTotal] = useState(0);
   const [reloadKey, setReloadKey] = useState(0);
+  const [startModalOpen, setStartModalOpen] = useState(false);
+  const [selectedQuiz, setSelectedQuiz] = useState<Quiz | null>(null);
+  const [selectedTime, setSelectedTime] = useState(15);
+  const [startError, setStartError] = useState<string | null>(null);
   const [startingQuizId, setStartingQuizId] = useState<number | null>(null);
 
   useEffect(() => {
@@ -489,19 +506,36 @@ export function StudentTestsPage() {
   function handleView(quiz: Quiz) {
     navigate(`/student/tests/${quiz.id}`);
   }
-  async function handleStart(quiz: Quiz) {
+  function handleStart(quiz: Quiz) {
+    setSelectedQuiz(quiz);
+    setSelectedTime(getNearestTimeOption(quiz.durationMin));
+    setStartError(null);
+    setStartModalOpen(true);
+  }
+
+  async function handleConfirmStart(timeLimit: number) {
+    if (!selectedQuiz) return;
+
     try {
-      setStartingQuizId(quiz.id);
-      const data = await startSinglePlayerSession(quiz.id);
+      setSelectedTime(timeLimit);
+      setStartingQuizId(selectedQuiz.id);
+      setStartError(null);
+      const data = await startSinglePlayerSession(selectedQuiz.id, timeLimit);
+      setStartModalOpen(false);
+      setSelectedQuiz(null);
       navigate(`/student/test-taking/${data.session_id}?quiz_id=${data.quiz_id}`);
     } catch (err: unknown) {
-      setToast(err instanceof Error ? err.message : "Testni boshlab bo'lmadi");
+      setStartError(err instanceof Error ? err.message : "Testni boshlab bo'lmadi");
     } finally {
       setStartingQuizId(null);
     }
   }
   function handleMulti(quiz: Quiz) {
-    setToast(`"${quiz.title}" — do'stlar bilan o'yin tashkil etilmoqda...`);
+    navigate('/student/competition', {
+      state: {
+        preselectedQuizId: quiz.id,
+      },
+    });
   }
 
   return (
@@ -692,6 +726,22 @@ export function StudentTestsPage() {
           ))}
         </div>
       )}
+
+      <TestTimeModal
+        open={startModalOpen}
+        onClose={() => {
+          if (startingQuizId !== null) return;
+          setStartModalOpen(false);
+          setSelectedQuiz(null);
+          setStartError(null);
+        }}
+        onStart={handleConfirmStart}
+        testTitle={selectedQuiz?.title ?? 'Test'}
+        questionCount={selectedQuiz?.questions}
+        initialTimeLimit={selectedTime}
+        isStarting={selectedQuiz !== null && startingQuizId === selectedQuiz.id}
+        error={startError}
+      />
 
       <div className="h-6" />
 

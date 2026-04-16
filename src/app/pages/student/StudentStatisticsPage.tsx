@@ -10,13 +10,6 @@ const weekDays = ['Du', 'Se', 'Ch', 'Pa', 'Ju', 'Sha', 'Ya'];
 const weekActivity = [4, 7, 3, 8, 5, 2, 6];
 const maxActivity = Math.max(...weekActivity);
 
-const DEFAULT_SUBJECT_STATS = [
-  { name: 'Matematika', correct: 75, wrong: 25, color: '#818CF8' },
-  { name: 'Fizika', correct: 60, wrong: 40, color: '#38BDF8' },
-  { name: "Ona tili", correct: 42, wrong: 58, color: '#34D399' },
-  { name: 'Ingliz tili', correct: 88, wrong: 12, color: '#FBBF24' },
-];
-
 interface SubjectAnalyticsItem {
   subject_name: string | null;
   correct_answer: number | null;
@@ -174,7 +167,8 @@ async function fetchRecommendation() {
 export function StudentStatisticsPage() {
   const { theme: t } = useTheme();
   const cardBase = { background: t.bgCard, border: `1px solid ${t.border}`, boxShadow: t.shadowCard };
-  const [subjects, setSubjects] = useState<SubjectUiStat[]>(DEFAULT_SUBJECT_STATS);
+  const [subjects, setSubjects] = useState<SubjectUiStat[]>([]);
+  const [subjectsLoaded, setSubjectsLoaded] = useState(false);
   const [overallCards, setOverallCards] = useState<OverallCardsResponse>({
     total_quiz_session: 40,
     correct_answer: 0,
@@ -208,9 +202,11 @@ export function StudentStatisticsPage() {
           };
         });
 
-        if (mapped.length > 0) {
-          setSubjects(mapped);
-        }
+        setSubjects(mapped);
+        setSubjectsLoaded(true);
+      } else {
+        setSubjects([]);
+        setSubjectsLoaded(true);
       }
 
       if (cardsResult.status === 'fulfilled') {
@@ -349,29 +345,45 @@ export function StudentStatisticsPage() {
       {/* Subject accuracy */}
       <div className="rounded-2xl p-5 mb-4" style={cardBase}>
         <h3 className="font-bold text-sm mb-4" style={{ color: t.textPrimary }}>Fanlar bo'yicha natija</h3>
-        <div className="space-y-4">
-          {subjects.map((subj) => (
-            <div key={subj.name}>
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-sm font-medium" style={{ color: t.textPrimary }}>{subj.name}</span>
-                <div className="flex items-center gap-3">
-                  <span className="text-xs" style={{ color: '#22C55E' }}>✓ {subj.correct}%</span>
-                  <span className="text-xs" style={{ color: '#EF4444' }}>✗ {subj.wrong}%</span>
+        {subjects.length > 0 ? (
+          <div className="space-y-4">
+            {subjects.map((subj) => (
+              <div key={subj.name}>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-sm font-medium" style={{ color: t.textPrimary }}>{subj.name}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xs" style={{ color: '#22C55E' }}>✓ {subj.correct}%</span>
+                    <span className="text-xs" style={{ color: '#EF4444' }}>✗ {subj.wrong}%</span>
+                  </div>
+                </div>
+                <div className="flex h-2.5 rounded-full overflow-hidden" style={{ background: t.isDark ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.1)' }}>
+                  <div
+                    className="h-full rounded-full transition-all"
+                    style={{
+                      width: `${subj.correct}%`,
+                      background: `linear-gradient(90deg, ${subj.color}88, ${subj.color})`,
+                      boxShadow: t.isDark ? `0 0 6px ${subj.color}44` : 'none',
+                    }}
+                  />
                 </div>
               </div>
-              <div className="flex h-2.5 rounded-full overflow-hidden" style={{ background: t.isDark ? 'rgba(239,68,68,0.2)' : 'rgba(239,68,68,0.1)' }}>
-                <div
-                  className="h-full rounded-full transition-all"
-                  style={{
-                    width: `${subj.correct}%`,
-                    background: `linear-gradient(90deg, ${subj.color}88, ${subj.color})`,
-                    boxShadow: t.isDark ? `0 0 6px ${subj.color}44` : 'none',
-                  }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div
+            className="rounded-xl px-4 py-5"
+            style={{ background: t.isDark ? 'rgba(148,163,184,0.08)' : 'rgba(148,163,184,0.10)' }}
+          >
+            <p className="text-sm font-medium mb-1" style={{ color: t.textPrimary }}>
+              {subjectsLoaded ? "Fanlar bo'yicha natija hozircha mavjud emas" : 'Fanlar statistikasi yuklanmoqda'}
+            </p>
+            <p className="text-xs leading-5" style={{ color: t.textMuted }}>
+              {subjectsLoaded
+                ? "Sizda hali fanlar kesimida ishlangan test natijalari topilmadi. Bir nechta test ishlab ko'ring, natijalar shu yerda ko'rinadi."
+                : "Natijalar tayyor bo'lishi bilan bu yerda fanlar kesimidagi to'g'ri va noto'g'ri javoblar ko'rsatiladi."}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* AI Recommendations */}
